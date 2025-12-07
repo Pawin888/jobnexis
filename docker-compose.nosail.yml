@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8000"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8080
+      RUN_MIGRATIONS: "1"
+    volumes:
+      - uploads:/var/www/html/storage/app/public
+    depends_on:
+      - pgsql
+
+  pgsql:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: laravel
+      POSTGRES_USER: sail
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "${PGADMIN_UI_PORT:-8181}:80"   # Web UI reachable from network
+    depends_on:
+      - pgsql
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"  # SMTP (kept local for safety)
+      - "${MAILPIT_UI_PORT:-8125}:8025"              # Web UI reachable from network
+
+volumes:
+  pgdata:
+    driver: local
+  uploads:
+    driver: local
