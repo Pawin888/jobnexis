@@ -66,12 +66,12 @@
                 @auth
                     <div class="dropdown dropdown-hover rounded-xl">
                         <div tabindex="0" role="button"
-                            class="m-1 bg-transparent border-gray-300 rounded-xl btn border-1">
-                            <div class="flex items-center w-full gap-3">
+                            class="bg-transparent border-gray-300 rounded-xl btn border-1">
+                            <div class="flex items-center gap-3">
 
                                 <div class="avatar placeholder">
-                                    <div class="flex items-end justify-end w-10 h-10 text-neutral-content">
-                                        <i class="mt-3 fa-regular fa-user" style="color: #383839;"></i>
+                                    <div class="flex items-center justify-center w-10 rounded-ful text-neutral-content">
+                                        <i class="fa-regular fa-user" style="color: #383839;"></i>
                                     </div>
                                 </div>
                                 @php
