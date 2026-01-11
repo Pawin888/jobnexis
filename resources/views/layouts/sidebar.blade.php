@@ -62,7 +62,14 @@
                 </a>
             </li>
             <li>
-
+                <a href="{{ route('admin.master-data.skills-overview') }}"
+                    class="flex items-center px-3 py-2 rounded-lg {{ request()->is('admin/master-data/master-skills*') ? 'bg-blue-100 text-blue-700' : '' }}">
+                    <i 
+                        class="fa-solid fa-layer-group w-5 text-center mr-2 {{ request()->is('admin/master-data/master-skills*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
+                    Master Skills Overview
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('logout') }}"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i
