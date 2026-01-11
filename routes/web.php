@@ -17,6 +17,8 @@ use App\Http\Controllers\ProfileDetailController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\SkillController;
 
+use App\Http\Controllers\Admin\MasterSkillOverviewController;
+
 Route::get('/', fn() => view('welcome'))->name('home');
 
 // Public catalog page (guest-friendly)
@@ -225,5 +227,24 @@ Route::controller(ProfileController::class)->group(function () {
     Route::patch('/profile', 'update')->name('profile.update');
     Route::delete('/profile', 'destroy')->name('profile.destroy');
 });
+
+Route::middleware('role:admin')
+    ->prefix('admin')
+    ->group(function () {
+
+        Route::get('/skills-management', [AdminSkillController::class, 'index'])
+            ->name('admin.skills.management.index');
+
+});
+
+Route::middleware('role:admin')
+    ->prefix('admin/master-data')
+    ->name('admin.master-data.')
+    ->group(function () {
+
+        Route::get('/master-skills', [MasterSkillOverviewController::class, 'index'])
+            ->name('skills-overview');
+
+    });
 
 require __DIR__ . '/auth.php';
