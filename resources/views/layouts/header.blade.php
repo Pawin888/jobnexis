@@ -58,6 +58,9 @@
                             <li>
                                 <a href="{{ route('profile-jobber.edit') }}">โปรไฟล์</a>
                             </li>
+                            <li>
+                                <a href="{{ route('jobber.resumes.create') }}">เรซูเม่</a>
+                            </li>
                             <a href="{{ route('logout') }}"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                                 class="p-2 ">

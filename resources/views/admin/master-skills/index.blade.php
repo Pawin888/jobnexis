@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Master Skills Overview')
+@section('title', 'คลังทักษะ ESCO')
 
 @section('content')
 <div class="max-w-7xl mx-auto py-8">

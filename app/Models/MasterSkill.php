@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MasterSkill extends Model
 {
@@ -18,7 +19,10 @@ class MasterSkill extends Model
         'is_active',
     ];
 
-    public function skillGroups()
+    /**
+     * Skill → Skill Groups (ESCO mapping)
+     */
+    public function skillGroups(): BelongsToMany
     {
         return $this->belongsToMany(
             MasterSkillGroup::class,
@@ -28,7 +32,6 @@ class MasterSkill extends Model
         );
     }
 
-    // สำหรับ Blade ที่เรียก $skill->skillGroup
     public function skillGroup()
     {
         return $this->skillGroups()->first();

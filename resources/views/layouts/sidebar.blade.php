@@ -63,10 +63,10 @@
             </li>
             <li>
                 <a href="{{ route('admin.master-data.skills-overview') }}"
-                    class="flex items-center px-3 py-2 rounded-lg {{ request()->is('admin/master-data/master-skills*') ? 'bg-blue-100 text-blue-700' : '' }}">
+                    class="flex items-center px-3 py-2 rounded-lg {{ request()->is('admin/master-data/master-skills*') ? 'text-blue-600' : '' }}">
                     <i 
-                        class="fa-solid fa-layer-group w-5 text-center mr-2 {{ request()->is('admin/master-data/master-skills*') ? 'text-blue-600' : 'text-gray-500' }}"></i>
-                    Master Skills Overview
+                        class="fa-solid fa-layer-group w-5 text-blue-600 text-center mr-1"></i>
+                    คลังทักษะ ESCO
                 </a>
             </li>
             <li>
