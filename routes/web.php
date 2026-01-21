@@ -18,6 +18,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\SkillController;
 
 use App\Http\Controllers\Admin\MasterSkillOverviewController;
+use App\Http\Controllers\Jobber\ResumeController;
 
 Route::get('/', fn() => view('welcome'))->name('home');
 
@@ -245,6 +246,17 @@ Route::middleware('role:admin')
         Route::get('/master-skills', [MasterSkillOverviewController::class, 'index'])
             ->name('skills-overview');
 
+    });
+
+Route::middleware(['auth', 'role:jobber'])
+    ->prefix('jobber/resumes')
+    ->name('jobber.resumes.')
+    ->group(function () {
+        Route::get('/create', [ResumeController::class, 'create'])->name('create');
+        Route::post('/', [ResumeController::class, 'store'])->name('store');
+        Route::get('/{resume}/edit', [ResumeController::class, 'edit'])->name('edit');
+        Route::put('/{resume}', [ResumeController::class, 'update'])->name('update');
+        Route::delete('/{resume}', [ResumeController::class, 'destroy'])->name('destroy');
     });
 
 require __DIR__ . '/auth.php';

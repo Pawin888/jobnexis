@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MasterSkillGroup extends Model
 {
@@ -18,7 +19,10 @@ class MasterSkillGroup extends Model
         'is_active',
     ];
 
-    public function skills()
+    /**
+     * Group → Skills
+     */
+    public function skills(): BelongsToMany
     {
         return $this->belongsToMany(
             MasterSkill::class,
