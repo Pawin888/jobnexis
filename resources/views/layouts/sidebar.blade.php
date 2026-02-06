@@ -64,23 +64,10 @@
             <li>
                 <a href="{{ route('admin.master-data.skills-overview') }}"
                     class="flex items-center px-3 py-2 rounded-lg {{ request()->is('admin/master-data/master-skills*') ? 'text-blue-600' : '' }}">
-                    <i 
+                    <i
                         class="fa-solid fa-layer-group w-5 text-blue-600 text-center mr-1"></i>
                     คลังทักษะ ESCO
                 </a>
-            </li>
-            <li>
-                <a href="{{ route('logout') }}"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i
-                        class="fa-solid fa-arrow-right-from-bracket w-5 text-blue-600 text-center mr-1 {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}"></i>
-                    ออกจากระบบ
-                </a>
-
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
-
             </li>
         </ul>
     </aside>
@@ -107,20 +94,6 @@
                     คอร์สอบรม
                 </a>
             </li>
-            <li>
-
-                <a href="{{ route('logout') }}"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i
-                        class="fa-solid fa-arrow-right-from-bracket w-5 text-blue-600 text-center mr-1 {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}"></i>
-                    ออกจากระบบ
-                </a>
-
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
-
-            </li>
         </ul>
     </aside>
 @elseif (Auth::check() && Auth::user()->role === 'provider')
@@ -145,20 +118,6 @@
                         class="fa-solid fa-clipboard-check w-5 text-blue-600 text-center mr-1 {{ request()->is('education/courses') ? 'text-blue-600' : '' }}"></i>
                     ประกาศงาน
                 </a>
-            </li>
-            <li>
-
-                <a href="{{ route('logout') }}"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i
-                        class="fa-solid fa-arrow-right-from-bracket w-5 text-blue-600 text-center mr-1 {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}"></i>
-                    ออกจากระบบ
-                </a>
-
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
-
             </li>
         </ul>
     </aside>
