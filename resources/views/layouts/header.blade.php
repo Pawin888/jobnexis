@@ -61,11 +61,12 @@
                             <li>
                                 <a href="{{ route('jobber.resumes.create') }}">เรซูเม่</a>
                             </li>
-                            <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                                class="p-2 ">
-                                ออกจากระบบ
-                            </a>
+                            <li>
+                                <a href="{{ route('logout') }}"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    ออกจากระบบ
+                                </a>
+                            </li>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
                                 @csrf
                             </form>
@@ -591,25 +592,36 @@
                     @endauth
                 </div>
             </div>
-            <ul tabindex="0" class="p-2 shadow-sm dropdown-content menu bg-base-100 rounded-box z-1 w-52">
-                <li>
+            @auth
+                <ul tabindex="0" class="p-2 shadow-sm dropdown-content menu bg-base-100 rounded-box z-1 w-52">
                     @php
                         $isAdmin = Auth::user()->role === 'admin';
 
                         $profileRoute = match (Auth::user()->role) {
                             'provider' => route('provider.profile.edit'),
                             'education' => route('profile-education.edit.self'),
+                            'admin' => '#',
                             default => route('profile-jobber.edit'),
                         };
                     @endphp
 
                     @if ($isAdmin)
-                        <span>ESP BUU</span>
+                        <li><span>ESP BUU</span></li>
                     @else
-                        <a href="{{ $profileRoute }}">โปรไฟล์</a>
+                        <li><a href="{{ $profileRoute }}">โปรไฟล์</a></li>
                     @endif
-                </li>
-            </ul>
+
+                    <li>
+                        <a href="{{ route('logout') }}"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            ออกจากระบบ
+                        </a>
+                    </li>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                </ul>
+            @endauth
         </div>
     </header>
 @endif

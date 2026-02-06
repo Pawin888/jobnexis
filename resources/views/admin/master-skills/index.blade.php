@@ -3,54 +3,50 @@
 @section('title', 'คลังทักษะ ESCO')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-8">
+<div class="mx-auto">
 
-    <h1 class="text-3xl font-bold mb-6">
-        Master Skills Overview
-    </h1>
+    {{-- Skills Card --}}
+    <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="font-semibold text-lg mb-4">
+            ค้นหา
+        </h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        {{-- Skill Groups --}}
-        <div class="md:col-span-1 bg-white rounded-xl shadow p-6">
-            <h2 class="font-semibold text-lg mb-4">
-                Skill Groups
-            </h2>
-
-            @if($skillGroups->isNotEmpty())
-                <ul class="space-y-2 max-h-[70vh] overflow-y-auto">
-                    @foreach($skillGroups as $group)
-                        <li
-                            class="p-3 rounded-lg border hover:bg-gray-50 transition flex justify-between items-center"
-                        >
-                            <div class="font-medium text-gray-900">
-                                {{ $group->name }}
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                {{ $group->skills_count }}
-                                skill{{ $group->skills_count !== 1 ? 's' : '' }}
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            @else
-                <p class="text-gray-500 text-sm">ยังไม่มี Skill Groups</p>
-            @endif
+        {{-- Search Bar --}}
+        <div class="mb-6">
+            <form method="GET" action="{{ url()->current() }}" class="flex flex-col sm:flex-row gap-3">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="ค้นหาด้วย ชื่อทักษะ / คีย์เวิร์ด"
+                    class="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                >
+                <div class="flex gap-2">
+                    <button
+                        type="submit"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                        ค้นหา
+                    </button>
+                    <a
+                        href="{{ url()->current() }}"
+                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                    >
+                        ล้าง
+                    </a>
+                </div>
+            </form>
         </div>
 
-        {{-- Skills --}}
-        <div class="md:col-span-2 bg-white rounded-xl shadow p-6 overflow-x-auto">
-            <h2 class="font-semibold text-lg mb-4">
-                Skills
-            </h2>
-
-            @if($skills->isNotEmpty())
+        {{-- Skills Table --}}
+        @if($skills->isNotEmpty())
+            <div class="overflow-x-auto">
                 <table class="w-full text-sm border border-gray-200 rounded-lg">
                     <thead class="bg-gray-50">
                         <tr class="border-b">
-                            <th class="text-left py-2 px-3">Skill</th>
-                            <th class="text-left py-2 px-3">Group</th>
-                            <th class="text-left py-2 px-3">ESCO URI</th>
+                            <th class="text-left py-2 px-3">ทักษะ</th>
+                            <th class="text-left py-2 px-3">หมวดหมู่</th>
+                            <th class="text-center py-2 px-3">ESCO URI</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,23 +60,72 @@
                                     {{ $skill->skillGroups->first()?->name ?? '-' }}
                                 </td>
 
-                                <td class="py-2 px-3 text-xs text-gray-500 break-all">
-                                    {{ $skill->esco_uri ?? '-' }}
+                                <td class="py-2 px-3 text-center">
+                                    @if($skill->esco_uri)
+                                        <a
+                                            href="{{ $skill->esco_uri }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+                                            title="{{ $skill->esco_uri }}"
+                                        >
+                                           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none"
+                                           viewBox="0 0 24 24" stroke="black">
+                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                        </svg>
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-
-                {{-- Pagination --}}
-                <div class="mt-4">
-                    {{ $skills->links() }}
-                </div>
-            @else
-                <p class="text-gray-500 text-sm">ยังไม่มี Skills</p>
-            @endif
-        </div>
-
+            </div>
+        @else
+            <p class="text-gray-500 text-sm">ยังไม่มี Skills</p>
+        @endif
     </div>
+
+    {{-- Pagination --}}
+    @if($skills->isNotEmpty())
+        <div class="mt-6 bg-white rounded-xl shadow p-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                <div class="flex items-center gap-2">
+                    <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
+                    <select
+                        id="perPage"
+                        name="perPage"
+                        onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&search={{ request('search') }}'"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                    >
+                        <option value="20" {{ request('perPage', 20) == 20 ? 'selected' : '' }}>20</option>
+                        <option value="25" {{ request('perPage', 20) == 25 ? 'selected' : '' }}>25</option>
+                        <option value="30" {{ request('perPage', 20) == 30 ? 'selected' : '' }}>30</option>
+                        <option value="40" {{ request('perPage', 20) == 40 ? 'selected' : '' }}>40</option>
+                    </select>
+                    <span class="text-sm text-gray-700">รายการต่อหน้า</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {{ $skills->appends(['search' => request('search'), 'perPage' => request('perPage', 20)])->links() }}
+                </div>
+
+                <div class="text-sm text-gray-600">
+                    แสดง
+                    <span class="font-semibold text-gray-800">{{ $skills->firstItem() ?? 0 }}</span>
+                    -
+                    <span class="font-semibold text-gray-800">{{ $skills->lastItem() ?? 0 }}</span>
+                    จากทั้งหมด
+                    <span class="font-semibold text-gray-800">{{ number_format($skills->total()) }}</span>
+                    รายการ
+                </div>
+            </div>
+        </div>
+    @endif
+
 </div>
 @endsection
