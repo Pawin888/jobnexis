@@ -131,6 +131,14 @@
         </a>
         <ul class="w-full gap-2 menu menu-vertical text-base-content">
             <li>
+                <a href="{{ url('/') }}"
+                    class="flex items-center {{ request()->is('/') ? 'text-blue-600' : '' }}">
+                    <i
+                        class="fa-solid fa-home w-5 text-blue-600 text-center mr-1 {{ request()->is('/') ? 'text-blue-600' : '' }}"></i>
+                    หน้าหลัก
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('provider.dashboard') }}"
                     class="flex items-center {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}">
                     <i
@@ -147,18 +155,12 @@
                 </a>
             </li>
             <li>
-
-                <a href="{{ route('logout') }}"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <a href="{{ route('provider.dashboard') }}"
+                    class="flex items-center {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}">
                     <i
-                        class="fa-solid fa-arrow-right-from-bracket w-5 text-blue-600 text-center mr-1 {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}"></i>
-                    ออกจากระบบ
+                        class="fa-solid fa-file-lines w-5 text-blue-600 text-center mr-1 {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}"></i>
+                    ใบสมัครงาน
                 </a>
-
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
-
             </li>
         </ul>
     </aside>

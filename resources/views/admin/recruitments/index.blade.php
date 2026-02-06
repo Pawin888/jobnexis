@@ -24,7 +24,7 @@
                     </a>
                 @else
                     <a href="{{ route('provider.recruitments.create') }}"
-                        class="p-2 text-blue-600 border-2 border-blue-600 border-dashed rounded-lg btn btn-sm">
+                        class="p-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         <i class="mr-2 fa-solid fa-plus"></i> เพิ่มประกาศงาน
                     </a>
                 @endif
@@ -32,11 +32,11 @@
         </div>
 
         {{-- ฟิลเตอร์ --}}
-        <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
+        <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-4">
                 <fieldset class="fieldset">
                     <legend class="mb-1 fieldset-legend">ค้นหา</legend>
                     <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
-                        class="w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
+                        class="w-full border border-gray-300 input input-bordered" placeholder="  ชื่องาน/รายละเอียด/คุณสมบัติ">
                 </fieldset>
                 <fieldset class="fieldset">
                     <legend class="mb-1 fieldset-legend">สถานะ</legend>
@@ -72,8 +72,8 @@
             </div>
         </form>
 
-        <div class="flex flex-col items-center justify-center p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
-            <table class="table">
+        <div class="flex flex-col p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
+            <table class="table w-full table-fixed">
                 <thead>
                     <tr>
                         <th>ชื่องาน</th>

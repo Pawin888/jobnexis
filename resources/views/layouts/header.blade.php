@@ -606,7 +606,33 @@
                     @if ($isAdmin)
                         <span>ESP BUU</span>
                     @else
-                        <a href="{{ $profileRoute }}">โปรไฟล์</a>
+                        <a href="{{ $profileRoute }}"
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-base-200">
+                                <i class="fa-solid fa-user w-5 text-center"></i>
+                                โปรไฟล์
+                            </a>
+                        <a href="{{ route('provider.recruitments.index') }}"
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-base-200">
+                                <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
+                                ประกาศงาน
+                            </a>
+                        <a href="{{ route('provider.dashboard') }}"
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-base-200">
+                                <i class="fa-solid fa-file-lines w-5 text-center"></i>
+                                ใบสมัครงาน
+                            </a>
+                        <li>
+                            <a href="#"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                            class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-100">
+                                <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
+                                ออกจากระบบ
+                            </a>
+
+                            <form id="logout-form" method="POST" action="{{ route('logout') }}" class="hidden">
+                                @csrf
+                            </form>
+                        </li>
                     @endif
                 </li>
             </ul>
