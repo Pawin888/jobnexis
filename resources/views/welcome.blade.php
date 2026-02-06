@@ -340,7 +340,7 @@
                                         <template x-if="currentModal === 'forgot'">
                                             <div>
                                                 <h2 class="mb-2 text-2xl font-bold text-center text-base-content">
-                                                    กู้คืนรหัสผ่านของคุณ</h2>
+                                                    กู้คืนรหัสผ่านของคุณหน่อยนะครับ</h2>
                                                 <h3 class="mb-6 text-xl font-bold text-center text-base-content/60">
                                                     กรอกอีเมลที่ลงทะเบียนไว้เพื่อรับการกู้คืนรหัสผ่าน</h3>
                                                 @if (session('status'))
