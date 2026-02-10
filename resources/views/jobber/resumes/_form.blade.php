@@ -159,32 +159,39 @@
 
         {{-- Profile Image --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">รูปโปรไฟล์</label>
-            <div class="flex items-center gap-4">
-                <div class="relative">
-                    @if(isset($resume->profile_image))
-                        <img id="preview-image" src="{{ asset($resume->profile_image) }}" alt="Profile" class="w-24 h-24 object-cover rounded-full border-4 border-gray-200">
-                    @else
-                        <div id="preview-placeholder" class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center border-4 border-gray-300">
-                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </div>
-                        <img id="preview-image" src="" alt="Profile" class="w-24 h-24 object-cover rounded-full border-4 border-gray-200 hidden">
-                    @endif
+    <label class="block text-sm font-medium text-gray-700 mb-2">รูปโปรไฟล์</label>
+    <div class="flex items-center gap-4">
+        <div class="relative">
+            @if(isset($resume->profile_image) && $resume->profile_image)
+                {{-- กรณีมีรูปเดิม --}}
+                <img id="preview-image" src="{{ asset('storage/' . $resume->profile_image) }}" alt="Profile" class="w-24 h-24 object-cover rounded-full border-4 border-gray-200">
+                <div id="preview-placeholder" class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center border-4 border-gray-300 hidden">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
                 </div>
-                <div class="flex-1">
-                    <input id="profile-image" type="file" name="profile_image" accept="image/*" class="hidden">
-                    <label for="profile-image" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <span class="text-sm text-gray-700">เลือกรูปภาพ</span>
-                    </label>
-                    <p class="text-xs text-gray-500 mt-1">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 2MB</p>
+            @else
+                {{-- กรณีไม่มีรูปเดิม --}}
+                <div id="preview-placeholder" class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center border-4 border-gray-300">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
                 </div>
-            </div>
+                <img id="preview-image" src="" alt="Profile" class="w-24 h-24 object-cover rounded-full border-4 border-gray-200 hidden">
+            @endif
         </div>
+        <div class="flex-1">
+            <input id="profile-image" type="file" name="profile_image" accept="image/*" class="hidden">
+            <label for="profile-image" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-sm text-gray-700">เลือกรูปภาพ</span>
+            </label>
+            <p class="text-xs text-gray-500 mt-1">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 2MB</p>
+        </div>
+    </div>
+</div>
 
         {{-- Name Fields --}}
         <div class="mb-6">
@@ -434,38 +441,35 @@
         const profileInput = document.getElementById('profile-image');
 
     // Profile Image Preview
-    if (profileInput) {
-        profileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                // Validate file size (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('ขนาดไฟล์ต้องไม่เกิน 2MB');
-                    this.value = '';
-                    return;
-                }
+   if (profileInput) {
+    profileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-                // Validate file type
-                if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
-                    alert('กรุณาเลือกไฟล์ JPG หรือ PNG เท่านั้น');
-                    this.value = '';
-                    return;
-                }
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('ขนาดไฟล์ต้องไม่เกิน 2MB');
+            this.value = '';
+            return;
+        }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('preview-image');
-                    const placeholder = document.getElementById('preview-placeholder');
-                    if (preview) {
-                        preview.src = e.target.result;
-                        preview.classList.remove('hidden');
-                    }
-                    if (placeholder) placeholder.classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
+        // Validate file type
+        if (!file.type.match('image/(jpeg|jpg|png)')) {
+            alert('กรุณาเลือกไฟล์ JPG หรือ PNG เท่านั้น');
+            this.value = '';
+            return;
+        }
+
+        // แสดง preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-image').src = e.target.result;
+            document.getElementById('preview-image').classList.remove('hidden');
+            document.getElementById('preview-placeholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
     // Tab Navigation
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -513,14 +517,6 @@
             // Force recheck of current values
             const currentTabName = tabs[currentTab];
             if (currentTabName === 'personal') {
-                // Debug: log email field state
-                const emailField = document.querySelector('input[name="email"]');
-                console.log('Email validation check:');
-                console.log('Email field exists:', !!emailField);
-                console.log('Email value:', emailField ? emailField.value : 'N/A');
-                console.log('Email trimmed:', emailField ? emailField.value.trim() : 'N/A');
-                console.log('Regex test:', emailField ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value.trim()) : 'N/A');
-
                 // Update validation to check current state
                 if (validateCurrentTab()) {
                     if (currentTab < tabs.length - 1) showTab(currentTab + 1);
@@ -757,16 +753,22 @@
         }
 
         // Check for uploading files
-        let uploading = false;
+        let hasInvalidFile = false;
         document.querySelectorAll('input[type="file"]').forEach(f => {
-            if (f.files.length > 0 && !f.complete) uploading = true;
-        });
-
-        if (uploading) {
-            e.preventDefault();
-            alert('กรุณารอให้ไฟล์อัพโหลดเสร็จก่อนบันทึก');
-            return false;
+            if (f.files.length > 0) {
+        const file = f.files[0];
+        // ตรวจสอบเฉพาะขนาดไฟล์
+        if (f.name === 'profile_image' && file.size > 2 * 1024 * 1024) {
+            hasInvalidFile = true;
+            alert('รูปโปรไฟล์มีขนาดเกิน 2MB');
         }
+    }
+});
+
+if (hasInvalidFile) {
+    e.preventDefault();
+    return false;
+}
 
         // Show loading state
         const submitButton = this.querySelector('button[type="submit"]');
