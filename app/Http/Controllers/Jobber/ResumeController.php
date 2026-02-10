@@ -21,6 +21,14 @@ class ResumeController extends Controller
      */
     public function create()
     {
+        $existingResume = Resume::where('user_id', auth()->id())
+            ->latest('id')
+            ->first();
+
+        if ($existingResume) {
+            return redirect()->route('jobber.resumes.edit', $existingResume);
+        }
+        
         $skillGroups = MasterSkillGroup::with('skills')
             ->where('is_active', true)
             ->orderBy('name')

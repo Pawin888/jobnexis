@@ -408,6 +408,7 @@
 
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <label class="flex items-start gap-3 cursor-pointer">
+                <input type="hidden" name="is_visible" value="0">
                 <input type="checkbox" name="is_visible" value="1" {{ old('is_visible', $resume->is_visible ?? true) ? 'checked' : '' }} class="mt-1">
                 <div>
                     <span class="font-medium text-gray-800">เปิดเผยเรซูเม่ต่อสาธารณะ</span>
@@ -990,7 +991,7 @@ if (hasInvalidFile) {
                 <div class="flex-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">ไฟล์ใบรับรอง (PDF, JPG, PNG)</label>
                     <input type="file" name="certificates[${index}][file]" class="input" accept=".pdf,.jpg,.jpeg,.png">
-                    ${data.file_path ? `<a href="${data.file_path}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-block">ดูไฟล์เดิม</a>` : ''}
+                    ${data.file_path ? `<a href="/storage/${data.file_path}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-block">ดูไฟล์เดิม</a>` : ''}
                 </div>
                 <button type="button" class="remove ml-3 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
                     <span class="flex items-center gap-1">

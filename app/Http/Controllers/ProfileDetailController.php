@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AdminEditedYourData;
 use App\Mail\AccountStatusChanged;
 use Throwable;
+use App\Models\Resume;
 
 class ProfileDetailController extends Controller
 {
@@ -49,8 +50,16 @@ class ProfileDetailController extends Controller
             $educations   = Education::where('ed_u_id', $targetUserId)->get();
             $works        = WorkExperience::where('we_u_id', $targetUserId)->get();
             $certificates = Certificate::where('cer_u_id', $targetUserId)->get();
+            $resumes = Resume::with(
+                'resumeSkills.skill',
+                'resumeSkills.skillGroup',
+                'workExperiences',
+                'educations',
+                'certificates',
+                'languages'
+            )->where('user_id', $targetUserId)->get();
 
-            return view('admin.edit-jobber', compact('profile', 'educations', 'works', 'targetUserId', 'certificates', 'provinces'));
+            return view('admin.edit-jobber', compact('profile', 'educations', 'works', 'targetUserId', 'certificates', 'provinces', 'resumes'));
         } catch (Throwable $e) {
             Log::error('Edit profile failed', [
                 'action' => 'edit',

@@ -19,6 +19,8 @@ use App\Http\Controllers\SkillController;
 
 use App\Http\Controllers\Admin\MasterSkillOverviewController;
 use App\Http\Controllers\Jobber\ResumeController;
+use App\Http\Controllers\Provider\ApplicationController;
+use App\Http\Controllers\Jobber\JobApplicationController;
 
 Route::get('/', fn() => view('welcome'))->name('home');
 
@@ -258,5 +260,24 @@ Route::middleware(['auth', 'role:jobber'])
         Route::put('/{resume}', [ResumeController::class, 'update'])->name('update');
         Route::delete('/{resume}', [ResumeController::class, 'destroy'])->name('destroy');
     });
+
+/** -------- Provider: ดูใบสมัครงาน -------- */
+Route::prefix('provider')->middleware(['auth', 'provider'])->group(function () {
+    Route::get('/applications', [ApplicationController::class, 'index'])
+        ->name('provider.applications.index');
+    Route::get('/applications/{applicationId}', [ApplicationController::class, 'show'])
+        ->name('provider.applications.show');
+    Route::put('/applications/{applicationId}/status', [ApplicationController::class, 'updateStatus'])
+        ->name('provider.applications.updateStatus');
+    Route::get('/recruitments/{recruitmentId}/applications', [ApplicationController::class, 'byRecruit'])
+        ->name('provider.recruitments.applications');
+});
+
+Route::middleware(['auth', 'role:jobber'])->group(function () {
+    Route::post('/jobs/{rcId}/apply', [App\Http\Controllers\Jobber\JobApplicationController::class, 'apply'])
+        ->name('jobber.jobs.apply');
+    Route::delete('/jobs/{rcId}/withdraw', [App\Http\Controllers\Jobber\JobApplicationController::class, 'withdraw'])
+        ->name('jobber.jobs.withdraw');
+});
 
 require __DIR__ . '/auth.php';

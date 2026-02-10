@@ -83,12 +83,10 @@
                         @if($r->rc_application_url)
                             <div class="flex items-center gap-2">
                                 <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-2 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">ดูรายละเอียด</a>
-                                <a href="{{ $r->rc_application_url }}" target="_blank" rel="noopener" class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">สมัคร</a>
                             </div>
                         @else
                             <div class="flex items-center gap-2">
                                 <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">ดูรายละเอียด</a>
-                                <button class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg cursor-not-allowed" disabled>สมัคร</button>
                             </div>
                         @endif
                     </div>
