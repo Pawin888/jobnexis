@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recruitment;
+use App\Models\RecruitmentSkill;
+use App\Models\CompaniesProfile;
+use App\Models\MasterSkill;
+use App\Models\MasterSkillGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +25,7 @@ class RecruitmentController extends Controller
         ];
 
         $recs = Recruitment::query()->open()
+            ->with('skills')
             ->when($q, function ($qq) use ($q) {
                 $qq->where(function ($w) use ($q) {
                     $w->where('rc_title', 'ilike', "%{$q}%")
@@ -62,6 +67,7 @@ class RecruitmentController extends Controller
         ];
 
         $recs = Recruitment::query()->open()
+            ->with('skills')
             ->when($q, function ($qq) use ($q) {
                 $qq->where(function ($w) use ($q) {
                     $w->where('rc_title', 'ilike', "%{$q}%")
@@ -97,7 +103,7 @@ class RecruitmentController extends Controller
     {
         if (!Auth::check() || Auth::user()->role !== 'jobber') abort(403);
 
-        $rec = Recruitment::open()->findOrFail($rcId);
+        $rec = Recruitment::open()->with('skills') ->findOrFail($rcId);
 
         $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
 
@@ -115,7 +121,7 @@ class RecruitmentController extends Controller
     /** Public: ดูรายละเอียดงาน (เปิดสำหรับผู้ที่ยังไม่ล็อกอิน) */
     public function publicShow($rcId)
     {
-        $rec = Recruitment::open()->findOrFail($rcId);
+        $rec = Recruitment::open()->with('skills') ->findOrFail($rcId);
 
         $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
 
@@ -133,7 +139,7 @@ class RecruitmentController extends Controller
         if (Auth::user()->role !== 'admin') abort(403);
 
         // ดึงข้อมูลบริษัท (ถ้ามี) เพื่อโชว์หัวเรื่อง
-        $provider = DB::table('users')->where('id', $userId)->first();
+        $provider = User::with('skills')->find($userId);
         $company  = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
 
         [$q, $status, $type, $mode] = [
@@ -179,7 +185,7 @@ class RecruitmentController extends Controller
         if (Auth::user()->role !== 'provider') abort(403);
 
         $userId = Auth::id();
-        $company = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
+        $company = CompaniesProfile::with('user')->first();
 
         [$q, $status, $type, $mode] = [
             $request->string('q')->toString(),
@@ -221,7 +227,7 @@ class RecruitmentController extends Controller
     /** ทั้ง Admin/Provider ใช้ร่วมกัน */
     public function edit($rcId)
     {
-        $rec = Recruitment::findOrFail($rcId);
+        $rec = Recruitment::with('skills')->findOrFail($rcId);
 
         $user = Auth::user();
         $isOwner = $rec->rc_u_id === $user->id;
@@ -230,9 +236,14 @@ class RecruitmentController extends Controller
             abort(403);
         }
 
+        $skillGroups = MasterSkillGroup::with('skills')
+            ->has('skills')
+            ->get();
+
         return view('admin.recruitments.edit', [
             'rec' => $rec,
             'isAdmin' => $user->role === 'admin',
+            'skillGroups' => $skillGroups,
         ]);
     }
 
@@ -259,6 +270,12 @@ class RecruitmentController extends Controller
             'rc_posted_at'       => ['nullable','date'],
             'rc_expire_at'       => ['nullable','date','after_or_equal:rc_posted_at'],
             'rc_application_url' => ['nullable','url','max:2048'],
+
+            // 🔴 เพิ่ม validation ของ skill
+            'skills' => ['sometimes','array'],
+            'skills.*.skill_group_id' => ['required','exists:master_skill_groups,id'],
+            'skills.*.skill_id' => ['required','exists:master_skills,id'],
+            'skills.*.proficiency_level' => ['required','in:beginner,intermediate,advanced,expert'],
         ]);
 
         // ถ้าไม่ส่ง posted_at มา ให้คงค่าของเดิม
@@ -266,7 +283,29 @@ class RecruitmentController extends Controller
             unset($data['rc_posted_at']);
         }
 
-        $rec->fill($data)->save();
+        // 🔴 ครอบทุกอย่างด้วย transaction
+        DB::transaction(function () use ($rec, $data, $request) {
+
+            // อัปเดตข้อมูลประกาศ
+            $rec->fill($data)->save();
+
+            // ถ้ามีการส่ง skill มา
+            if ($request->filled('skills')) {
+
+                // ลบ skill เดิม
+                RecruitmentSkill::where('rc_id', $rec->rc_id)->delete();
+
+                // เพิ่ม skill ใหม่
+                foreach ($request->skills as $skill) {
+                    RecruitmentSkill::create([
+                        'rc_id' => $rec->rc_id,
+                        'master_skill_group_id' => $skill['skill_group_id'],
+                        'master_skill_id' => $skill['skill_id'],
+                        'proficiency_level' => $skill['proficiency_level'],
+                    ]);
+                }
+            }
+        });
 
         // กลับไป list ให้ถูกฝั่ง
         if ($user->role === 'admin') {
@@ -274,6 +313,7 @@ class RecruitmentController extends Controller
                 ->route('admin.providers.recruitments.index', $rec->rc_u_id)
                 ->with('status', 'อัปเดตประกาศงานเรียบร้อย');
         }
+
         return redirect()
             ->route('provider.recruitments.index')
             ->with('status', 'อัปเดตประกาศงานเรียบร้อย');
@@ -310,12 +350,17 @@ class RecruitmentController extends Controller
     // ดึงข้อมูลเบื้องต้นไว้โชว์หัวเรื่อง
     $provider = DB::table('users')->where('id', $userId)->first();
     $company  = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
+    // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
+    $skillGroups = MasterSkillGroup::with('skills')
+        ->has('skills') // กรองเฉพาะที่มี skills
+        ->get();
 
     return view('admin.recruitments.create', [
         'isAdmin'  => true,
         'ownerId'  => (int) $userId,
         'provider' => $provider,
         'company'  => $company,
+        'skillGroups'  => $skillGroups,
     ]);
 }
 
@@ -340,7 +385,18 @@ public function storeForAdmin(Request $request, $userId)
         $data['rc_posted_at'] = now();
     }
 
-    Recruitment::create($data);
+    $rec = Recruitment::create($data);
+
+    if ($request->filled('skills')) {
+        foreach ($request->skills as $skill) {
+            RecruitmentSkill::create([
+                'rc_id' => $rec->rc_id,
+                'master_skill_group_id' => $skill['skill_group_id'],
+                'master_skill_id' => $skill['skill_id'],
+                'proficiency_level' => $skill['proficiency_level'],
+            ]);
+        }
+    }
 
     return redirect()
         ->route('admin.providers.recruitments.index', $userId)
@@ -353,12 +409,17 @@ public function createForProvider()
 
     $userId  = auth::id();
     $company = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
+    // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
+    $skillGroups = MasterSkillGroup::with('skills')
+        ->has('skills') // กรองเฉพาะที่มี skills
+        ->get();
 
     return view('admin.recruitments.create', [
         'isAdmin'  => false,
         'ownerId'  => $userId,
         'provider' => auth::user(),
         'company'  => $company,
+        'skillGroups'  => $skillGroups,
     ]);
 }
 
@@ -382,7 +443,18 @@ public function createForProvider()
         $data['rc_posted_at'] = now();
     }
 
-    Recruitment::create($data);
+    $rec = Recruitment::create($data);
+
+    if ($request->filled('skills')) {
+        foreach ($request->skills as $skill) {
+            RecruitmentSkill::create([
+                'rc_id' => $rec->rc_id,
+                'master_skill_group_id' => $skill['skill_group_id'],
+                'master_skill_id' => $skill['skill_id'],
+                'proficiency_level' => $skill['proficiency_level'],
+            ]);
+        }
+    }
 
         return redirect()
             ->route('provider.recruitments.index')
@@ -410,6 +482,14 @@ public function createForProvider()
         'rc_expire_at'       => ['nullable','date','after_or_equal:rc_posted_at'],
 
         'rc_application_url' => ['nullable','url','max:2048'],
+
+        'skills' => ['sometimes','array'],
+        'skills.*.skill_group_id' => ['required','exists:master_skill_groups,id'],
+        'skills.*.skill_id' => ['required','exists:master_skills,id'],
+        'skills.*.proficiency_level' => [
+            'required',
+            'in:beginner,intermediate,advanced,expert'
+        ],
     ]);
 }
 

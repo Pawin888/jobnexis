@@ -35,23 +35,57 @@ class Recruitment extends Model
         'rc_expire_at' => 'date',
     ];
 
-    /** เจ้าของประกาศ (User) */
+    /**
+     * เจ้าของประกาศ (User)
+     */
     public function owner()
     {
-        return $this->belongsTo(\App\Models\User::class, 'rc_u_id');
+        return $this->belongsTo(User::class, 'rc_u_id');
     }
 
-    /** Scope: ของ user คนนี้ */
+    /**
+     * Recruitment → RecruitmentSkills
+     */
+    public function skills()
+    {
+        return $this->hasMany(
+            RecruitmentSkill::class,
+            'rc_id',
+            'rc_id'
+        );
+    }
+
+    /**
+     * Recruitment → MasterSkills (many-to-many)
+     * พร้อม pivot: proficiency_level, master_skill_group_id
+     */
+    public function masterSkills()
+    {
+        return $this->belongsToMany(
+            MasterSkill::class,
+            'recruitment_skills',
+            'rc_id',
+            'master_skill_id'
+        )
+        ->withPivot('proficiency_level', 'master_skill_group_id')
+        ->withTimestamps();
+    }
+
+    /**
+     * Scope: ของ user คนนี้
+     */
     public function scopeOwnedBy($q, $userId)
     {
         return $q->where('rc_u_id', $userId);
     }
 
-    /** Scope: ยังเปิดอยู่และไม่หมดอายุ */
+    /**
+     * Scope: ยังเปิดอยู่และไม่หมดอายุ
+     */
     public function scopeOpen($q)
     {
         return $q->where('rc_status', 'open')
-                 ->where(function($qq){
+                 ->where(function ($qq) {
                      $qq->whereNull('rc_expire_at')
                         ->orWhereDate('rc_expire_at', '>=', now()->toDateString());
                  });
