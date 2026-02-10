@@ -90,4 +90,12 @@ class Recruitment extends Model
                         ->orWhereDate('rc_expire_at', '>=', now()->toDateString());
                  });
     }
+
+    /**
+     * Recruitment → JobApplications
+     */
+    public function applications()
+    {
+        return $this->hasMany(JobApplication::class, 'recruitment_id', 'rc_id');
+    }
 }
