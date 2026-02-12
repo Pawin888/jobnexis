@@ -90,41 +90,129 @@
     </div>
 
     {{-- Pagination --}}
-    @if($skills->isNotEmpty())
-        <div class="mt-6 bg-white rounded-xl shadow p-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+@if($skills->isNotEmpty())
+    <div class="mt-6 bg-white rounded-xl shadow p-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
 
-                <div class="flex items-center gap-2">
-                    <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
-                    <select
-                        id="perPage"
-                        name="perPage"
-                        onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&search={{ request('search') }}'"
-                        class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                    >
-                        <option value="20" {{ request('perPage', 20) == 20 ? 'selected' : '' }}>20</option>
-                        <option value="25" {{ request('perPage', 20) == 25 ? 'selected' : '' }}>25</option>
-                        <option value="30" {{ request('perPage', 20) == 30 ? 'selected' : '' }}>30</option>
-                        <option value="40" {{ request('perPage', 20) == 40 ? 'selected' : '' }}>40</option>
-                    </select>
-                    <span class="text-sm text-gray-700">รายการต่อหน้า</span>
-                </div>
+            {{-- Left: Items per page --}}
+            <div class="flex items-center gap-2">
+                <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
+                <select
+                    id="perPage"
+                    name="perPage"
+                    onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&search={{ request('search') }}'"
+                    class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                >
+                    <option value="20" {{ request('perPage', 20) == 20 ? 'selected' : '' }}>20</option>
+                    <option value="25" {{ request('perPage', 20) == 25 ? 'selected' : '' }}>25</option>
+                    <option value="30" {{ request('perPage', 20) == 30 ? 'selected' : '' }}>30</option>
+                    <option value="40" {{ request('perPage', 20) == 40 ? 'selected' : '' }}>40</option>
+                </select>
+                <span class="text-sm text-gray-700">รายการต่อหน้า</span>
 
-                <div class="flex items-center gap-2">
-                    {{ $skills->appends(['search' => request('search'), 'perPage' => request('perPage', 20)])->links() }}
-                </div>
-
-                <div class="text-sm text-gray-600">
-                    แสดง
+                {{-- Info moved here --}}
+                <span class="text-sm text-gray-600 ml-4">
+                    (แสดง
                     <span class="font-semibold text-gray-800">{{ $skills->firstItem() ?? 0 }}</span>
                     -
                     <span class="font-semibold text-gray-800">{{ $skills->lastItem() ?? 0 }}</span>
                     จากทั้งหมด
                     <span class="font-semibold text-gray-800">{{ number_format($skills->total()) }}</span>
-                    รายการ
-                </div>
+                    รายการ)
+                </span>
             </div>
+
+            {{-- Right: Pagination Controls --}}
+            <div class="flex items-center gap-2">
+                {{-- Previous Button --}}
+                @if($skills->onFirstPage())
+                    <button
+                        disabled
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm"
+                    >
+                        ก่อนหน้า
+                    </button>
+                @else
+                    <a
+                        href="{{ $skills->appends(request()->except('page'))->previousPageUrl() }}"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                    >
+                        ก่อนหน้า
+                    </a>
+                @endif
+
+                {{-- Page Numbers --}}
+                <div class="flex items-center gap-1">
+                    @php
+                        $currentPage = $skills->currentPage();
+                        $lastPage = $skills->lastPage();
+                        $start = max(1, $currentPage - 2);
+                        $end = min($lastPage, $currentPage + 2);
+                    @endphp
+
+                    {{-- First Page --}}
+                    @if($start > 1)
+                        <a
+                            href="{{ $skills->appends(request()->except('page'))->url(1) }}"
+                            class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                        >
+                            1
+                        </a>
+                        @if($start > 2)
+                            <span class="px-2 text-gray-500">...</span>
+                        @endif
+                    @endif
+
+                    {{-- Page Range --}}
+                    @for($i = $start; $i <= $end; $i++)
+                        @if($i == $currentPage)
+                            <span class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg text-sm font-medium">
+                                {{ $i }}
+                            </span>
+                        @else
+                            <a
+                                href="{{ $skills->appends(request()->except('page'))->url($i) }}"
+                                class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                            >
+                                {{ $i }}
+                            </a>
+                        @endif
+                    @endfor
+
+                    {{-- Last Page --}}
+                    @if($end < $lastPage)
+                        @if($end < $lastPage - 1)
+                            <span class="px-2 text-gray-500">...</span>
+                        @endif
+                        <a
+                            href="{{ $skills->appends(request()->except('page'))->url($lastPage) }}"
+                            class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                        >
+                            {{ $lastPage }}
+                        </a>
+                    @endif
+                </div>
+
+                {{-- Next Button --}}
+                @if($skills->hasMorePages())
+                    <a
+                        href="{{ $skills->appends(request()->except('page'))->nextPageUrl() }}"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+                    >
+                        ถัดไป
+                    </a>
+                @else
+                    <button
+                        disabled
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm"
+                    >
+                        ถัดไป
+                    </button>
+                @endif
+            </div>
+
         </div>
+    </div>
     @endif
 
 </div>
