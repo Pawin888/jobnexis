@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Recruitment;
 use App\Models\RecruitmentSkill;
+use App\Models\RecruitmentLanguage;
 use App\Models\CompaniesProfile;
 use App\Models\MasterSkill;
 use App\Models\MasterSkillGroup;
@@ -227,7 +228,7 @@ class RecruitmentController extends Controller
     /** ทั้ง Admin/Provider ใช้ร่วมกัน */
     public function edit($rcId)
     {
-        $rec = Recruitment::with('skills')->findOrFail($rcId);
+        $rec = Recruitment::with('skills', 'languages')->findOrFail($rcId);
 
         $user = Auth::user();
         $isOwner = $rec->rc_u_id === $user->id;
@@ -276,6 +277,10 @@ class RecruitmentController extends Controller
             'skills.*.skill_group_id' => ['required','exists:master_skill_groups,id'],
             'skills.*.skill_id' => ['required','exists:master_skills,id'],
             'skills.*.proficiency_level' => ['required','in:beginner,intermediate,advanced,expert'],
+
+            'languages' => ['sometimes','array'],
+            'languages.*.language' => ['required','string','max:255'],
+            'languages.*.proficiency' => ['required','in:basic,conversational,fluent,native'],
         ]);
 
         // ถ้าไม่ส่ง posted_at มา ให้คงค่าของเดิม
@@ -303,6 +308,21 @@ class RecruitmentController extends Controller
                         'master_skill_id' => $skill['skill_id'],
                         'proficiency_level' => $skill['proficiency_level'],
                     ]);
+                }
+            }
+            
+            if ($request->filled('languages')) {
+                // ลบภาษาเดิม (เฉพาะ update)
+                if (method_exists($rec, 'languages')) {
+                    $rec->languages()->delete();
+                }
+                foreach ($request->languages as $lang) {
+                    if (!empty($lang['language'])) {
+                        $rec->languages()->create([
+                            'language' => $lang['language'],
+                            'proficiency' => $lang['proficiency'] ?? 'basic',
+                        ]);
+                    }
                 }
             }
         });
@@ -398,6 +418,21 @@ public function storeForAdmin(Request $request, $userId)
         }
     }
 
+    if ($request->filled('languages')) {
+        // ลบภาษาเดิม (เฉพาะ update)
+        if (method_exists($rec, 'languages')) {
+            $rec->languages()->delete();
+        }
+        foreach ($request->languages as $lang) {
+            if (!empty($lang['language'])) {
+                $rec->languages()->create([
+                    'language' => $lang['language'],
+                    'proficiency' => $lang['proficiency'] ?? 'basic',
+                ]);
+            }
+        }
+    }
+
     return redirect()
         ->route('admin.providers.recruitments.index', $userId)
         ->with('status', 'สร้างประกาศงานเรียบร้อย');
@@ -456,6 +491,21 @@ public function createForProvider()
         }
     }
 
+    if ($request->filled('languages')) {
+        // ลบภาษาเดิม (เฉพาะ update)
+        if (method_exists($rec, 'languages')) {
+            $rec->languages()->delete();
+        }
+        foreach ($request->languages as $lang) {
+            if (!empty($lang['language'])) {
+                $rec->languages()->create([
+                    'language' => $lang['language'],
+                    'proficiency' => $lang['proficiency'] ?? 'basic',
+                ]);
+            }
+        }
+    }
+
         return redirect()
             ->route('provider.recruitments.index')
             ->with('status', 'สร้างประกาศงานเรียบร้อย');
@@ -488,8 +538,13 @@ public function createForProvider()
         'skills.*.skill_id' => ['required','exists:master_skills,id'],
         'skills.*.proficiency_level' => [
             'required',
-            'in:beginner,intermediate,advanced,expert'
-        ],
+            'in:beginner,intermediate,advanced,expert'],
+        'skills' => ['sometimes','array', 'distinct:skill_id'],
+        
+        'languages' => ['sometimes','array'],
+        'languages.*.language' => ['required','string','max:255'],
+        'languages.*.proficiency' => ['required','in:basic,conversational,fluent,native'],
+        
     ]);
 }
 

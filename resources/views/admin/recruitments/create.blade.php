@@ -240,6 +240,44 @@
 
         </div>{{-- end space-y-4 --}}
 
+        {{-- ================= SECTION: LANGUAGES ================= --}}
+        <div class="bg-base-200 rounded-2xl px-6 py-5">
+            <h2 class="text-base font-semibold mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-5 bg-info rounded-full inline-block"></span>
+                ภาษาที่ต้องการ
+            </h2>
+            <div id="languages-wrapper" class="space-y-3">
+                @php
+                    $langs = old('languages', isset($rec) ? $rec->languages->toArray() : [['language'=>'','proficiency'=>'basic']]);
+                @endphp
+                @foreach ($langs as $i => $lang)
+                <div class="language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
+                    style="grid-template-columns: 2fr 2fr 2rem">
+                    <input type="text" name="languages[{{ $i }}][language]"
+                        class="input input-bordered input-sm w-full"
+                        placeholder="เช่น English, ไทย"
+                        value="{{ $lang['language'] ?? '' }}">
+                    <select name="languages[{{ $i }}][proficiency]"
+                        class="select select-bordered select-sm w-full">
+                        <option value="basic" {{ ($lang['proficiency'] ?? '')=='basic' ? 'selected' : '' }}>พื้นฐาน</option>
+                        <option value="conversational" {{ ($lang['proficiency'] ?? '')=='conversational' ? 'selected' : '' }}>สนทนาได้</option>
+                        <option value="fluent" {{ ($lang['proficiency'] ?? '')=='fluent' ? 'selected' : '' }}>คล่องแคล่ว</option>
+                        <option value="native" {{ ($lang['proficiency'] ?? '')=='native' ? 'selected' : '' }}>เจ้าของภาษา</option>
+                    </select>
+                    <button type="button"
+                        class="remove-language {{ $i == 0 && count($langs) == 1 ? 'hidden' : '' }} btn btn-xs shrink-0"
+                        style="background-color:#ef4444; color:white; border:none; min-width:2rem">
+                        ✕
+                    </button>
+                </div>
+                @endforeach
+            </div>
+            <button type="button" id="add-language"
+                class="mt-3 btn btn-sm btn-outline btn-info gap-1">
+                + เพิ่มภาษา
+            </button>
+        </div>
+
         {{-- ================= ACTIONS ================= --}}
         <div class="flex justify-end gap-3 mt-4 pb-6">
             <a href="{{ $isAdmin
@@ -362,6 +400,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', e => {
         if (e.target.classList.contains('remove-skill') || e.target.closest('.remove-skill')) {
             e.target.closest('.skill-row').remove();
+        }
+    });
+
+    // ===== Languages =====
+    let langIndex = document.querySelectorAll('.language-row').length;
+    document.getElementById('add-language').addEventListener('click', () => {
+        const wrapper = document.getElementById('languages-wrapper');
+        const template = wrapper.querySelector('.language-row').cloneNode(true);
+        template.querySelectorAll('input,select').forEach(el => {
+            el.name = el.name.replace(/\d+/, langIndex);
+            if (el.tagName === 'INPUT') el.value = '';
+            if (el.tagName === 'SELECT') el.value = 'basic';
+        });
+        template.querySelector('.remove-language').classList.remove('hidden');
+        wrapper.appendChild(template);
+        langIndex++;
+    });
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('remove-language') || e.target.closest('.remove-language')) {
+            const rows = document.querySelectorAll('.language-row');
+            if (rows.length > 1) e.target.closest('.language-row').remove();
         }
     });
 });
