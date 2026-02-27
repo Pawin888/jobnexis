@@ -98,4 +98,9 @@ class Recruitment extends Model
     {
         return $this->hasMany(JobApplication::class, 'recruitment_id', 'rc_id');
     }
+
+    public function languages()
+    {
+        return $this->hasMany(RecruitmentLanguage::class, 'rc_id', 'rc_id');
+    }
 }
