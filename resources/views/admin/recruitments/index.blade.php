@@ -32,45 +32,44 @@
         </div>
 
         {{-- ฟิลเตอร์ --}}
-        <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
-                <fieldset class="fieldset">
-                    <legend class="mb-1 fieldset-legend">ค้นหา</legend>
-                    <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
-                        class="w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
-                </fieldset>
-                <fieldset class="fieldset">
-                    <legend class="mb-1 fieldset-legend">สถานะ</legend>
-                    <select name="status" class="w-full border border-gray-300 select select-bordered">
-                        <option value="">— ทั้งหมด —</option>
-                        @foreach (['open' => 'เปิดรับ', 'closed' => 'ปิดรับ', 'draft' => 'ฉบับร่าง'] as $k => $v)
-                            <option value="{{ $k }}" @selected(($filters['status'] ?? '') === $k)>{{ $v }}</option>
-                        @endforeach
-                    </select>
-                </fieldset>
-                <fieldset class="fieldset">
-                    <legend class="mb-1 fieldset-legend">ประเภท</legend>
-                    <select name="type" class="w-full border border-gray-300 select select-bordered">
-                        <option value="">— ทั้งหมด —</option>
-                        @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
-                            <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
-                        @endforeach
-                    </select>
-                </fieldset>
-                <fieldset class="fieldset">
-                    <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
-                    <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
-                        <option value="">— ทั้งหมด —</option>
-                        @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
-                            <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
-                        @endforeach
-                    </select>
-                </fieldset>
-            <div class="flex gap-2 md:col-span-5">
-                <button class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
-                <a href="{{ url()->current() }}" class="btn">ล้าง</a>
-
-            </div>
-        </form>
+<form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-4">
+    <fieldset class="fieldset">
+        <legend class="mb-1 fieldset-legend">ค้นหา</legend>
+        <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
+            class="w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
+    </fieldset>
+    <fieldset class="fieldset">
+        <legend class="mb-1 fieldset-legend">สถานะ</legend>
+        <select name="status" class="w-full border border-gray-300 select select-bordered">
+            <option value="">— ทั้งหมด —</option>
+            @foreach (['open' => 'เปิดรับ', 'closed' => 'ปิดรับ', 'draft' => 'ฉบับร่าง'] as $k => $v)
+                <option value="{{ $k }}" @selected(($filters['status'] ?? '') === $k)>{{ $v }}</option>
+            @endforeach
+        </select>
+    </fieldset>
+    <fieldset class="fieldset">
+        <legend class="mb-1 fieldset-legend">ประเภท</legend>
+        <select name="type" class="w-full border border-gray-300 select select-bordered">
+            <option value="">— ทั้งหมด —</option>
+            @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
+                <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
+            @endforeach
+        </select>
+    </fieldset>
+    <fieldset class="fieldset">
+        <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
+        <div class="flex gap-2">
+            <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
+                <option value="">— ทั้งหมด —</option>
+                @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
+                    <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
+                @endforeach
+            </select>
+            <button class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
+            <a href="{{ url()->current() }}" class="btn">ล้าง</a>
+        </div>
+    </fieldset>
+</form>
 
         <div class="flex flex-col items-center justify-center p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
             <table class="table">
