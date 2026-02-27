@@ -39,28 +39,28 @@ class ApplicationController extends Controller
 
     // ดูรายละเอียดใบสมัครและรีซูเมต่อ recruitment
     public function show($applicationId)
-    {
-        $application = JobApplication::with([
-            'recruitment',
-            'jobber',
-            'jobber.profile',
-            'resume',
-            'resume.workExperiences',
-            'resume.educations',
-            'resume.resumeSkills',
-            'resume.certificates',
-        ])
-        ->findOrFail($applicationId);
+{
+    $application = JobApplication::with([
+        'recruitment',
+        'jobber',
+        'jobber.profile',
+        'resume',
+        'resume.workExperiences',
+        'resume.educations',
+        'resume.resumeSkills.skill',
+        'resume.resumeSkills.skillGroup',
+        'resume.certificates',
+    ])
+    ->findOrFail($applicationId);
 
-        // ตรวจสอบว่า provider มีอำนาจเข้าถึง
-        if ($application->recruitment->rc_u_id !== Auth::id()) {
-            abort(403);
-        }
-
-        return view('provider.applications.show', [
-            'application' => $application,
-        ]);
+    if ($application->recruitment->rc_u_id !== Auth::id()) {
+        abort(403);
     }
+
+    return view('provider.applications.show', [
+        'application' => $application,
+    ]);
+}
 
     // อัปเดตสถานะใบสมัคร
     public function updateStatus(Request $request, $applicationId)
