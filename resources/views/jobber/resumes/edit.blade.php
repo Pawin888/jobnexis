@@ -10,8 +10,8 @@
                 <h1 class="text-3xl font-bold text-gray-800">แก้ไขเรซูเม่</h1>
                 <p class="text-gray-600 mt-2">อัปเดตข้อมูลเรซูเม่ของคุณ</p>
             </div>
-            <a href="{{ route('jobber.dashboard') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                ← กลับ
+            <a href="{{ route('profile-jobber.edit') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                ยกเลิก
             </a>
         </div>
     </div>
