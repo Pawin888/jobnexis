@@ -92,6 +92,7 @@ cp .env.example .env
 | `./vendor/bin/sail up -d`           | เริ่มต้นระบบ (เปิดเว็บ)  |
 | `./vendor/bin/sail down`            | ปิดระบบ                  |
 | `./vendor/bin/sail artisan migrate` | สร้างตารางในฐานข้อมูล    |
+| `./vendor/bin/sail artisan migrate:fresh`| สร้างตารางในฐานข้อมูลใหม่ทั้งหมด    |
 | `./vendor/bin/sail artisan db:seed` | สร้างข้อมูลจำลอง         |
 | `./vendor/bin/sail artisan`         | คำสั่งทั้งหมดของ Laravel |
 
@@ -122,3 +123,9 @@ cp .env.example .env
 ---
 
 > ขอให้สนุกกับการใช้งานครับ 😊
+
+##
+**Q: ในกรณีที่ profile image และ certificate ไม่สามารถบันทึกลงฐานข้อมูล หรือแสดงผลไม่ได้ **
+🔹 sudo chown -R $USER:$USER storage bootstrap/cache ให้สิทธิ์การเข้าถึง storage
+🔹 chmod -R u+rwX storage bootstrap/cache
+🔹 ./vendor/bin/sail artisan storage:link สร้าง symbolic link (ลิงก์เชื่อมโฟลเดอร์)
