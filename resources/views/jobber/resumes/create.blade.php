@@ -10,7 +10,7 @@
                 <h1 class="text-3xl font-bold text-gray-800">สร้างเรซูเม่</h1>
                 <p class="text-gray-600 mt-2">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อสร้างเรซูเม่ของคุณ</p>
             </div>
-            <a href="{{ route('profile-jobber.edit') }}" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+            <a href="{{ route('profile-jobber.edit') }}" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-gray-200 transition">
                 ยกเลิก
             </a>
         </div>

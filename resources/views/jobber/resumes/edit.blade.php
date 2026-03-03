@@ -10,16 +10,13 @@
                 <h1 class="text-3xl font-bold text-gray-800">แก้ไขเรซูเม่</h1>
                 <p class="text-gray-600 mt-2">อัปเดตข้อมูลเรซูเม่ของคุณ</p>
             </div>
-            <a href="{{ route('profile-jobber.edit') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                ยกเลิก
+            <a href="{{ route('profile-jobber.edit') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                กลับไปหน้าโปรไฟล์
             </a>
         </div>
     </div>
 
-    <form id="resume-form" method="POST" action="{{ route('jobber.resumes.update', $resume) }}" enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
-
+    <form id="resume-form" method="POST" action="{{ route('jobber.resumes.update', $resume->id) }}" enctype="multipart/form-data">
         @include('jobber.resumes._form')
     </form>
 

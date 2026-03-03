@@ -34,7 +34,8 @@
 
 @if (Auth::check() && Auth::user()->role === 'jobber' || !Auth::check())
 
-<body class="h-full min-h-screen bg-[linear-gradient(to_bottom,_theme('colors.sky.100')_20%,_theme('colors.blue.300')_100%)] px-28">
+<html class="h-full">
+<body class="min-h-screen bg-[linear-gradient(to_bottom,_theme('colors.sky.100')_20%,_theme('colors.blue.300')_100%)] px-28">
     <div class="flex">
         {{-- Sidebar --}}
         @include('layouts.sidebar')

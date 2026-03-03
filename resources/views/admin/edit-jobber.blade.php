@@ -69,188 +69,205 @@
 
     {{-- ================= แสดงเรซูเม่ ================= --}}
     <div class="mt-12">
-        <h2 class="mb-4 text-lg font-semibold">เรซูเม่ของคุณ</h2>
-            @if ($resumes->isEmpty())
-                <div class="text-center py-8">
-                    <p class="text-gray-500 mb-4">ยังไม่สร้างเรซูเม่</p>
-                    <a href="{{ route('jobber.resumes.create') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        สร้างเรซูเม่
-                    </a>
-                </div>
-            @else
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold tracking-tight text-gray-800">เรซูเม่ของคุณ</h2>
+            <span class="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
+                {{ $resumes->count() }} รายการ
+            </span>
+        </div>
 
+        @if ($resumes->isEmpty())
+            <div class="p-10 text-center bg-white border border-dashed rounded-2xl">
+                <p class="mb-4 text-gray-500">ยังไม่สร้างเรซูเม่</p>
+                <a href="{{ route('jobber.resumes.create') }}"
+                   class="inline-flex items-center gap-2 px-6 py-3 text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
+                    สร้างเรซูเม่
+                </a>
+            </div>
+        @else
             <div class="space-y-4">
                 @foreach ($resumes as $resume)
                     @php
+                        $resumeSkills = $resume->resumeSkills ?? collect();
                         $workExperiences = $resume->workExperiences ?? collect();
-                        $educations      = $resume->educations ?? collect();
-                        $certificates    = $resume->certificates ?? collect();
-                        $languages       = $resume->languages ?? collect();
-                        $resumeSkills    = $resume->resumeSkills ?? collect();
+                        $educations = $resume->educations ?? collect();
+                        $certificates = $resume->certificates ?? collect();
+                        $languages = $resume->languages ?? collect();
+
                         $profileImageUrl = null;
                         if (!empty($resume->profile_image)) {
                             if (\Illuminate\Support\Str::startsWith($resume->profile_image, ['http://', 'https://'])) {
                                 $profileImageUrl = $resume->profile_image;
                             } else {
-                                $profileImagePath = preg_replace('#^/?storage/#', '', $resume->profile_image);
-                                $profileImageUrl = \Illuminate\Support\Facades\Storage::url($profileImagePath);
+                                $imgPath = preg_replace('#^/?storage/#', '', $resume->profile_image);
+                                $profileImageUrl = \Illuminate\Support\Facades\Storage::url($imgPath);
                             }
                         }
+
+                        $genderLabels = ['male' => 'ชาย', 'female' => 'หญิง', 'other' => 'อื่นๆ'];
+                        $skillLevelLabels = ['beginner' => 'เริ่มต้น', 'intermediate' => 'ปานกลาง', 'advanced' => 'ขั้นสูง', 'expert' => 'ผู้เชี่ยวชาญ'];
+                        $languageLevelLabels = ['basic' => 'พื้นฐาน', 'conversational' => 'สนทนาได้', 'fluent' => 'คล่องแคล่ว', 'native' => 'เจ้าของภาษา'];
+
+                        $fullName = trim(($resume->first_name ?? '') . ' ' . ($resume->middle_name ?? '') . ' ' . ($resume->last_name ?? ''));
+                        $birthDate = $resume->birth_date ? \Carbon\Carbon::parse($resume->birth_date)->format('d/m/Y') : '-';
+                        $availableStartDate = $resume->available_start_date ? \Carbon\Carbon::parse($resume->available_start_date)->format('d/m/Y') : '-';
                     @endphp
 
-                    <div class="p-6 space-y-6 border rounded-lg bg-base-100">
-
-                        {{-- Header --}}
-                        <div class="flex flex-col gap-4 lg:flex-row lg:justify-between">
-                            <div class="flex items-center gap-4">
+                    <details class="overflow-hidden bg-white border shadow-sm group rounded-2xl" open>
+                        <summary class="flex items-center justify-between gap-4 p-5 cursor-pointer bg-gradient-to-r from-slate-50 to-white">
+                            <div class="flex items-center gap-4 min-w-0">
                                 @if ($profileImageUrl)
-                                    <img
-                                        src="{{ $profileImageUrl }}"
-                                        alt="Profile"
-                                        class="h-16 w-16 rounded-full object-cover border"
-                                    />
+                                    <img src="{{ $profileImageUrl }}" alt="Profile"
+                                         class="object-cover w-14 h-14 border-2 border-gray-200 rounded-full" />
+                                @else
+                                    <div class="flex items-center justify-center w-14 h-14 text-gray-400 bg-gray-100 border-2 border-gray-200 rounded-full">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                    </div>
                                 @endif
 
-                                <div>
-                                    <p class="text-lg font-semibold">{{ $resume->title ?? '-' }}</p>
-                                    <p class="text-sm text-gray-500">
-                                        สถานะ:
-                                        @if ($resume->is_visible)
-                                            <span class="text-green-600">เปิดเผย</span>
-                                        @else
-                                            <span class="text-red-600">ซ่อน</span>
-                                        @endif
-                                    </p>
-                                    <p class="mt-1 text-sm text-gray-500">
-                                        {{ trim(($resume->first_name ?? '') . ' ' . ($resume->last_name ?? '')) ?: '-' }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="text-sm text-gray-600">
-                                <p>อีเมล: {{ $resume->email ?? '-' }}</p>
-                                <p>เบอร์โทร: {{ $resume->phone ?? '-' }}</p>
-                            </div>
-                        </div>
-
-                        {{-- ข้อมูลส่วนตัว --}}
-                        <div>
-                            <h3 class="mb-2 font-semibold">ข้อมูลส่วนตัว</h3>
-                            <div class="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
-                                <div>วันเกิด: {{ $resume->birth_date ?? '-' }}</div>
-                                <div>เพศ: {{ $resume->gender ?? '-' }}</div>
-                                <div>ที่อยู่: {{ $resume->address ?? '-' }}</div>
-                                <div>สรุป: {{ $resume->summary ?? '-' }}</div>
-                            </div>
-                        </div>
-
-                        {{-- ทักษะ --}}
-                        <div>
-                            <h3 class="mb-2 font-semibold">ทักษะ</h3>
-                            @forelse ($resumeSkills as $rs)
-                                <div class="text-sm">
-                                    {{ $rs->skill->name ?? $rs->skill_name ?? 'ทักษะ' }}
-                                    @if($rs->proficiency_level)
-                                        - ระดับ {{ $rs->proficiency_level }}
-                                    @endif
-                                </div>
-                            @empty
-                                <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
-                            @endforelse
-                        </div>
-
-                        {{-- ประสบการณ์ทำงาน --}}
-                        <div>
-                            <h3 class="mb-2 font-semibold">ประสบการณ์ทำงาน</h3>
-                            @forelse ($workExperiences as $we)
-                                <div class="text-sm">
-                                    <div class="font-medium">{{ $we->job_title }} - {{ $we->company_name }}</div>
-                                    <div class="text-gray-600">
-                                        {{ $we->start_date }} ถึง {{ $we->is_current ? 'ปัจจุบัน' : $we->end_date }}
+                                <div class="min-w-0">
+                                    <h3 class="text-lg font-bold text-gray-800 truncate">{{ $fullName ?: '-' }}</h3>
+                                    <p class="text-sm text-gray-500 truncate">{{ $resume->title ?: 'ไม่ได้ระบุตำแหน่ง' }}</p>
+                                    <div class="flex gap-2 mt-2">
+                                        <span class="px-2 py-1 text-xs rounded-full {{ $resume->is_visible ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                            {{ $resume->is_visible ? 'เปิดเผยเรซูเม่' : 'ซ่อนเรซูเม่' }}
+                                        </span>
                                     </div>
                                 </div>
-                            @empty
-                                <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
-                            @endforelse
-                        </div>
+                            </div>
 
-                        {{-- การศึกษา --}}
-                        <div>
-                            <h3 class="mb-2 font-semibold">การศึกษา</h3>
-                            @forelse ($educations as $ed)
-                                <div class="text-sm">
-                                    {{ $ed->education_level }} - {{ $ed->institution }}
+                            <svg class="w-5 h-5 text-gray-400 transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </summary>
+
+                        <div class="p-5 space-y-5 border-t">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">อีเมล</div><div class="font-medium">{{ $resume->email ?? '-' }}</div></div>
+                                <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">เบอร์โทร</div><div class="font-medium">{{ $resume->phone ?? '-' }}</div></div>
+                                <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">วันเกิด</div><div class="font-medium">{{ $birthDate }}</div></div>
+                                <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">เพศ</div><div class="font-medium">{{ $genderLabels[$resume->gender ?? ''] ?? '-' }}</div></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                <div class="p-4 border rounded-xl">
+                                    <h4 class="mb-2 font-semibold text-gray-800">เกี่ยวกับตัวคุณ</h4>
+                                    <p class="text-sm leading-relaxed text-gray-700">{{ $resume->summary ?: 'ไม่มีข้อมูล' }}</p>
                                 </div>
-                            @empty
-                                <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
-                            @endforelse
-                        </div>
 
-                        {{-- ใบรับรอง --}}
-                        <div>
-                            <h3 class="mb-2 font-semibold">ใบรับรอง</h3>
-                            @forelse ($certificates as $cert)
-                                @php
-                                    $certPath = $cert->file_path ?? $cert->file ?? null;
-
-                                    if ($certPath && \Illuminate\Support\Str::startsWith($certPath, ['http://', 'https://'])) {
-                                        $certUrl = $certPath;
-                                    } elseif ($certPath) {
-                                        $certPath = preg_replace('#^/?storage/#', '', $certPath);
-                                        $certUrl = \Illuminate\Support\Facades\Storage::url($certPath);
-                                    } else {
-                                        $certUrl = null;
-                                    }
-                                @endphp
-                                <div class="text-sm">
-                                    {{ $cert->name }} ({{ $cert->issued_by }})
-                                    @if ($certUrl)
-                                        <a href="{{ $certUrl }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                            </svg>
-                                            ดูไฟล์
-                                        </a>
-                                    @endif
+                                <div class="p-4 border rounded-xl">
+                                    <h4 class="mb-2 font-semibold text-gray-800">ข้อมูลการสมัครงาน</h4>
+                                    <div class="space-y-1 text-sm">
+                                        <div><span class="text-gray-500">เริ่มงานได้:</span> {{ $availableStartDate }}</div>
+                                        <div><span class="text-gray-500">สถานที่ต้องการ:</span> {{ $resume->preferred_location ?? '-' }}</div>
+                                        <div><span class="text-gray-500">เงินเดือนคาดหวัง:</span> {{ !empty($resume->expected_salary) ? number_format((float) $resume->expected_salary) . ' บาท' : '-' }}</div>
+                                    </div>
                                 </div>
-                            @empty
-                                <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
-                            @endforelse
-                        </div>
+                            </div>
 
-                        {{-- ภาษา --}}
-                        <div>
-                            <h3 class="mb-2 font-semibold">ภาษา</h3>
-                            @forelse ($languages as $lang)
-                                <div class="text-sm">{{ $lang->language }} - {{ $lang->level }}</div>
-                            @empty
-                                <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
-                            @endforelse
+                            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                <div class="p-4 border rounded-xl">
+                                    <h4 class="mb-2 font-semibold">ทักษะ</h4>
+                                    @forelse ($resumeSkills as $rs)
+                                        <div class="py-1 text-sm">
+                                            <span class="font-medium">{{ $rs->skill->name ?? $rs->skill_name ?? 'ทักษะ' }}</span>
+                                            @if ($rs->proficiency_level)
+                                                <span class="text-blue-700">- {{ $skillLevelLabels[$rs->proficiency_level] ?? $rs->proficiency_level }}</span>
+                                            @endif
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
+                                    @endforelse
+                                </div>
+
+                                <div class="p-4 border rounded-xl">
+                                    <h4 class="mb-2 font-semibold">ภาษา</h4>
+                                    @forelse ($languages as $lang)
+                                        <div class="py-1 text-sm">
+                                            {{ $lang->language ?: '-' }}
+                                            <span class="text-blue-700">- {{ $languageLevelLabels[$lang->level ?? ''] ?? ($lang->level ?: '-') }}</span>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <div class="p-4 border rounded-xl">
+                                <h4 class="mb-2 font-semibold">ประสบการณ์ทำงาน</h4>
+                                @forelse ($workExperiences as $we)
+                                    <div class="p-3 mb-2 border rounded-lg bg-slate-50">
+                                        <div class="text-sm font-medium">{{ $we->job_title ?: '-' }} - {{ $we->company_name ?: '-' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $we->start_date ?: '-' }} ถึง {{ $we->is_current ? 'ปัจจุบัน' : ($we->end_date ?: '-') }}</div>
+                                        @if (!empty($we->description))
+                                            <div class="mt-2 text-sm text-gray-700 whitespace-pre-line">{{ $we->description }}</div>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
+                                @endforelse
+                            </div>
+
+                            <div class="p-4 border rounded-xl">
+                                <h4 class="mb-2 font-semibold">การศึกษา</h4>
+                                @forelse ($educations as $ed)
+                                    <div class="p-3 mb-2 border rounded-lg bg-slate-50">
+                                        <div class="text-sm font-medium">{{ $ed->education_level ?: '-' }} - {{ $ed->field_of_study ?: '-' }}</div>
+                                        <div class="text-sm text-gray-600">{{ $ed->institution ?: '-' }}</div>
+                                        <div class="text-xs text-gray-500">ปี {{ $ed->start_year ?: '-' }} - {{ $ed->end_year ?: 'ปัจจุบัน' }}</div>
+                                    </div>
+                                @empty
+                                    <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
+                                @endforelse
+                            </div>
+
+                            <div class="p-4 border rounded-xl">
+                                <h4 class="mb-2 font-semibold">ใบรับรอง / ประกาศนียบัตร</h4>
+                                @forelse ($certificates as $cert)
+                                    @php
+                                        $certPath = $cert->file_path ?? $cert->file ?? null;
+                                        if ($certPath && \Illuminate\Support\Str::startsWith($certPath, ['http://', 'https://'])) {
+                                            $certUrl = $certPath;
+                                        } elseif ($certPath) {
+                                            $certPath = preg_replace('#^/?storage/#', '', $certPath);
+                                            $certUrl = \Illuminate\Support\Facades\Storage::url($certPath);
+                                        } else {
+                                            $certUrl = null;
+                                        }
+                                    @endphp
+                                    <div class="p-3 mb-2 border rounded-lg bg-slate-50">
+                                        <div class="text-sm font-medium">{{ $cert->name ?: '-' }}</div>
+                                        <div class="text-xs text-gray-500">ออกโดย {{ $cert->issued_by ?: '-' }} • {{ $cert->issued_year ?: '-' }}</div>
+                                        @if ($certUrl)
+                                            <a href="{{ $certUrl }}" target="_blank"
+                                               class="inline-flex items-center px-3 py-1 mt-2 text-xs text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                                ดูไฟล์
+                                            </a>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>
+                                @endforelse
+                            </div>
+
+                            <div class="flex justify-end gap-3 pt-2">
+                                <a href="{{ route('jobber.resumes.edit', $resume->id) }}"
+                                   class="px-4 py-2 text-sm text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
+                                    แก้ไข
+                                </a>
+                                <form method="POST" action="{{ route('jobber.resumes.destroy', $resume->id) }}"
+                                      onsubmit="return confirm('คุณต้องการลบเรซูเม่นี้หรือไม่? การลบจะไม่สามารถกู้คืนได้');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-4 py-2 text-sm text-white transition bg-red-600 rounded-xl hover:bg-red-700">
+                                        ลบ
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        {{-- ปุ่มจัดการเรซูเม่ --}}
-                        <div class="flex justify-end gap-3 pt-4 border-t">
-                            <a href="{{ route('jobber.resumes.edit', $resume->id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                แก้ไข
-                            </a>
-                            <form method="POST" action="{{ route('jobber.resumes.destroy', $resume->id) }}" onsubmit="return confirm('คุณต้องการลบเรซูเม่นี้หรือไม่? การลบจะไม่สามารถกู้คืนได้');" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                    ลบ
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    </details>
                 @endforeach
             </div>
         @endif

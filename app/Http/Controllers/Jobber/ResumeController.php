@@ -88,7 +88,7 @@ class ResumeController extends Controller
             'certificates.*.name' => 'required|string|max:255',
             'certificates.*.issued_by' => 'nullable|string|max:255',
             'certificates.*.issued_year' => 'nullable|digits:4|integer',
-            'certificates.*.file' => 'nullable|file|max:5120', // ใบเซอร์
+            'certificates.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             // --- Languages ---
             'languages' => 'nullable|array',
@@ -148,7 +148,8 @@ class ResumeController extends Controller
                 }
             }
 
-            // --- Certificates ---
+            // --- Reset Certificates ---
+            $resume->certificates()->delete();
             if (!empty($validated['certificates'])) {
                 foreach ($validated['certificates'] as $index => $cert) {
                     $filePath = null;
@@ -156,7 +157,7 @@ class ResumeController extends Controller
                         $filePath = $request->file("certificates.$index.file")->store('certificates', 'public');
                     }
                     $resume->certificates()->create([
-                        'name' => $cert['name'],
+                        'name' => $cert['name'] ?? null,
                         'issued_by' => $cert['issued_by'] ?? null,
                         'issued_year' => $cert['issued_year'] ?? null,
                         'file_path' => $filePath,
@@ -173,7 +174,7 @@ class ResumeController extends Controller
         });
 
         return redirect()
-            ->route('jobber.resumes.edit', $resume->id)
+            ->route('profile-jobber.edit', $resume->id)
             ->with('success', 'Resume created successfully');
     }
 
@@ -222,7 +223,7 @@ class ResumeController extends Controller
             'expected_salary' => 'nullable|numeric|min:0',
             'is_visible' => 'boolean',
 
-            'profile_image' => 'nullable|image|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
 
             'skills' => 'required|array|min:1',
             'skills.*.skill_group_id' => 'required|exists:master_skill_groups,id',
@@ -248,7 +249,7 @@ class ResumeController extends Controller
             'certificates.*.name' => 'required|string|max:255',
             'certificates.*.issued_by' => 'nullable|string|max:255',
             'certificates.*.issued_year' => 'nullable|digits:4|integer',
-            'certificates.*.file' => 'nullable|file|max:5120',
+            'certificates.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             'languages' => 'nullable|array',
             'languages.*.language' => 'required|string|max:255',
@@ -262,7 +263,9 @@ class ResumeController extends Controller
                 if ($resume->profile_image) {
                     Storage::disk('public')->delete($resume->profile_image);
                 }
-                $resume->profile_image = $request->file('profile_image')->store('profile_images', 'public');
+                $validated['profile_image'] = $request->file('profile_image')->store('profile_images', 'public');
+            } else {
+                unset($validated['profile_image']); // กันไม่ให้ object file หลุดเข้า update
             }
 
             $resume->update($validated);
@@ -304,8 +307,9 @@ class ResumeController extends Controller
                     if ($request->hasFile("certificates.$index.file")) {
                         $filePath = $request->file("certificates.$index.file")->store('certificates', 'public');
                     }
+
                     $resume->certificates()->create([
-                        'name' => $cert['name'],
+                        'name' => $cert['name'] ?? null,
                         'issued_by' => $cert['issued_by'] ?? null,
                         'issued_year' => $cert['issued_year'] ?? null,
                         'file_path' => $filePath,
@@ -323,7 +327,7 @@ class ResumeController extends Controller
         });
 
         return redirect()
-            ->back()
+            ->route('profile-jobber.edit')
             ->with('success', 'Resume updated successfully');
     }
 
@@ -356,7 +360,7 @@ class ResumeController extends Controller
         $resume->delete();
 
         return redirect()
-            ->route('jobber.dashboard')
+            ->route('profile-jobber.edit')
             ->with('success', 'Resume deleted successfully');
     }
 }
