@@ -55,7 +55,7 @@
                     <th>รีซูเม</th>
                     <th>วันที่สมัคร</th>
                     <th>สถานะ</th>
-                    <th></th>
+                    <th>การทำงาน</th>
                 </tr>
             </thead>
             <tbody id="tableBody">

@@ -72,23 +72,23 @@
 </form>
 
         <div class="flex flex-col items-center justify-center p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
-            <table class="table">
+            <table class="table table-fixed w-full">
                 <thead>
                     <tr>
-                        <th>ชื่องาน</th>
-                        <th>ประเภท</th>
-                        <th>โพสต์เมื่อ</th>
-                        <th>หมดอายุ</th>
-                        <th>สถานะ</th>
-                        <th>การทำงาน</th>
+                        <th class="w-[30%]">ชื่องาน</th>
+                        <th class="w-[12%]">ประเภท</th>
+                        <th class="w-[16%]">โพสต์เมื่อ</th>
+                        <th class="w-[13%]">หมดอายุ</th>
+                        <th class="w-[14%]">สถานะ</th>
+                        <th class="w-[15%]">การทำงาน</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($recs as $r)
                         <tr>
-                            <td class="max-w-[320px]">
-                                <div class="line-clamp-1" title="$r->rc_title">{{ Str::limit($r->rc_title, 30, '...') }}</div>
-                                <div class="text-xs opacity-70 line-clamp-1">
+                            <td class="max-w-0">
+                                <div class="truncate" title="{{ $r->rc_title }}">{{ Str::limit($r->rc_title, 30, '...') }}</div>
+                                <div class="text-xs opacity-70 truncate">
                                     {{ $r->rc_location_text ?? 'ไม่ใส่ที่อยู่' }}
                                 </div>
                             </td>
@@ -116,8 +116,6 @@
                                     <span class="px-3 py-1 text-sm rounded-full {{ $statusColor }}">
                                         {{ $r->rc_status === 'open' ? 'เปิดรับ' : ($r->rc_status === 'closed' ? 'ปิดรับ' : 'ฉบับร่าง') }}
                                     </span>
-                                    {{-- Toggle publish/draft --}}
-
                                 </div>
                             </td>
                             <td>
@@ -133,9 +131,9 @@
                                             @method('PATCH')
                                             <input type="hidden" name="to" value="{{ $toVal }}">
                                             <button type="submit"
-                                                class="flex items-center justify-center w-10 h-10 transition border border-gray-400 rounded-2xl bg-base-100 {{ $isOpen ? 'hover:bg-blue-600' : 'hover:bg-blue-600' }}"
+                                                class="flex items-center justify-center w-10 h-10 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600"
                                                 title="{{ $isOpen ? 'ตั้งเป็นฉบับร่าง' : 'เผยแพร่' }}">
-                                                <i class="fa-solid {{ $isOpen ? 'fa-eye' : 'fa-eye-slash' }} {{ $isOpen ? 'text-gray-600' : 'text-gray-600' }}"></i>
+                                                <i class="fa-solid {{ $isOpen ? 'fa-eye' : 'fa-eye-slash' }} text-gray-600"></i>
                                             </button>
                                         </form>
                                         <a href="{{ route('admin.recruitments.edit', $r->rc_id) }}"
@@ -143,7 +141,7 @@
                                            title="แก้ไข">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน “{{ addslashes($r->rc_title) }}” ?');">
+                                        <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน "{{ addslashes($r->rc_title) }}" ?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -168,7 +166,7 @@
                                            title="แก้ไข">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน “{{ addslashes($r->rc_title) }}” ?');">
+                                        <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน "{{ addslashes($r->rc_title) }}" ?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
