@@ -8,9 +8,9 @@
             <div>
                 <h1 class="text-xl font-semibold">
                     รายการประกาศงาน
-                    <span class="opacity-70">
+                    {{-- <span class="opacity-70">
                         ของ {{ $company->co_name ?? ($provider->email ?? '-') }}
-                    </span>
+                    </span> --}}
                 </h1>
                 <p class="text-sm opacity-70">
                     ทั้งหมด {{ number_format($recs->total()) }} รายการ
