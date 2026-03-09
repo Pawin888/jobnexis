@@ -217,10 +217,10 @@
                         {{-- ระดับ --}}
                         <select name="skills[0][proficiency_level]"
                             class="select select-bordered select-sm focus:select-primary">
-                            <option value="beginner">Beginner</option>
-                            <option value="intermediate">Intermediate</option>
-                            <option value="advanced">Advanced</option>
-                            <option value="expert">Expert</option>
+                            <option value="beginner">เริ่มต้น</option>
+                            <option value="intermediate">ปานกลาง</option>
+                            <option value="advanced">ขั้นสูง</option>
+                            <option value="expert">ผู้เชี่ยวชาญ</option>
                         </select>
 
                         {{-- ปุ่มลบ: เล็ก สีแดงเต็ม --}}
@@ -358,11 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const skills = SKILLS_BY_GROUP[parseInt(groupId)] || SKILLS_BY_GROUP[groupId];
             if (!skills || skills.length === 0) return;
 
-            skills.forEach(skill => {
+            [...skills]
+                .sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }))
+                .forEach(skill => {
                 skillSelect.insertAdjacentHTML('beforeend',
                     `<option value="${skill.id}">${skill.name}</option>`
                 );
-            });
+                });
             skillSelect.disabled = false;
         }
 

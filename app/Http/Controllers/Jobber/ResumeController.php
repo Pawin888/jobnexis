@@ -29,8 +29,12 @@ class ResumeController extends Controller
             return redirect()->route('jobber.resumes.edit', $existingResume);
         }
         
-        $skillGroups = MasterSkillGroup::with('skills')
+        $skillGroups = MasterSkillGroup::query()
             ->where('is_active', true)
+            ->whereHas('skills')
+            ->with(['skills' => function ($query) {
+                $query->orderBy('name');
+            }])
             ->orderBy('name')
             ->get();
 
@@ -194,8 +198,12 @@ class ResumeController extends Controller
             'languages'
         );
 
-        $skillGroups = MasterSkillGroup::with('skills')
+        $skillGroups = MasterSkillGroup::query()
             ->where('is_active', true)
+            ->whereHas('skills')
+            ->with(['skills' => function ($query) {
+                $query->orderBy('name');
+            }])
             ->orderBy('name')
             ->get();
 

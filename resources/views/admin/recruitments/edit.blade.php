@@ -204,7 +204,7 @@
                                     class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
                                     <option value="">-- สกิล --</option>
                                     @if ($existingSkill->skillGroup)
-                                        @foreach ($existingSkill->skillGroup->skills as $skill)
+                                        @foreach ($existingSkill->skillGroup->skills->sortBy(fn ($s) => mb_strtolower($s->name)) as $skill)
                                             <option value="{{ $skill->id }}" @selected($selectedSkillId == $skill->id)>{{ $skill->name }}</option>
                                         @endforeach
                                     @endif
@@ -218,9 +218,9 @@
                             {{-- ระดับ --}}
                             <select name="skills[{{ $i }}][proficiency_level]"
                                 class="select select-bordered select-sm focus:select-primary">
-                                @foreach (['beginner', 'intermediate', 'advanced', 'expert'] as $level)
+                                @foreach (['beginner' => 'เริ่มต้น', 'intermediate' => 'ปานกลาง', 'advanced' => 'ขั้นสูง', 'expert' => 'ผู้เชี่ยวชาญ'] as $level => $label)
                                     <option value="{{ $level }}" @selected(old("skills.$i.proficiency_level", $existingSkill->proficiency_level) === $level)>
-                                        {{ ucfirst($level) }}
+                                        {{ $label }}
                                     </option>
                                 @endforeach
                             </select>
@@ -263,10 +263,10 @@
 
                             <select name="skills[0][proficiency_level]"
                                 class="select select-bordered select-sm focus:select-primary">
-                                <option value="beginner">Beginner</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced">Advanced</option>
-                                <option value="expert">Expert</option>
+                                <option value="beginner">เริ่มต้น</option>
+                                <option value="intermediate">ปานกลาง</option>
+                                <option value="advanced">ขั้นสูง</option>
+                                <option value="expert">ผู้เชี่ยวชาญ</option>
                             </select>
 
                             <button type="button" class="remove-skill hidden btn btn-xs shrink-0"
@@ -399,11 +399,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const skills = SKILLS_BY_GROUP[parseInt(groupId)] || SKILLS_BY_GROUP[groupId];
             if (!skills || skills.length === 0) return;
 
-            skills.forEach(skill => {
+            [...skills]
+                .sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }))
+                .forEach(skill => {
                 skillSelect.insertAdjacentHTML('beforeend',
                     `<option value="${skill.id}">${skill.name}</option>`
                 );
-            });
+                });
             skillSelect.disabled = false;
         }
 

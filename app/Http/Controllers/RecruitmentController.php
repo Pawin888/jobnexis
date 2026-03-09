@@ -104,35 +104,41 @@ class RecruitmentController extends Controller
     {
         if (!Auth::check() || Auth::user()->role !== 'jobber') abort(403);
 
-        $rec = Recruitment::open()->with('skills') ->findOrFail($rcId);
-
-        $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
-
-        // เพิ่มยอดเข้าชมอย่างง่าย (ไม่ซีเรียสเรื่อง race)
-        try {
-            $rec->increment('rc_views');
-        } catch (\Throwable $e) {}
-
-        return view('jobber.recruitments.show', [
-            'rec' => $rec,
-            'company' => $company,
-        ]);
-    }
-
-    /** Public: ดูรายละเอียดงาน (เปิดสำหรับผู้ที่ยังไม่ล็อกอิน) */
-    public function publicShow($rcId)
-    {
-        $rec = Recruitment::open()->with('skills') ->findOrFail($rcId);
+        $rec = Recruitment::open()
+            ->with([
+                'recruitmentSkills.skillGroup',
+                'recruitmentSkills.skill',
+                'skills',
+                'languages',
+            ])
+            ->findOrFail($rcId);
 
         $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
 
         try { $rec->increment('rc_views'); } catch (\Throwable $e) {}
 
-        return view('jobber.recruitments.show', [
-            'rec' => $rec,
-            'company' => $company,
-        ]);
+        return view('jobber.recruitments.show', compact('rec', 'company'));
     }
+
+    /** Public: ดูรายละเอียดงาน (เปิดสำหรับผู้ที่ยังไม่ล็อกอิน) */
+    public function publicShow($rcId)
+    {
+        $rec = Recruitment::open()
+            ->with([
+                'recruitmentSkills.skillGroup',
+                'recruitmentSkills.skill',
+                'skills',
+                'languages',
+            ])
+            ->findOrFail($rcId);
+
+        $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
+
+        try { $rec->increment('rc_views'); } catch (\Throwable $e) {}
+
+        return view('jobber.recruitments.show', compact('rec', 'company'));
+    }
+    
     /** Admin: รายการงานของ provider คนที่ระบุ */
     public function adminIndex(Request $request, $userId)
     {
@@ -237,8 +243,12 @@ class RecruitmentController extends Controller
             abort(403);
         }
 
-        $skillGroups = MasterSkillGroup::with('skills')
-            ->has('skills')
+        $skillGroups = MasterSkillGroup::query()
+            ->whereHas('skills')
+            ->with(['skills' => function ($query) {
+                $query->orderByRaw('LOWER(name)');
+            }])
+            ->orderByRaw('LOWER(name)')
             ->get();
 
         return view('admin.recruitments.edit', [
@@ -371,8 +381,12 @@ class RecruitmentController extends Controller
     $provider = DB::table('users')->where('id', $userId)->first();
     $company  = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
     // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
-    $skillGroups = MasterSkillGroup::with('skills')
-        ->has('skills') // กรองเฉพาะที่มี skills
+    $skillGroups = MasterSkillGroup::query()
+        ->whereHas('skills')
+        ->with(['skills' => function ($query) {
+            $query->orderByRaw('LOWER(name)');
+        }])
+        ->orderByRaw('LOWER(name)')
         ->get();
 
     return view('admin.recruitments.create', [
@@ -445,8 +459,12 @@ public function createForProvider()
     $userId  = auth::id();
     $company = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
     // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
-    $skillGroups = MasterSkillGroup::with('skills')
-        ->has('skills') // กรองเฉพาะที่มี skills
+    $skillGroups = MasterSkillGroup::query()
+        ->whereHas('skills')
+        ->with(['skills' => function ($query) {
+            $query->orderByRaw('LOWER(name)');
+        }])
+        ->orderByRaw('LOWER(name)')
         ->get();
 
     return view('admin.recruitments.create', [

@@ -479,6 +479,7 @@
     const nextBtn = document.getElementById('next-tab');
     const submitBtn = document.getElementById('submit-btn');
     let currentTab = 0;
+    let maxUnlockedTab = 0;
     const tabs = ['personal', 'experience', 'skills', 'education', 'application'];
 
     function showTab(index) {
@@ -503,8 +504,24 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function canGoToTab(index) {
+        if (index <= maxUnlockedTab) return true;
+        if (index === currentTab + 1) {
+            const isCurrentStepValid = validateCurrentTab();
+            if (isCurrentStepValid) {
+                maxUnlockedTab = index;
+                return true;
+            }
+        }
+        return false;
+    }
+
     tabButtons.forEach((btn, index) => {
-        btn.addEventListener('click', () => showTab(index));
+        btn.addEventListener('click', () => {
+            if (canGoToTab(index)) {
+                showTab(index);
+            }
+        });
     });
 
     if (prevBtn) {
@@ -515,21 +532,16 @@
 
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            // Force recheck of current values
-            const currentTabName = tabs[currentTab];
-            if (currentTabName === 'personal') {
-                // Update validation to check current state
+            if (currentTab < tabs.length - 1) {
                 if (validateCurrentTab()) {
-                    if (currentTab < tabs.length - 1) showTab(currentTab + 1);
-                } else {
-                    console.log('Validation failed');
+                    maxUnlockedTab = Math.max(maxUnlockedTab, currentTab + 1);
+                    showTab(currentTab + 1);
                 }
-            } else {
-                // For other tabs, just move forward
-                if (currentTab < tabs.length - 1) showTab(currentTab + 1);
             }
         });
     }
+
+    showTab(0);
 
     // Validation function
     function validateCurrentTab() {
@@ -596,6 +608,56 @@
             if (!phone || !phone.value.trim()) {
                 errors.push('กรุณากรอกเบอร์ติดต่อ');
                 if (phone) phone.classList.add('border-red-500');
+            }
+        } else if (currentTabName === 'experience') {
+            const workRows = workContainer ? workContainer.children : [];
+
+            if (!workRows.length) {
+                errors.push('กรุณาเพิ่มประสบการณ์ทำงานอย่างน้อย 1 รายการก่อนไปขั้นตอนทักษะ');
+            } else {
+                Array.from(workRows).forEach((row, idx) => {
+                    const jobTitle = row.querySelector('input[name*="[job_title]"]');
+                    const companyName = row.querySelector('input[name*="[company_name]"]');
+                    const startDate = row.querySelector('input[name*="[start_date]"]');
+
+                    if (!jobTitle || !jobTitle.value.trim()) {
+                        errors.push(`ประสบการณ์ทำงานรายการที่ ${idx + 1}: กรุณากรอกตำแหน่งงาน`);
+                        if (jobTitle) jobTitle.classList.add('border-red-500');
+                    }
+                    if (!companyName || !companyName.value.trim()) {
+                        errors.push(`ประสบการณ์ทำงานรายการที่ ${idx + 1}: กรุณากรอกชื่อบริษัท/องค์กร`);
+                        if (companyName) companyName.classList.add('border-red-500');
+                    }
+                    if (!startDate || !startDate.value) {
+                        errors.push(`ประสบการณ์ทำงานรายการที่ ${idx + 1}: กรุณาเลือกวันที่เริ่มงาน`);
+                        if (startDate) startDate.classList.add('border-red-500');
+                    }
+                });
+            }
+        } else if (currentTabName === 'skills') {
+            const skillRows = skillContainer ? skillContainer.children : [];
+
+            if (!skillRows.length) {
+                errors.push('กรุณาเพิ่มทักษะอย่างน้อย 1 รายการก่อนไปขั้นตอนถัดไป');
+            } else {
+                Array.from(skillRows).forEach((row, idx) => {
+                    const group = row.querySelector('select[name*="[skill_group_id]"]');
+                    const skill = row.querySelector('select[name*="[skill_id]"]');
+                    const level = row.querySelector('select[name*="[proficiency_level]"]');
+
+                    if (!group || !group.value) {
+                        errors.push(`ทักษะรายการที่ ${idx + 1}: กรุณาเลือกกลุ่มทักษะ`);
+                        if (group) group.classList.add('border-red-500');
+                    }
+                    if (!skill || !skill.value) {
+                        errors.push(`ทักษะรายการที่ ${idx + 1}: กรุณาเลือกทักษะ`);
+                        if (skill) skill.classList.add('border-red-500');
+                    }
+                    if (!level || !level.value) {
+                        errors.push(`ทักษะรายการที่ ${idx + 1}: กรุณาเลือกระดับความชำนาญ`);
+                        if (level) level.classList.add('border-red-500');
+                    }
+                });
             }
         }
 
