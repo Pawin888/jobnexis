@@ -103,4 +103,9 @@ class Recruitment extends Model
     {
         return $this->hasMany(RecruitmentLanguage::class, 'rc_id', 'rc_id');
     }
+
+    public function recruitmentSkills()
+    {
+        return $this->hasMany(RecruitmentSkill::class, 'rc_id', 'rc_id');
+    }
 }

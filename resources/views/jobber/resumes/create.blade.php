@@ -20,21 +20,23 @@
         @include('jobber.resumes._form')
     </form>
 
-    <div class="mt-8 flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border">
-        <button type="button" id="prev-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+    <div class="mt-8 flex items-center justify-between bg-white p-6 rounded-lg shadow-sm border">
+        <button type="button" id="prev-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition hidden">
             ← ย้อนกลับ
         </button>
-        <button type="button" id="next-tab" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            ถัดไป →
-        </button>
-        <button type="submit" form="resume-form" id="submit-btn" class="px-8 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden">
-            <span class="flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                บันทึกเรซูเม่
-            </span>
-        </button>
+        <div class="flex items-center gap-3 ml-auto">
+            <button type="button" id="next-tab" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                ถัดไป →
+            </button>
+            <button type="submit" form="resume-form" id="submit-btn" class="px-8 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden">
+                <span class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    บันทึกเรซูเม่
+                </span>
+            </button>
+        </div>
     </div>
 </div>
 

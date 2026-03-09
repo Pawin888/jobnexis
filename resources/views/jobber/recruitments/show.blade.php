@@ -3,313 +3,357 @@
 @section('title', 'รายละเอียดงาน')
 
 @section('content')
-<div class="w-full p-6 shadow bg-base-200 rounded-2xl">
+<div class="w-full p-4 md:p-6 shadow bg-base-200 rounded-2xl">
 
-    {{-- ================= Header ================= --}}
-    <div class="flex items-center justify-between pb-4 mb-4 border-b">
-        <a
-            href="{{ (auth()->check() && auth()->user()->role === 'jobber')
-                ? route('jobber.jobs.index')
-                : route('jobs.index') }}"
-            class="text-blue-600 hover:underline"
-        >
-            ← กลับไปหน้าหางาน
-        </a>
-    </div>
+    @php
+        $typeLabel = [
+            'full-time' => 'Full-time',
+            'part-time' => 'Part-time',
+            'intern' => 'Intern',
+            'freelance' => 'Freelance',
+        ][$rec->rc_type] ?? ucfirst($rec->rc_type ?? '-');
 
-    {{-- ================= Layout ================= --}}
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        $modeLabel = [
+            'onsite' => 'Onsite',
+            'remote' => 'Remote',
+            'hybrid' => 'Hybrid',
+        ][$rec->rc_work_mode] ?? ucfirst($rec->rc_work_mode ?? '-');
 
-        {{-- ================= รายละเอียดงาน ================= --}}
-        <div class="p-5 bg-white shadow md:col-span-2 rounded-xl">
+        $statusLabel = [
+            'open' => 'เผยแพร่แล้ว',
+            'draft' => 'ฉบับร่าง',
+            'closed' => 'ปิดรับแล้ว',
+        ][$rec->rc_status] ?? ($rec->rc_status ?: '-');
 
-            {{-- Company + Job title --}}
-            <div class="flex items-start gap-3">
-                <div class="w-14 h-14 overflow-hidden bg-gray-100 rounded-full">
-                    @if ($company && $company->co_profile_img)
-                        <img src="{{ asset('storage/' . $company->co_profile_img) }}"
-                             class="object-cover w-full h-full">
-                    @else
-                        <img src="{{ asset('image/web-image/logo.png') }}"
-                             class="object-contain w-full h-full p-1">
-                    @endif
-                </div>
+        $isExpired = $rec->rc_expire_at
+            ? \Illuminate\Support\Carbon::parse($rec->rc_expire_at)->endOfDay()->isPast()
+            : false;
+    @endphp
 
-                <div>
-                    <h1 class="text-2xl font-semibold text-base-content">
-                        {{ $rec->rc_title }}
-                    </h1>
-
-                    <p class="text-sm text-gray-500">
-                        {{ $company->co_name ?? 'ไม่ระบุบริษัท' }}
-                    </p>
-
-                    <div class="flex flex-wrap gap-2 mt-2 text-xs">
-                        <span class="px-2 py-1 text-blue-700 bg-blue-100 rounded-full">
-                            {{ ucfirst($rec->rc_type) }}
-                        </span>
-
-                        <span class="px-2 py-1 text-emerald-700 bg-emerald-100 rounded-full">
-                            {{ ucfirst($rec->rc_work_mode) }}
-                        </span>
-
-                        @if ($rec->rc_salary)
-                            <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full">
-                                เงินเดือน: {{ $rec->rc_salary }}
-                            </span>
-                        @endif
-
-                        @if ($rec->rc_location_text)
-                            <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full">
-                                สถานที่: {{ $rec->rc_location_text }}
-                            </span>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            {{-- Job description --}}
-            <div class="mt-6 space-y-6">
-                <div>
-                    <h2 class="text-lg font-semibold">รายละเอียดงาน</h2>
-                    <p class="mt-2 text-gray-800 whitespace-pre-line">
-                        {{ $rec->rc_description }}
-                    </p>
-                </div>
-
-                @if ($rec->rc_requirements)
-                    <div>
-                        <h2 class="text-lg font-semibold">คุณสมบัติ/ข้อกำหนด</h2>
-                        <p class="mt-2 text-gray-800 whitespace-pre-line">
-                            {{ $rec->rc_requirements }}
-                        </p>
-                    </div>
-                @endif
-            </div>
-
-            {{-- Footer --}}
-            <div class="flex items-center justify-between mt-8 text-sm text-gray-500">
-                <span>
-                    โพสต์เมื่อ
-                    {{ optional($rec->rc_posted_at)->timezone('Asia/Bangkok')->format('Y-m-d H:i') }}
-                </span>
-
-                @if ($rec->rc_expire_at)
-                    <span>
-                        หมดอายุ {{ \Illuminate\Support\Carbon::parse($rec->rc_expire_at)->format('Y-m-d') }}
-                    </span>
-                @endif
-            </div>
+    {{-- Header --}}
+    <div class="flex flex-col gap-4 pb-5 mb-6 border-b">
+        <div class="flex items-center justify-between">
+            <a
+                href="{{ (auth()->check() && auth()->user()->role === 'jobber')
+                    ? route('jobber.jobs.index')
+                    : route('jobs.index') }}"
+                class="text-sm text-blue-600 hover:underline"
+            >
+                ← กลับไปหน้าหางาน
+            </a>
         </div>
 
-        {{-- ================= สมัครงาน ================= --}}
-        <div class="p-5 bg-white shadow rounded-xl">
-            <h3 class="text-lg font-semibold">สมัครงาน</h3>
-            <p class="mt-1 text-sm text-gray-600">ส่งเรซูเม่ของคุณให้ผู้ประกอบการ</p>
-
-            <div class="mt-4">
-                @auth
-                    @if(auth()->user()->role === 'jobber')
-                        @php
-                            $application = \App\Models\JobApplication::where('recruitment_id', $rec->rc_id)
-                                ->where('jobber_id', auth()->id())
-                                ->first();
-                            
-                            $hasApplied = $application && $application->status !== 'withdrawn';
-                        @endphp
-
-                        @if($hasApplied)
-                            {{-- ถอนการสมัคร --}}
-                            <button
-                                onclick="document.getElementById('withdraw_modal').showModal()"
-                                class="w-full px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700"
-                            >
-                                ถอนการสมัคร
-                            </button>
-
-                            <dialog id="withdraw_modal" class="modal">
-                                <div class="modal-box">
-                                    <h3 class="text-lg font-bold text-orange-600">
-                                        ยืนยันการถอนการสมัคร
-                                    </h3>
-
-                                    <p class="py-4">
-                                        คุณต้องการถอนการสมัครตำแหน่ง
-                                        <strong>{{ $rec->rc_title }}</strong>
-                                        ใช่หรือไม่?
-                                    </p>
-
-                                    <form action="{{ route('jobber.jobs.withdraw', $rec->rc_id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <div class="modal-action">
-                                            <button type="button"
-                                                onclick="document.getElementById('withdraw_modal').close()"
-                                                class="btn">
-                                                ยกเลิก
-                                            </button>
-                                            <button type="submit"
-                                                class="text-white btn bg-orange-600 hover:bg-orange-700">
-                                                ยืนยันการถอน
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <form method="dialog" class="modal-backdrop">
-                                    <button>close</button>
-                                </form>
-                            </dialog>
-                        @else
-                            {{-- สมัครงาน --}}
-                            <form action="{{ route('jobber.jobs.apply', $rec->rc_id) }}" method="POST">
-                                @csrf
-                                <button
-                                    type="submit"
-                                    class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-                                >
-                                    สมัครงานด้วยเรซูเม่ของคุณ
-                                </button>
-                            </form>
-                        @endif
-                    @else
-                        <p class="text-sm text-gray-600">
-                            บัญชีผู้ประกอบการไม่สามารถสมัครงานได้
-                        </p>
-                    @endif
+        <div class="flex items-start gap-4">
+            <div class="w-14 h-14 overflow-hidden bg-white border rounded-full shrink-0">
+                @if ($company && $company->co_profile_img)
+                    <img src="{{ asset('storage/' . $company->co_profile_img) }}" class="object-cover w-full h-full" alt="company-logo">
                 @else
-                    <a href="{{ route('login') }}"
-                        class="block w-full px-4 py-2 text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        เข้าสู่ระบบเพื่อสมัครงาน
-                    </a>
-                @endauth
-                
-                {{-- แสดงสถานะการสมัคร --}}
-                @auth
-                    @if(auth()->user()->role === 'jobber' && isset($application) && $application)
-                        <div class="p-3 mt-4 border-l-4 rounded-lg
-                            @switch($application->status)
-                                @case('applied')
-                                    bg-blue-50 border-blue-500
-                                    @break
-                                @case('reviewing')
-                                    bg-yellow-50 border-yellow-500
-                                    @break
-                                @case('accepted')
-                                    bg-green-50 border-green-500
-                                    @break
-                                @case('rejected')
-                                    bg-red-50 border-red-500
-                                    @break
-                                @case('withdrawn')
-                                    bg-gray-50 border-gray-500
-                                    @break
-                            @endswitch
-                        ">
-                            <div class="flex items-start gap-2">
-                                <div class="flex-1">
-                                    <p class="text-sm font-semibold
-                                        @switch($application->status)
-                                            @case('applied') text-blue-800 @break
-                                            @case('reviewing') text-yellow-800 @break
-                                            @case('accepted') text-green-800 @break
-                                            @case('rejected') text-red-800 @break
-                                            @case('withdrawn') text-gray-800 @break
-                                        @endswitch
-                                    ">
-                                        สถานะการสมัคร: 
-                                        @switch($application->status)
-                                            @case('applied') 
-                                                <span class="px-2 py-1 text-xs bg-blue-100 rounded">สมัครแล้ว</span>
-                                                @break
-                                            @case('reviewing') 
-                                                <span class="px-2 py-1 text-xs bg-yellow-100 rounded">กำลังพิจารณา</span>
-                                                @break
-                                            @case('accepted') 
-                                                <span class="px-2 py-1 text-xs bg-green-100 rounded">ยอมรับ</span>
-                                                @break
-                                            @case('rejected') 
-                                                <span class="px-2 py-1 text-xs bg-red-100 rounded">ปฏิเสธ</span>
-                                                @break
-                                            @case('withdrawn') 
-                                                <span class="px-2 py-1 text-xs bg-gray-100 rounded">ถอนการสมัคร</span>
-                                                @break
-                                        @endswitch
-                                    </p>
-                                    
-                                    <p class="mt-1 text-xs text-gray-600">
-                                        สมัครเมื่อ: {{ $application->applied_at->format('d/m/Y H:i') }}
-                                    </p>
-                                    
-                                    @if($application->reviewed_at)
-                                        <p class="text-xs text-gray-600">
-                                            พิจารณาเมื่อ: {{ $application->reviewed_at->format('d/m/Y H:i') }}
-                                        </p>
-                                    @endif
-                                    
-                                    @if($application->review_note)
-                                        <p class="mt-2 text-xs text-gray-700">
-                                            <strong>หมายเหตุจากผู้ประกอบการ:</strong><br>
-                                            {{ $application->review_note }}
-                                        </p>
+                    <img src="{{ asset('image/web-image/logo.png') }}" class="object-contain w-full h-full p-1" alt="default-logo">
+                @endif
+            </div>
+            <div class="min-w-0">
+                <h1 class="text-xl font-semibold md:text-2xl text-base-content break-words">{{ $rec->rc_title }}</h1>
+                <p class="text-sm text-gray-500">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
+
+                <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                    <span class="px-3 py-1 text-blue-700 bg-blue-100 rounded-full">{{ $typeLabel }}</span>
+                    <span class="px-3 py-1 text-emerald-700 bg-emerald-100 rounded-full">{{ $modeLabel }}</span>
+                    <span class="px-3 py-1 rounded-full {{ $rec->rc_status === 'open' ? 'text-green-700 bg-green-100' : 'text-gray-700 bg-gray-100' }}">
+                        {{ $statusLabel }}
+                    </span>
+                    @if($rec->rc_expire_at)
+                        <span class="px-3 py-1 rounded-full {{ $isExpired ? 'text-red-700 bg-red-100' : 'text-amber-700 bg-amber-100' }}">
+                            {{ $isExpired ? 'หมดอายุแล้ว' : 'ยังเปิดรับสมัคร' }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+
+        {{-- Main --}}
+        <div class="space-y-6 lg:col-span-8">
+
+            {{-- Overview --}}
+            <div class="p-5 bg-white shadow rounded-xl">
+                <h2 class="text-lg font-semibold">ภาพรวมตำแหน่งงาน</h2>
+                <div class="grid grid-cols-1 gap-3 mt-4 sm:grid-cols-2">
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">เงินเดือน</p>
+                        <p class="text-sm font-medium text-gray-800">{{ $rec->rc_salary ?: '-' }}</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">สถานที่ทำงาน</p>
+                        <p class="text-sm font-medium text-gray-800">{{ $rec->rc_location_text ?: '-' }}</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">โพสต์เมื่อ</p>
+                        <p class="text-sm font-medium text-gray-800">
+                            {{ optional($rec->rc_posted_at)->timezone('Asia/Bangkok')->format('d/m/Y H:i') ?: '-' }}
+                        </p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">หมดอายุประกาศ</p>
+                        <p class="text-sm font-medium text-gray-800">
+                            {{ $rec->rc_expire_at ? \Illuminate\Support\Carbon::parse($rec->rc_expire_at)->format('d/m/Y') : '-' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 mt-4">
+                    @if($rec->rc_application_url)
+                        <a href="{{ $rec->rc_application_url }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+                            สมัครผ่านลิงก์ภายนอก
+                        </a>
+                    @endif
+                    @if($rec->rc_location_link)
+                        <a href="{{ $rec->rc_location_link }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center px-4 py-2 text-sm text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200">
+                            ดูแผนที่สถานที่ทำงาน
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Description --}}
+            <div class="p-5 bg-white shadow rounded-xl">
+                <h2 class="text-lg font-semibold">รายละเอียดงาน</h2>
+                <p class="mt-3 text-gray-800 whitespace-pre-line">{{ $rec->rc_description ?: '-' }}</p>
+            </div>
+
+            {{-- Requirements --}}
+            <div class="p-5 bg-white shadow rounded-xl">
+                <h2 class="text-lg font-semibold">คุณสมบัติ / ข้อกำหนด</h2>
+                <p class="mt-3 text-gray-800 whitespace-pre-line">{{ $rec->rc_requirements ?: '-' }}</p>
+            </div>
+
+            {{-- Skills --}}
+            <div class="p-5 bg-white shadow rounded-xl">
+                <h2 class="text-lg font-semibold">ทักษะที่ต้องการ</h2>
+
+                @php
+                    $skillItems = collect();
+
+                    // กรณีเก็บแบบ recruitmentSkills (มี skill_group_id, skill_id, proficiency_level)
+                    if (isset($rec->recruitmentSkills) && $rec->recruitmentSkills->count()) {
+                        $skillItems = $rec->recruitmentSkills->map(function ($row) {
+                            return [
+                                'group' => $row->skillGroup->name ?? '-',
+                                'name'  => $row->skill->name ?? '-',
+                                'level' => $row->proficiency_level ?? null,
+                            ];
+                        });
+                    }
+                    // กรณีเก็บแบบ many-to-many skills + pivot
+                    elseif (isset($rec->skills) && $rec->skills->count()) {
+                        $skillItems = $rec->skills->map(function ($skill) {
+                            return [
+                                'group' => $skill->skillGroup->name ?? '-',
+                                'name'  => $skill->name ?? '-',
+                                'level' => data_get($skill, 'pivot.proficiency_level'),
+                            ];
+                        });
+                    }
+
+                    $levelMap = [
+                        'beginner' => 'เริ่มต้น',
+                        'intermediate' => 'ปานกลาง',
+                        'advanced' => 'ขั้นสูง',
+                        'expert' => 'ผู้เชี่ยวชาญ',
+                    ];
+
+                    $levelColorMap = [
+                        'beginner' => 'bg-sky-100 text-sky-700',
+                        'intermediate' => 'bg-emerald-100 text-emerald-700',
+                        'advanced' => 'bg-amber-100 text-amber-700',
+                        'expert' => 'bg-fuchsia-100 text-fuchsia-700',
+                    ];
+                @endphp
+
+                @if($skillItems->count())
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        @foreach($skillItems as $item)
+                            @php $levelClass = $levelColorMap[$item['level'] ?? ''] ?? 'bg-gray-100 text-gray-600'; @endphp
+                            <div class="min-w-[230px] max-w-full px-3 py-2 border rounded-xl bg-blue-50 border-blue-100 text-slate-800">
+                                <div class="mb-1">
+                                    <span class="inline-block px-2 py-0.5 text-sm font-medium rounded-lg bg-indigo-100 text-indigo-700">
+                                        กลุ่มทักษะ: {{ $item['group'] !== '-' ? $item['group'] : '-' }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 text-sm font-medium rounded-lg bg-cyan-100 text-cyan-800">ทักษะ: {{ $item['name'] }}</span>
+                                    @if(!empty($item['level']))
+                                        <span class="px-2 py-0.5 text-sm font-medium rounded-full {{ $levelClass }}">ระดับ: {{ $levelMap[$item['level']] ?? $item['level'] }}</span>
                                     @endif
                                 </div>
                             </div>
-                        </div>
-                    @endif
-                @endauth
+                        @endforeach
+                    </div>
+                @else
+                    <p class="mt-3 text-sm text-gray-500">-</p>
+                @endif
             </div>
 
-            @if(session('success'))
-                <div class="p-3 mt-3 text-sm text-green-700 bg-green-100 rounded-lg">
-                    {{ session('success') }}
-                </div>
-            @endif
+            {{-- Languages --}}
+            <div class="p-5 bg-white shadow rounded-xl">
+                <h2 class="text-lg font-semibold">ภาษาที่ต้องการ</h2>
+                @if(isset($rec->languages) && $rec->languages->count())
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        @foreach($rec->languages as $lang)
+                            @php
+                                $p = $lang->proficiency ?? data_get($lang, 'pivot.proficiency');
+                                $pLabel = [
+                                    'basic' => 'พื้นฐาน',
+                                    'conversational' => 'สนทนาได้',
+                                    'fluent' => 'คล่องแคล่ว',
+                                    'native' => 'เจ้าของภาษา',
+                                ][$p] ?? ($p ?: '-');
 
-            @if(session('error'))
-                <div class="p-3 mt-3 text-sm text-red-700 bg-red-100 rounded-lg">
-                    {{ session('error') }}
-                </div>
-            @endif
+                                $langLevelColorMap = [
+                                    'basic' => 'bg-slate-100 text-slate-700',
+                                    'conversational' => 'bg-cyan-100 text-cyan-700',
+                                    'fluent' => 'bg-emerald-100 text-emerald-700',
+                                    'native' => 'bg-violet-100 text-violet-700',
+                                ];
+                                $langLevelClass = $langLevelColorMap[$p] ?? 'bg-gray-100 text-gray-600';
+                            @endphp
+
+                            <div class="inline-flex flex-col px-3 py-2 border rounded-xl bg-emerald-50 border-emerald-100 text-slate-800">
+                                <div class="mb-1">
+                                    <span class="inline-block px-2 py-0.5 text-sm font-medium rounded-lg bg-teal-100 text-teal-700">
+                                        ภาษา: {{ $lang->language ?? '-' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="inline-block px-2 py-0.5 text-sm font-medium rounded-full {{ $langLevelClass }}">
+                                        ระดับ: {{ $pLabel }}
+                                    </span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="mt-3 text-sm text-gray-500">-</p>
+                @endif
+            </div>
         </div>
 
-        {{-- ================= ข้อมูลบริษัท ================= --}}
-        <div class="p-5 bg-white shadow rounded-xl">
-            <h3 class="text-lg font-semibold">ข้อมูลบริษัท</h3>
+        {{-- Sidebar --}}
+        <div class="space-y-6 lg:col-span-4">
 
-            <p class="mt-2 text-sm text-gray-800">
-                {{ $company->co_name ?? 'ไม่ระบุบริษัท' }}
-            </p>
+            {{-- Apply card --}}
+            <div class="p-5 bg-white shadow rounded-xl lg:sticky lg:top-6">
+                <h3 class="text-lg font-semibold">สมัครงาน</h3>
+                <p class="mt-1 text-sm text-gray-600">ส่งเรซูเม่ของคุณให้ผู้ประกอบการ</p>
 
-            @if ($company?->co_email)
-                <p class="mt-1 text-sm text-gray-600">
-                    อีเมล: {{ $company->co_email }}
-                </p>
-            @endif
+                @php
+                    $application = null;
+                    $hasApplied = false;
 
-            @if ($company?->co_phone)
-                <p class="mt-1 text-sm text-gray-600">
-                    โทร: {{ $company->co_phone }}
-                </p>
-            @endif
+                    if (auth()->check() && auth()->user()->role === 'jobber') {
+                        $application = \App\Models\JobApplication::where('recruitment_id', $rec->rc_id)
+                            ->where('jobber_id', auth()->id())
+                            ->first();
+                        $hasApplied = $application && $application->status !== 'withdrawn';
+                    }
 
-            @if ($company?->co_address)
-                <p class="mt-1 text-sm text-gray-600 whitespace-pre-line">
-                    ที่อยู่: {{ $company->co_address }}
-                </p>
-            @endif
+                    $statusMap = [
+                        'applied'   => ['label' => 'สมัครแล้ว',       'box' => 'bg-blue-50 border-blue-500',   'text' => 'text-blue-800',   'tag' => 'bg-blue-100'],
+                        'reviewing' => ['label' => 'กำลังพิจารณา',    'box' => 'bg-yellow-50 border-yellow-500','text' => 'text-yellow-800', 'tag' => 'bg-yellow-100'],
+                        'accepted'  => ['label' => 'ยอมรับ',          'box' => 'bg-green-50 border-green-500', 'text' => 'text-green-800',  'tag' => 'bg-green-100'],
+                        'rejected'  => ['label' => 'ปฏิเสธ',          'box' => 'bg-red-50 border-red-500',     'text' => 'text-red-800',    'tag' => 'bg-red-100'],
+                        'withdrawn' => ['label' => 'ถอนการสมัคร',     'box' => 'bg-gray-50 border-gray-500',   'text' => 'text-gray-800',   'tag' => 'bg-gray-100'],
+                    ];
+                @endphp
 
-            @if ($rec->rc_location_link)
-                <a href="{{ $rec->rc_location_link }}"
-                    target="_blank"
-                    rel="noopener"
-                    class="inline-block mt-3 text-blue-600 hover:underline">
-                    ดูแผนที่/สถานที่
-                </a>
-            @endif
+                <div class="mt-4">
+                    @auth
+                        @if(auth()->user()->role === 'jobber')
+                            @if($hasApplied)
+                                <button onclick="document.getElementById('withdraw_modal').showModal()"
+                                        class="w-full px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700">
+                                    ถอนการสมัคร
+                                </button>
+
+                                <dialog id="withdraw_modal" class="modal">
+                                    <div class="modal-box">
+                                        <h3 class="text-lg font-bold text-orange-600">ยืนยันการถอนการสมัคร</h3>
+                                        <p class="py-4">คุณต้องการถอนการสมัครตำแหน่ง <strong>{{ $rec->rc_title }}</strong> ใช่หรือไม่?</p>
+                                        <form action="{{ route('jobber.jobs.withdraw', $rec->rc_id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <div class="modal-action">
+                                                <button type="button" onclick="document.getElementById('withdraw_modal').close()" class="btn">ยกเลิก</button>
+                                                <button type="submit" class="text-white btn bg-orange-600 hover:bg-orange-700">ยืนยันการถอน</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                                </dialog>
+                            @else
+                                <form action="{{ route('jobber.jobs.apply', $rec->rc_id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                        สมัครงานด้วยเรซูเม่ของคุณ
+                                    </button>
+                                </form>
+                            @endif
+                        @else
+                            <p class="text-sm text-gray-600">บัญชีผู้ประกอบการไม่สามารถสมัครงานได้</p>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}"
+                           class="block w-full px-4 py-2 text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            เข้าสู่ระบบเพื่อสมัครงาน
+                        </a>
+                    @endauth
+
+                    @auth
+                        @if(auth()->user()->role === 'jobber' && $application)
+                            @php $s = $statusMap[$application->status] ?? $statusMap['applied']; @endphp
+                            <div class="p-3 mt-4 border-l-4 rounded-lg {{ $s['box'] }}">
+                                <p class="text-sm font-semibold {{ $s['text'] }}">
+                                    สถานะการสมัคร:
+                                    <span class="px-2 py-1 text-xs rounded {{ $s['tag'] }}">{{ $s['label'] }}</span>
+                                </p>
+                                <p class="mt-1 text-xs text-gray-600">
+                                    สมัครเมื่อ: {{ optional($application->applied_at)->format('d/m/Y H:i') ?: '-' }}
+                                </p>
+                                @if($application->reviewed_at)
+                                    <p class="text-xs text-gray-600">พิจารณาเมื่อ: {{ $application->reviewed_at->format('d/m/Y H:i') }}</p>
+                                @endif
+                                @if($application->review_note)
+                                    <p class="mt-2 text-xs text-gray-700 whitespace-pre-line">
+                                        <strong>หมายเหตุจากผู้ประกอบการ:</strong><br>{{ $application->review_note }}
+                                    </p>
+                                @endif
+                            </div>
+                        @endif
+                    @endauth
+
+                    @if(session('success'))
+                        <div class="p-3 mt-3 text-sm text-green-700 bg-green-100 rounded-lg">{{ session('success') }}</div>
+                    @endif
+                    @if(session('error'))
+                        <div class="p-3 mt-3 text-sm text-red-700 bg-red-100 rounded-lg">{{ session('error') }}</div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Company card --}}
+            <div class="p-5 bg-white shadow rounded-xl">
+                <h3 class="text-lg font-semibold">ข้อมูลบริษัท</h3>
+                <p class="mt-2 text-sm text-gray-800">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
+                <div class="mt-3 space-y-1 text-sm text-gray-600">
+                    <p>อีเมล: {{ $company?->co_email ?: '-' }}</p>
+                    <p>โทร: {{ $company?->co_phone ?: '-' }}</p>
+                    <p class="whitespace-pre-line">ที่อยู่: {{ $company?->co_address ?: '-' }}</p>
+                </div>
+            </div>
         </div>
-
     </div>
 </div>
 @endsection

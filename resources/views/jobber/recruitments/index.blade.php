@@ -11,14 +11,14 @@
             </div>
         </div>
 
-        <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-5">
-            <fieldset class="fieldset md:col-span-2">
+        <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-12">
+            <fieldset class="fieldset md:col-span-4">
                 <legend class="mb-1 fieldset-legend">ค้นหา</legend>
                 <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
                        class="w-full border border-gray-300 input input-bordered"
                        placeholder=" ชื่องาน / รายละเอียด / คุณสมบัติ">
             </fieldset>
-            <fieldset class="fieldset">
+            <fieldset class="fieldset md:col-span-3">
                 <legend class="mb-1 fieldset-legend">ประเภท</legend>
                 <select name="type" class="w-full border border-gray-300 select select-bordered">
                     <option value="">— ทั้งหมด —</option>
@@ -27,7 +27,7 @@
                     @endforeach
                 </select>
             </fieldset>
-            <fieldset class="fieldset">
+            <fieldset class="fieldset md:col-span-3">
                 <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
                 <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
                     <option value="">— ทั้งหมด —</option>
@@ -36,9 +36,14 @@
                     @endforeach
                 </select>
             </fieldset>
-            <div class="flex gap-2 md:col-span-1">
-                <button class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
-                <a href="{{ url()->current() }}" class="btn">ล้าง</a>
+            <div class="flex gap-2 md:col-span-2">
+                <button class="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                    ค้นหา
+                </button>
+
+                <a href="{{ url()->current() }}" class="flex items-center justify-center flex-1 px-4 py-2 text-white bg-gray-500 rounded-lg hover:bg-gray-600">
+                    ล้าง
+                </a>
             </div>
         </form>
 
