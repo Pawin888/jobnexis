@@ -8,9 +8,9 @@
             <div>
                 <h1 class="text-xl font-semibold">
                     รายการประกาศงาน
-                    <span class="opacity-70">
+                    {{-- <span class="opacity-70">
                         ของ {{ $company->co_name ?? ($provider->email ?? '-') }}
-                    </span>
+                    </span> --}}
                 </h1>
                 <p class="text-sm opacity-70">
                     ทั้งหมด {{ number_format($recs->total()) }} รายการ
@@ -72,23 +72,23 @@
 </form>
 
         <div class="flex flex-col items-center justify-center p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
-            <table class="table">
+            <table class="table table-fixed w-full">
                 <thead>
                     <tr>
-                        <th>ชื่องาน</th>
-                        <th>ประเภท</th>
-                        <th>โพสต์เมื่อ</th>
-                        <th>หมดอายุ</th>
-                        <th>สถานะ</th>
-                        <th>การทำงาน</th>
+                        <th class="w-[30%]">ชื่องาน</th>
+                        <th class="w-[12%]">ประเภท</th>
+                        <th class="w-[16%]">โพสต์เมื่อ</th>
+                        <th class="w-[13%]">หมดอายุ</th>
+                        <th class="w-[14%]">สถานะ</th>
+                        <th class="w-[15%]">การทำงาน</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($recs as $r)
                         <tr>
-                            <td class="max-w-[320px]">
-                                <div class="line-clamp-1" title="$r->rc_title">{{ Str::limit($r->rc_title, 30, '...') }}</div>
-                                <div class="text-xs opacity-70 line-clamp-1">
+                            <td class="max-w-0">
+                                <div class="truncate" title="{{ $r->rc_title }}">{{ Str::limit($r->rc_title, 30, '...') }}</div>
+                                <div class="text-xs opacity-70 truncate">
                                     {{ $r->rc_location_text ?? 'ไม่ใส่ที่อยู่' }}
                                 </div>
                             </td>
@@ -116,8 +116,6 @@
                                     <span class="px-3 py-1 text-sm rounded-full {{ $statusColor }}">
                                         {{ $r->rc_status === 'open' ? 'เปิดรับ' : ($r->rc_status === 'closed' ? 'ปิดรับ' : 'ฉบับร่าง') }}
                                     </span>
-                                    {{-- Toggle publish/draft --}}
-
                                 </div>
                             </td>
                             <td>
@@ -133,9 +131,9 @@
                                             @method('PATCH')
                                             <input type="hidden" name="to" value="{{ $toVal }}">
                                             <button type="submit"
-                                                class="flex items-center justify-center w-10 h-10 transition border border-gray-400 rounded-2xl bg-base-100 {{ $isOpen ? 'hover:bg-blue-600' : 'hover:bg-blue-600' }}"
+                                                class="flex items-center justify-center w-10 h-10 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600"
                                                 title="{{ $isOpen ? 'ตั้งเป็นฉบับร่าง' : 'เผยแพร่' }}">
-                                                <i class="fa-solid {{ $isOpen ? 'fa-eye' : 'fa-eye-slash' }} {{ $isOpen ? 'text-gray-600' : 'text-gray-600' }}"></i>
+                                                <i class="fa-solid {{ $isOpen ? 'fa-eye' : 'fa-eye-slash' }} text-gray-600"></i>
                                             </button>
                                         </form>
                                         <a href="{{ route('admin.recruitments.edit', $r->rc_id) }}"
@@ -143,7 +141,7 @@
                                            title="แก้ไข">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน “{{ addslashes($r->rc_title) }}” ?');">
+                                        <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน "{{ addslashes($r->rc_title) }}" ?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -168,7 +166,7 @@
                                            title="แก้ไข">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน “{{ addslashes($r->rc_title) }}” ?');">
+                                        <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน "{{ addslashes($r->rc_title) }}" ?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -192,39 +190,92 @@
             </table>
         </div>
 
-        {{-- Pagination แบบ join เดิม --}}
-        <div class="flex justify-center mt-4">
-            @if ($recs->lastPage() > 1)
-                <div class="join">
-                    @php
-                        $current = $recs->currentPage();
-                        $last = $recs->lastPage();
-                        $start = max(1, $current - 2);
-                        $end = min($last, $current + 2);
-                    @endphp
+        {{-- Pagination --}}
+        @if ($recs->isNotEmpty())
+            <div class="bg-white rounded-xl shadow p-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
 
-                    @if ($start > 1)
-                        <a href="{{ request()->fullUrlWithQuery(['page' => 1]) }}"
-                            class="join-item btn btn-sm {{ $current == 1 ? 'btn-active' : '' }}">1</a>
-                        @if ($start > 2)
-                            <span class="join-item btn btn-sm btn-disabled">...</span>
+                    {{-- Left: Items per page + Info --}}
+                    <div class="flex items-center gap-2">
+                        <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
+                        <select
+                            id="perPage"
+                            onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&q={{ request('q') }}&status={{ request('status') }}&type={{ request('type') }}&work_mode={{ request('work_mode') }}'"
+                            class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                        >
+                            @foreach ([10, 20, 30, 50] as $n)
+                                <option value="{{ $n }}" {{ request('perPage', 20) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                            @endforeach
+                        </select>
+                        <span class="text-sm text-gray-700">รายการต่อหน้า</span>
+
+                        <span class="text-sm text-gray-600 ml-4">
+                            (แสดง
+                            <span class="font-semibold text-gray-800">{{ $recs->firstItem() ?? 0 }}</span>
+                            -
+                            <span class="font-semibold text-gray-800">{{ $recs->lastItem() ?? 0 }}</span>
+                            จากทั้งหมด
+                            <span class="font-semibold text-gray-800">{{ number_format($recs->total()) }}</span>
+                            รายการ)
+                        </span>
+                    </div>
+
+                    {{-- Right: Pagination Controls --}}
+                    <div class="flex items-center gap-2">
+                        {{-- Previous --}}
+                        @if ($recs->onFirstPage())
+                            <button disabled class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm">ก่อนหน้า</button>
+                        @else
+                            <a href="{{ $recs->appends(request()->except('page'))->previousPageUrl() }}"
+                               class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">ก่อนหน้า</a>
                         @endif
-                    @endif
 
-                    @for ($i = $start; $i <= $end; $i++)
-                        <a href="{{ request()->fullUrlWithQuery(['page' => $i]) }}"
-                            class="join-item btn btn-sm {{ $i == $current ? 'btn-active' : '' }}">{{ $i }}</a>
-                    @endfor
+                        {{-- Page Numbers --}}
+                        <div class="flex items-center gap-1">
+                            @php
+                                $current = $recs->currentPage();
+                                $last = $recs->lastPage();
+                                $start = max(1, $current - 2);
+                                $end = min($last, $current + 2);
+                            @endphp
 
-                    @if ($end < $last)
-                        @if ($end < $last - 1)
-                            <span class="join-item btn btn-sm btn-disabled">...</span>
+                            @if ($start > 1)
+                                <a href="{{ $recs->appends(request()->except('page'))->url(1) }}"
+                                   class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">1</a>
+                                @if ($start > 2)
+                                    <span class="px-2 text-gray-500">...</span>
+                                @endif
+                            @endif
+
+                            @for ($i = $start; $i <= $end; $i++)
+                                @if ($i == $current)
+                                    <span class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg text-sm font-medium">{{ $i }}</span>
+                                @else
+                                    <a href="{{ $recs->appends(request()->except('page'))->url($i) }}"
+                                       class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">{{ $i }}</a>
+                                @endif
+                            @endfor
+
+                            @if ($end < $last)
+                                @if ($end < $last - 1)
+                                    <span class="px-2 text-gray-500">...</span>
+                                @endif
+                                <a href="{{ $recs->appends(request()->except('page'))->url($last) }}"
+                                   class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">{{ $last }}</a>
+                            @endif
+                        </div>
+
+                        {{-- Next --}}
+                        @if ($recs->hasMorePages())
+                            <a href="{{ $recs->appends(request()->except('page'))->nextPageUrl() }}"
+                               class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">ถัดไป</a>
+                        @else
+                            <button disabled class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm">ถัดไป</button>
                         @endif
-                        <a href="{{ request()->fullUrlWithQuery(['page' => $last]) }}"
-                            class="join-item btn btn-sm {{ $current == $last ? 'btn-active' : '' }}">{{ $last }}</a>
-                    @endif
+                    </div>
+
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 @endsection

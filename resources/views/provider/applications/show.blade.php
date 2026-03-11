@@ -7,9 +7,16 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-xl font-semibold mt-1">{{ $application->recruitment->rc_title }}</h1>
-            <p class="text-sm opacity-70">ผู้สมัคร: {{ $application->jobber->profile->up_name ?? $application->jobber->email }}</p>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('provider.applications.index') }}"
+               class="flex items-center justify-center w-9 h-9 border border-gray-400 rounded-2xl bg-base-100 hover:bg-gray-200 transition"
+               title="กลับ">
+                <i class="fa-solid fa-arrow-left text-gray-600"></i>
+            </a>
+            <div>
+                <h1 class="text-xl font-semibold mt-1">{{ $application->recruitment->rc_title }}</h1>
+                <p class="text-sm opacity-70">ผู้สมัคร: {{ $application->jobber->profile->up_name ?? $application->jobber->email }}</p>
+            </div>
         </div>
         @php
             $statusColor = [
@@ -44,9 +51,6 @@
                     {{ $application->resume->middle_name }}
                     {{ $application->resume->last_name }}
                 </p>
-                @if($application->resume->summary)
-                    <p class="text-sm opacity-70">{{ $application->resume->summary }}</p>
-                @endif
             </div>
         </div>
         <div class="grid grid-cols-2 gap-3 text-sm">
@@ -68,6 +72,14 @@
             </div>
         </div>
     </div>
+
+    {{-- เกี่ยวกับตัวคุณ --}}
+    @if($application->resume->summary)
+    <div class="p-4 border shadow bg-base-200 rounded-2xl">
+        <h2 class="mb-3 font-semibold">เกี่ยวกับตัวคุณ</h2>
+        <p class="text-sm whitespace-pre-line leading-relaxed">{{ $application->resume->summary }}</p>
+    </div>
+    @endif
 
     {{-- ประสบการณ์ทำงาน --}}
     @if($application->resume->workExperiences->count())
