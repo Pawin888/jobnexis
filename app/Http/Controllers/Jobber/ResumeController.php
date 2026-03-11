@@ -92,6 +92,7 @@ class ResumeController extends Controller
             'certificates.*.name' => 'required|string|max:255',
             'certificates.*.issued_by' => 'nullable|string|max:255',
             'certificates.*.issued_year' => 'nullable|digits:4|integer',
+            'certificates.*.existing_file_path' => 'nullable|string|max:2048',
             'certificates.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             // --- Languages ---
@@ -257,6 +258,7 @@ class ResumeController extends Controller
             'certificates.*.name' => 'required|string|max:255',
             'certificates.*.issued_by' => 'nullable|string|max:255',
             'certificates.*.issued_year' => 'nullable|digits:4|integer',
+            'certificates.*.existing_file_path' => 'nullable|string|max:2048',
             'certificates.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             'languages' => 'nullable|array',
@@ -308,11 +310,26 @@ class ResumeController extends Controller
             }
 
             // --- Reset Certificates ---
+            $existingCertificatePaths = $resume->certificates()
+                ->pluck('file_path')
+                ->filter()
+                ->values()
+                ->all();
+
             $resume->certificates()->delete();
             if (!empty($validated['certificates'])) {
                 foreach ($validated['certificates'] as $index => $cert) {
                     $filePath = null;
+                    $existingPath = $cert['existing_file_path'] ?? null;
+
+                    if ($existingPath && in_array($existingPath, $existingCertificatePaths, true)) {
+                        $filePath = $existingPath;
+                    }
+
                     if ($request->hasFile("certificates.$index.file")) {
+                        if ($filePath) {
+                            Storage::disk('public')->delete($filePath);
+                        }
                         $filePath = $request->file("certificates.$index.file")->store('certificates', 'public');
                     }
 

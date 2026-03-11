@@ -1058,6 +1058,7 @@ if (hasInvalidFile) {
             <div class="flex items-center justify-between">
                 <div class="flex-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">ไฟล์ใบรับรอง (PDF, JPG, PNG)</label>
+                    <input type="hidden" name="certificates[${index}][existing_file_path]" value="${data.file_path ?? ''}">
                     <input type="file" name="certificates[${index}][file]" class="input" accept=".pdf,.jpg,.jpeg,.png">
                     ${data.file_path ? `<a href="/storage/${data.file_path}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-block">ดูไฟล์เดิม</a>` : ''}
                 </div>
