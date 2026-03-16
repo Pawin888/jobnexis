@@ -20,7 +20,8 @@ class Resume extends Model
         'summary',
         'available_start_date',
         'preferred_location',
-        'expected_salary',
+        'salary_min',
+        'salary_max',
         'is_visible',
         'profile_image',
     ];
