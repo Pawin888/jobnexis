@@ -8,9 +8,11 @@ use App\Models\RecruitmentLanguage;
 use App\Models\CompaniesProfile;
 use App\Models\MasterSkill;
 use App\Models\MasterSkillGroup;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class RecruitmentController extends Controller
 {
@@ -34,8 +36,8 @@ class RecruitmentController extends Controller
                       ->orWhere('rc_requirements', 'ilike', "%{$q}%");
                 });
             })
-            ->when($type, fn($qq) => $qq->where('rc_type', $type))
-            ->when($mode, fn($qq) => $qq->where('rc_work_mode', $mode))
+            ->when($type, fn($qq) => $this->applyTypeFilter($qq, $type))
+            ->when($mode, fn($qq) => $this->applyWorkModeFilter($qq, $mode))
             ->orderByDesc('rc_posted_at')
             ->paginate(12)
             ->withQueryString();
@@ -76,8 +78,8 @@ class RecruitmentController extends Controller
                       ->orWhere('rc_requirements', 'ilike', "%{$q}%");
                 });
             })
-            ->when($type, fn($qq) => $qq->where('rc_type', $type))
-            ->when($mode, fn($qq) => $qq->where('rc_work_mode', $mode))
+            ->when($type, fn($qq) => $this->applyTypeFilter($qq, $type))
+            ->when($mode, fn($qq) => $this->applyWorkModeFilter($qq, $mode))
             ->orderByDesc('rc_posted_at')
             ->paginate(12)
             ->withQueryString();
@@ -156,6 +158,8 @@ class RecruitmentController extends Controller
             $request->string('work_mode')->toString(),
         ];
 
+        $today = now()->toDateString();
+
         $recs = Recruitment::ownedBy($userId)
             ->when($q, function ($qq) use ($q) {
                 $qq->where(function ($w) use ($q) {
@@ -164,12 +168,33 @@ class RecruitmentController extends Controller
                       ->orWhere('rc_requirements', 'ilike', "%{$q}%");
                 });
             })
-            ->when($status, fn($qq) => $qq->where('rc_status', $status))
-            ->when($type, fn($qq) => $qq->where('rc_type', $type))
-            ->when($mode, fn($qq) => $qq->where('rc_work_mode', $mode))
+            ->when($status === 'open', function ($qq) use ($today) {
+                $qq->where('rc_status', 'open')
+                   ->where(function ($w) use ($today) {
+                       $w->whereNull('rc_expire_at')
+                         ->orWhereDate('rc_expire_at', '>=', $today);
+                   });
+            })
+            ->when($status === 'inactive', function ($qq) use ($today) {
+                $qq->where(function ($w) use ($today) {
+                    $w->where('rc_status', 'closed')
+                      ->orWhereDate('rc_expire_at', '<', $today);
+                });
+            })
+            ->when($type, fn($qq) => $this->applyTypeFilter($qq, $type))
+            ->when($mode, fn($qq) => $this->applyWorkModeFilter($qq, $mode))
             ->orderByDesc('rc_posted_at')
             ->paginate(10)
             ->withQueryString();
+
+        // Auto-mark expired postings with closed status
+        foreach ($recs->items() as $rec) {
+            if ($rec->rc_expire_at && \Illuminate\Support\Carbon::parse($rec->rc_expire_at)->endOfDay()->isPast()) {
+                if ($rec->rc_status !== 'closed') {
+                    $rec->update(['rc_status' => 'closed']);
+                }
+            }
+        }
 
         return view('admin.recruitments.index', [
             'isAdmin'  => true,
@@ -201,6 +226,8 @@ class RecruitmentController extends Controller
             $request->string('work_mode')->toString(),
         ];
 
+        $today = now()->toDateString();
+
         $recs = Recruitment::ownedBy($userId)
             ->when($q, function ($qq) use ($q) {
                 $qq->where(function ($w) use ($q) {
@@ -209,12 +236,33 @@ class RecruitmentController extends Controller
                       ->orWhere('rc_requirements', 'ilike', "%{$q}%");
                 });
             })
-            ->when($status, fn($qq) => $qq->where('rc_status', $status))
-            ->when($type, fn($qq) => $qq->where('rc_type', $type))
-            ->when($mode, fn($qq) => $qq->where('rc_work_mode', $mode))
+            ->when($status === 'open', function ($qq) use ($today) {
+                $qq->where('rc_status', 'open')
+                   ->where(function ($w) use ($today) {
+                       $w->whereNull('rc_expire_at')
+                         ->orWhereDate('rc_expire_at', '>=', $today);
+                   });
+            })
+            ->when($status === 'inactive', function ($qq) use ($today) {
+                $qq->where(function ($w) use ($today) {
+                    $w->where('rc_status', 'closed')
+                      ->orWhereDate('rc_expire_at', '<', $today);
+                });
+            })
+            ->when($type, fn($qq) => $this->applyTypeFilter($qq, $type))
+            ->when($mode, fn($qq) => $this->applyWorkModeFilter($qq, $mode))
             ->orderByDesc('rc_posted_at')
             ->paginate(10)
             ->withQueryString();
+
+        // Auto-mark expired postings with closed status
+        foreach ($recs->items() as $rec) {
+            if ($rec->rc_expire_at && \Illuminate\Support\Carbon::parse($rec->rc_expire_at)->endOfDay()->isPast()) {
+                if ($rec->rc_status !== 'closed') {
+                    $rec->update(['rc_status' => 'closed']);
+                }
+            }
+        }
 
         return view('admin.recruitments.index', [ // reuse view เดิม
             'isAdmin'  => false,
@@ -258,6 +306,27 @@ class RecruitmentController extends Controller
         ]);
     }
 
+    /** Admin/Provider: ดูรายละเอียดประกาศงานที่จัดการได้ (รวมหมดอายุ/ปิดรับ) */
+    public function manageShow($rcId)
+    {
+        $rec = Recruitment::with([
+            'recruitmentSkills.skillGroup',
+            'recruitmentSkills.skill',
+            'skills',
+            'languages',
+        ])->findOrFail($rcId);
+
+        $user = Auth::user();
+        $isOwner = $rec->rc_u_id === $user->id;
+        if (!($user->role === 'admin' || ($user->role === 'provider' && $isOwner))) {
+            abort(403);
+        }
+
+        $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
+
+        return view('jobber.recruitments.show', compact('rec', 'company'));
+    }
+
     public function update(Request $request, $rcId)
     {
         $rec = Recruitment::findOrFail($rcId);
@@ -268,73 +337,17 @@ class RecruitmentController extends Controller
             abort(403);
         }
 
-        $data = $request->validate([
-            'rc_title'           => ['required','string','max:255'],
-            'rc_description'     => ['required','string'],
-            'rc_requirements'    => ['nullable','string'],
-            'rc_salary'          => ['nullable','string','max:255'],
-            'rc_location_text'   => ['nullable','string','max:255'],
-            'rc_location_link'   => ['nullable','url','max:2048'],
-            'rc_type'            => ['required','in:full-time,part-time,intern,freelance'],
-            'rc_work_mode'       => ['required','in:onsite,remote,hybrid'],
-            'rc_status'          => ['required','in:open,closed,draft'],
-            'rc_posted_at'       => ['nullable','date'],
-            'rc_expire_at'       => ['nullable','date','after_or_equal:rc_posted_at'],
-            'rc_application_url' => ['nullable','url','max:2048'],
+        $data = $this->validatedRecruitment($request);
 
-            // 🔴 เพิ่ม validation ของ skill
-            'skills' => ['sometimes','array'],
-            'skills.*.skill_group_id' => ['required','exists:master_skill_groups,id'],
-            'skills.*.skill_id' => ['required','exists:master_skills,id'],
-            'skills.*.proficiency_level' => ['required','in:beginner,intermediate,advanced,expert'],
-
-            'languages' => ['sometimes','array'],
-            'languages.*.language' => ['required','string','max:255'],
-            'languages.*.proficiency' => ['required','in:basic,conversational,fluent,native'],
-        ]);
-
-        // ถ้าไม่ส่ง posted_at มา ให้คงค่าของเดิม
-        if (empty($data['rc_posted_at'])) {
-            unset($data['rc_posted_at']);
-        }
+        // ปรับวันที่เปิดรับสมัครอัตโนมัติทุกครั้งที่แก้ไข
+        $data['rc_posted_at'] = now();
 
         // 🔴 ครอบทุกอย่างด้วย transaction
         DB::transaction(function () use ($rec, $data, $request) {
 
-            // อัปเดตข้อมูลประกาศ
             $rec->fill($data)->save();
 
-            // ถ้ามีการส่ง skill มา
-            if ($request->filled('skills')) {
-
-                // ลบ skill เดิม
-                RecruitmentSkill::where('rc_id', $rec->rc_id)->delete();
-
-                // เพิ่ม skill ใหม่
-                foreach ($request->skills as $skill) {
-                    RecruitmentSkill::create([
-                        'rc_id' => $rec->rc_id,
-                        'master_skill_group_id' => $skill['skill_group_id'],
-                        'master_skill_id' => $skill['skill_id'],
-                        'proficiency_level' => $skill['proficiency_level'],
-                    ]);
-                }
-            }
-            
-            if ($request->filled('languages')) {
-                // ลบภาษาเดิม (เฉพาะ update)
-                if (method_exists($rec, 'languages')) {
-                    $rec->languages()->delete();
-                }
-                foreach ($request->languages as $lang) {
-                    if (!empty($lang['language'])) {
-                        $rec->languages()->create([
-                            'language' => $lang['language'],
-                            'proficiency' => $lang['proficiency'] ?? 'basic',
-                        ]);
-                    }
-                }
-            }
+            $this->syncRecruitmentRelations($rec, $request);
         });
 
         // กลับไป list ให้ถูกฝั่ง
@@ -349,7 +362,7 @@ class RecruitmentController extends Controller
             ->with('status', 'อัปเดตประกาศงานเรียบร้อย');
     }
 
-    /** เปลี่ยนสถานะประกาศงานเป็น เผยแพร่(open) หรือ ฉบับร่าง(draft) */
+    /** เปลี่ยนสถานะประกาศงานเป็น เปิดรับ(open) หรือ ปิดรับ(closed) */
     public function updateStatus(Request $request, $rcId)
     {
         $rec = Recruitment::findOrFail($rcId);
@@ -360,8 +373,13 @@ class RecruitmentController extends Controller
             abort(403);
         }
 
+        // ถ้ากำหนดวันปิดรับสมัครไว้ ห้ามเปลี่ยนสถานะ (เฉพาะเปิดรับตลอดเท่านั้นที่กดเปลี่ยนได้)
+        if ($rec->rc_expire_at) {
+            return back()->with('error', 'ไม่สามารถเปลี่ยนสถานะได้เนื่องจากประกาศงานมีกำหนดวันปิดรับสมัครแล้ว');
+        }
+
         $to = $request->string('to')->toString();
-        if (!in_array($to, ['open', 'draft'], true)) {
+        if (!in_array($to, ['open', 'closed'], true)) {
             return back()->with('error', 'ค่าสถานะไม่ถูกต้อง');
         }
 
@@ -371,7 +389,7 @@ class RecruitmentController extends Controller
         }
         $rec->save();
 
-        return back()->with('status', $to === 'open' ? 'เผยแพร่ประกาศงานแล้ว' : 'บันทึกเป็นฉบับร่างแล้ว');
+        return back()->with('status', $to === 'open' ? 'เปิดรับประกาศงานแล้ว' : 'ปิดรับประกาศงานแล้ว');
     }
     public function createForAdmin($userId)
 {
@@ -400,52 +418,18 @@ class RecruitmentController extends Controller
 
 public function storeForAdmin(Request $request, $userId)
 {
-    if (auth::user()->role !== 'admin') abort(403);
+    if (Auth::user()->role !== 'admin') abort(403);
 
     $data = $this->validatedRecruitment($request);
     $data['rc_u_id'] = (int) $userId;
 
-    // ตั้งค่า posted_at เป็นตอนนี้ ถ้าไม่ส่งมา
-    if (empty($data['rc_posted_at'])) {
-        $data['rc_posted_at'] = now();
-    }
-
-    // Override status by quick action buttons
-    $quick = $request->string('publish_action')->toString();
-    if (in_array($quick, ['open','draft'], true)) {
-        $data['rc_status'] = $quick;
-    }
-    if (($data['rc_status'] ?? null) === 'open' && empty($data['rc_posted_at'])) {
-        $data['rc_posted_at'] = now();
-    }
+    $data['rc_posted_at'] = now();
+    $data['rc_status'] = 'open';
+    $data['rc_description'] = $data['rc_description'] ?? '';
 
     $rec = Recruitment::create($data);
 
-    if ($request->filled('skills')) {
-        foreach ($request->skills as $skill) {
-            RecruitmentSkill::create([
-                'rc_id' => $rec->rc_id,
-                'master_skill_group_id' => $skill['skill_group_id'],
-                'master_skill_id' => $skill['skill_id'],
-                'proficiency_level' => $skill['proficiency_level'],
-            ]);
-        }
-    }
-
-    if ($request->filled('languages')) {
-        // ลบภาษาเดิม (เฉพาะ update)
-        if (method_exists($rec, 'languages')) {
-            $rec->languages()->delete();
-        }
-        foreach ($request->languages as $lang) {
-            if (!empty($lang['language'])) {
-                $rec->languages()->create([
-                    'language' => $lang['language'],
-                    'proficiency' => $lang['proficiency'] ?? 'basic',
-                ]);
-            }
-        }
-    }
+    $this->syncRecruitmentRelations($rec, $request);
 
     return redirect()
         ->route('admin.providers.recruitments.index', $userId)
@@ -454,9 +438,9 @@ public function storeForAdmin(Request $request, $userId)
 
 public function createForProvider()
 {
-    if (auth::user()->role !== 'provider') abort(403);
+    if (Auth::user()->role !== 'provider') abort(403);
 
-    $userId  = auth::id();
+    $userId  = Auth::id();
     $company = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
     // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
     $skillGroups = MasterSkillGroup::query()
@@ -470,7 +454,7 @@ public function createForProvider()
     return view('admin.recruitments.create', [
         'isAdmin'  => false,
         'ownerId'  => $userId,
-        'provider' => auth::user(),
+        'provider' => Auth::user(),
         'company'  => $company,
         'skillGroups'  => $skillGroups,
     ]);
@@ -478,51 +462,18 @@ public function createForProvider()
 
     public function storeForProvider(Request $request)
     {
-        if (auth::user()->role !== 'provider') abort(403);
+        if (Auth::user()->role !== 'provider') abort(403);
 
     $data = $this->validatedRecruitment($request);
-    $data['rc_u_id'] = auth::id();
+    $data['rc_u_id'] = Auth::id();
 
-    if (empty($data['rc_posted_at'])) {
-        $data['rc_posted_at'] = now();
-    }
-
-    // Override status by quick action buttons
-    $quick = $request->string('publish_action')->toString();
-    if (in_array($quick, ['open','draft'], true)) {
-        $data['rc_status'] = $quick;
-    }
-    if (($data['rc_status'] ?? null) === 'open' && empty($data['rc_posted_at'])) {
-        $data['rc_posted_at'] = now();
-    }
+    $data['rc_posted_at'] = now();
+    $data['rc_status'] = 'open';
+    $data['rc_description'] = $data['rc_description'] ?? '';
 
     $rec = Recruitment::create($data);
 
-    if ($request->filled('skills')) {
-        foreach ($request->skills as $skill) {
-            RecruitmentSkill::create([
-                'rc_id' => $rec->rc_id,
-                'master_skill_group_id' => $skill['skill_group_id'],
-                'master_skill_id' => $skill['skill_id'],
-                'proficiency_level' => $skill['proficiency_level'],
-            ]);
-        }
-    }
-
-    if ($request->filled('languages')) {
-        // ลบภาษาเดิม (เฉพาะ update)
-        if (method_exists($rec, 'languages')) {
-            $rec->languages()->delete();
-        }
-        foreach ($request->languages as $lang) {
-            if (!empty($lang['language'])) {
-                $rec->languages()->create([
-                    'language' => $lang['language'],
-                    'proficiency' => $lang['proficiency'] ?? 'basic',
-                ]);
-            }
-        }
-    }
+    $this->syncRecruitmentRelations($rec, $request);
 
         return redirect()
             ->route('provider.recruitments.index')
@@ -532,39 +483,108 @@ public function createForProvider()
 /** ----- แชร์ rules ระหว่าง create/update ----- */
     private function validatedRecruitment(Request $request): array
     {
-        return $request->validate([
-        'rc_title'           => ['required','string','max:255'],
-        'rc_description'     => ['required','string'],
-        'rc_requirements'    => ['nullable','string'],
-        'rc_salary'          => ['nullable','string','max:255'],
+        $validator = Validator::make($request->all(), [
+            'rc_title'           => ['required', 'string', 'max:255'],
+            'rc_description'     => ['nullable', 'string'],
+            'rc_requirements'    => ['nullable', 'string'],
+            'rc_gender'          => ['nullable', 'in:any,male,female'],
+            'rc_education_level' => ['nullable', 'in:any,below_bachelor,bachelor,master'],
+            'rc_experience_level'=> ['nullable', 'in:no_experience,0_1,1_3,3_5,more_5'],
+            'rc_salary'          => ['nullable', 'string', 'max:255'],
 
-        'rc_location_text'   => ['nullable','string','max:255'],
-        'rc_location_link'   => ['nullable','url','max:2048'],
+            'rc_location_text'   => ['nullable', 'string', 'max:255'],
+            'rc_location_link'   => ['nullable', 'url', 'max:2048'],
 
-        'rc_type'            => ['required','in:full-time,part-time,intern,freelance'],
-        'rc_work_mode'       => ['required','in:onsite,remote,hybrid'],
-        'rc_status'          => ['required','in:open,closed,draft'],
+            'rc_type'            => ['nullable', 'in:full-time,part-time,intern,freelance'],
+            'rc_work_mode'       => ['nullable', 'in:onsite,remote,hybrid,distributed'],
+            'rc_expire_at'       => ['nullable', 'date', 'after:today'],
+            'expire_no_limit'    => ['nullable', 'boolean'],
 
-        // note: datetime-local => 'Y-m-d\TH:i'
-        'rc_posted_at'       => ['nullable','date'],
-        'rc_expire_at'       => ['nullable','date','after_or_equal:rc_posted_at'],
+            'skills' => ['nullable', 'array'],
+            'skills.*.skill_group_id' => ['required', 'exists:master_skill_groups,id'],
+            'skills.*.skill_id' => ['required', 'exists:master_skills,id'],
+            'skills.*.proficiency_level' => ['required', 'in:beginner,intermediate,advanced,expert'],
 
-        'rc_application_url' => ['nullable','url','max:2048'],
+            'languages' => ['nullable', 'array'],
+            'languages.*.language' => ['required', 'string', 'max:255'],
+            'languages.*.proficiency' => ['required', 'in:basic,conversational,fluent,native'],
+        ]);
 
-        'skills' => ['sometimes','array'],
-        'skills.*.skill_group_id' => ['required','exists:master_skill_groups,id'],
-        'skills.*.skill_id' => ['required','exists:master_skills,id'],
-        'skills.*.proficiency_level' => [
-            'required',
-            'in:beginner,intermediate,advanced,expert'],
-        'skills' => ['sometimes','array', 'distinct:skill_id'],
-        
-        'languages' => ['sometimes','array'],
-        'languages.*.language' => ['required','string','max:255'],
-        'languages.*.proficiency' => ['required','in:basic,conversational,fluent,native'],
-        
-    ]);
-}
+        $validator->after(function ($validator) use ($request) {
+            $selectedMode = trim((string) $request->input('rc_work_mode', ''));
+            $requiresLocation = in_array($selectedMode, ['onsite', 'hybrid'], true);
+
+            if ($requiresLocation) {
+                if (!filled($request->input('rc_location_text'))) {
+                    $validator->errors()->add('rc_location_text', 'กรุณาระบุสถานที่เมื่อเลือกเข้าออฟฟิศหรือผสมผสาน');
+                }
+
+                if (!filled($request->input('rc_location_link'))) {
+                    $validator->errors()->add('rc_location_link', 'กรุณาระบุลิงก์สถานที่เมื่อเลือกเข้าออฟฟิศหรือผสมผสาน');
+                }
+            }
+        });
+
+        $data = $validator->validate();
+
+        $isNoLimitExpire = (string) $request->input('expire_no_limit', '0') === '1';
+        if ($isNoLimitExpire) {
+            $data['rc_expire_at'] = null;
+        }
+
+        $data['rc_type'] = filled($data['rc_type'] ?? null) ? trim((string) $data['rc_type']) : null;
+        $data['rc_work_mode'] = filled($data['rc_work_mode'] ?? null) ? trim((string) $data['rc_work_mode']) : null;
+
+        $requiresLocation = in_array($data['rc_work_mode'] ?? null, ['onsite', 'hybrid'], true);
+
+        if (!$requiresLocation) {
+            $data['rc_location_text'] = null;
+            $data['rc_location_link'] = null;
+        }
+
+        return $data;
+    }
+
+    private function applyTypeFilter($query, string $type)
+    {
+        return $query->whereRaw("CONCAT(',', COALESCE(rc_type, ''), ',') LIKE ?", ["%,{$type},%"]);
+    }
+
+    private function applyWorkModeFilter($query, string $mode)
+    {
+        return $query->whereRaw("CONCAT(',', COALESCE(rc_work_mode, ''), ',') LIKE ?", ["%,{$mode},%"]);
+    }
+
+    private function syncRecruitmentRelations(Recruitment $rec, Request $request): void
+    {
+        $skills = collect($request->input('skills', []))
+            ->filter(fn ($skill) => !empty($skill['skill_group_id'] ?? null) || !empty($skill['skill_id'] ?? null));
+
+        RecruitmentSkill::where('rc_id', $rec->rc_id)->delete();
+
+        foreach ($skills as $skill) {
+            RecruitmentSkill::create([
+                'rc_id' => $rec->rc_id,
+                'master_skill_group_id' => $skill['skill_group_id'],
+                'master_skill_id' => $skill['skill_id'],
+                'proficiency_level' => $skill['proficiency_level'],
+            ]);
+        }
+
+        if (method_exists($rec, 'languages')) {
+            $rec->languages()->delete();
+        }
+
+        $languages = collect($request->input('languages', []))
+            ->filter(fn ($language) => !empty($language['language'] ?? null));
+
+        foreach ($languages as $language) {
+            $rec->languages()->create([
+                'language' => $language['language'],
+                'proficiency' => $language['proficiency'] ?? 'basic',
+            ]);
+        }
+    }
 
     /** ลบประกาศงาน (ทั้ง Admin/Provider ใช้ร่วมกัน) */
     public function destroy($rcId)

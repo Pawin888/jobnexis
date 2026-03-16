@@ -39,7 +39,7 @@
                 <legend class="mb-1 fieldset-legend">สถานะ</legend>
                 <select name="status" class="w-full border border-gray-300 select select-bordered">
                     <option value="">— ทั้งหมด —</option>
-                    @foreach (['open' => 'เปิดรับ', 'closed' => 'ปิดรับ', 'draft' => 'ฉบับร่าง'] as $k => $v)
+                    @foreach (['open' => 'เปิดรับ', 'inactive' => 'ปิดรับ/หมดอายุ'] as $k => $v)
                         <option value="{{ $k }}" @selected(($filters['status'] ?? '') === $k)>{{ $v }}</option>
                     @endforeach
                 </select>
@@ -48,7 +48,7 @@
                 <legend class="mb-1 fieldset-legend">ประเภท</legend>
                 <select name="type" class="w-full border border-gray-300 select select-bordered">
                     <option value="">— ทั้งหมด —</option>
-                    @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
+                    @foreach (['full-time' => 'เต็มเวลา (Full-time)', 'part-time' => 'พาร์ทไทม์ (Part-time)', 'intern' => 'ฝึกงาน (Internship)', 'freelance' => 'ฟรีแลนซ์ (Freelance)'] as $k => $v)
                         <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
                     @endforeach
                 </select>
@@ -58,7 +58,7 @@
                 <div class="flex gap-2">
                     <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
                         <option value="">— ทั้งหมด —</option>
-                        @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
+                        @foreach (['onsite' => 'เข้าออฟฟิศ (Work on Site)', 'remote' => 'ทำที่บ้าน (Work from Home)', 'hybrid' => 'ผสมผสาน (Hybrid Work)', 'distributed' => 'ทำที่ไหนก็ได้ (Distributed Work)'] as $k => $v)
                             <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
                         @endforeach
                     </select>
@@ -68,109 +68,203 @@
             </fieldset>
         </form>
 
-        <div class="flex flex-col items-center justify-center p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
-            <table class="table table-fixed w-full">
-                <thead>
+        <div class="overflow-x-auto rounded-2xl border shadow bg-base-200">
+            <table class="table table-fixed w-full min-w-[820px]">
+                <thead class="bg-base-300 text-xs uppercase tracking-wide">
                     <tr>
-                        <th class="w-[30%]">ชื่องาน</th>
-                        <th class="w-[12%]">ประเภท</th>
-                        <th class="w-[16%]">เปิดรับสมัครเมื่อ</th>
-                        <th class="w-[13%]">หมดอายุ</th>
-                        <th class="w-[14%]">สถานะ</th>
-                        <th class="w-[15%]">การทำงาน</th>
+                        <th class="w-[26%] py-3 px-4">ชื่องาน / สถานที่</th>
+                        <th class="w-[12%] py-3 px-3">ประเภทงาน</th>
+                        <th class="w-[13%] py-3 px-3">โหมดทำงาน</th>
+                        <th class="w-[11%] py-3 px-3">เปิดรับเมื่อ</th>
+                        <th class="w-[13%] py-3 px-3">ปิดรับ/หมดอายุ</th>
+                        <th class="w-[11%] py-3 px-3">สถานะ</th>
+                        <th class="w-[14%] py-3 px-3 text-center">จัดการ</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-base-300">
                     @forelse ($recs as $r)
-                        <tr>
-                            <td class="max-w-0">
-                                <div class="truncate" title="{{ $r->rc_title }}">{{ Str::limit($r->rc_title, 30, '...') }}</div>
-                                <div class="text-xs opacity-70 truncate">
-                                    {{ $r->rc_location_text ?? 'ไม่ใส่ที่อยู่' }}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="mr-1 badge">{{ ucfirst($r->rc_type) }}</div>
-                            </td>
-                            <td>{{ optional($r->rc_posted_at)->format('m-d-Y') ?? '-' }}</td>
-                            <td>
-                                @if ($r->rc_expire_at)
-                                    {{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('m-d-Y') }}
+                        @php
+                            $isExpired = $r->rc_expire_at && \Illuminate\Support\Carbon::parse($r->rc_expire_at)->endOfDay()->isPast();
+                            $isExpireToday = $r->rc_expire_at && \Illuminate\Support\Carbon::parse($r->rc_expire_at)->isToday();
+                            $isOpenActive = $r->rc_status === 'open' && !$isExpired;
+                            $toVal = $isOpenActive ? 'closed' : 'open';
+
+                            // Type badge color
+                            $typeBadgeColor = match($r->rc_type) {
+                                'full-time'  => 'bg-blue-100 text-blue-700',
+                                'part-time'  => 'bg-purple-100 text-purple-700',
+                                'intern'     => 'bg-green-100 text-green-700',
+                                'freelance'  => 'bg-orange-100 text-orange-700',
+                                default      => 'bg-gray-100 text-gray-500',
+                            };
+                            $typeShort = match($r->rc_type) {
+                                'full-time'  => 'เต็มเวลา',
+                                'part-time'  => 'พาร์ทไทม์',
+                                'intern'     => 'ฝึกงาน',
+                                'freelance'  => 'ฟรีแลนซ์',
+                                default      => '—',
+                            };
+
+                            // Work mode badge color
+                            $modeBadgeColor = match($r->rc_work_mode) {
+                                'onsite'      => 'bg-sky-100 text-sky-700',
+                                'remote'      => 'bg-teal-100 text-teal-700',
+                                'hybrid'      => 'bg-violet-100 text-violet-700',
+                                'distributed' => 'bg-amber-100 text-amber-700',
+                                default       => 'bg-gray-100 text-gray-500',
+                            };
+                            $modeShort = match($r->rc_work_mode) {
+                                'onsite'      => 'เข้าออฟฟิศ',
+                                'remote'      => 'Work from Home',
+                                'hybrid'      => 'Hybrid',
+                                'distributed' => 'Distributed',
+                                default       => '—',
+                            };
+                        @endphp
+                        <tr class="hover:bg-base-100 transition-colors">
+                            <td class="py-3 px-4 max-w-0">
+                                <div class="font-medium truncate text-sm" title="{{ $r->rc_title }}">{{ $r->rc_title }}</div>
+                                @if($r->rc_location_text)
+                                    <div class="text-xs opacity-60 truncate mt-0.5">
+                                        <i class="fa-solid fa-location-dot mr-1"></i>{{ $r->rc_location_text }}
+                                    </div>
                                 @else
-                                    —
+                                    <div class="text-xs opacity-40 mt-0.5">ไม่ระบุสถานที่</div>
                                 @endif
                             </td>
-                            <td>
-                                @php
-                                    $statusColor =
-                                        [
-                                            'open' => 'text-green-600 bg-green-200',
-                                            'closed' => 'text-gray-600 bg-gray-200',
-                                            'draft' => 'text-yellow-700 bg-yellow-200',
-                                        ][$r->rc_status] ?? 'bg-gray-200';
-                                @endphp
-                                <div class="flex items-center gap-2">
-                                    <span class="px-3 py-1 text-sm rounded-full {{ $statusColor }}">
-                                        {{ $r->rc_status === 'open' ? 'เปิดรับ' : ($r->rc_status === 'closed' ? 'ปิดรับ' : 'ฉบับร่าง') }}
-                                    </span>
-                                </div>
+                            <td class="py-3 px-3">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $typeBadgeColor }}">
+                                    {{ $typeShort }}
+                                </span>
                             </td>
-                            <td>
-                                <div class="gap-2 join">
-                                    @php
-                                        $toVal = $r->rc_status === 'open' ? 'draft' : 'open';
-                                        $isOpen = $r->rc_status === 'open';
-                                    @endphp
+                            <td class="py-3 px-3">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $modeBadgeColor }}">
+                                    {{ $modeShort }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3 text-xs">
+                                @if(!$r->rc_posted_at)
+                                    <span class="text-gray-500 opacity-70">ยังไม่เปิดรับ</span>
+                                @else
+                                    <span class="text-gray-600">{{ optional($r->rc_posted_at)->format('d/m/Y') ?? '—' }}</span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-3 text-xs">
+                                @if($isExpired)
+                                    <!-- Expired posting - top priority -->
+                                    <span class="text-red-600 font-medium">{{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('d/m/Y') }}</span>
+                                    <div class="text-xs text-red-400 mt-0.5">หมดอายุแล้ว</div>
+                                @elseif($r->rc_status === 'closed')
+                                    <!-- Closed but not expired -->
+                                    @if ($r->rc_expire_at)
+                                        <span class="rounded-full text-xs text-gray-700">
+                                             ปิดรับแล้ว
+                                        </span>
+                                    @else
+                                        <span class="rounded-full text-xs text-gray-700">
+                                             ปิดรับแล้ว
+                                        </span>
+                                    @endif
+                                @elseif ($r->rc_expire_at)
+                                    <!-- Has expiry date but not expired yet -->
+                                    <span class="text-gray-700">{{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('d/m/Y') }}</span>
+                                    <div class="text-xs mt-0.5 {{ $isExpireToday ? 'text-amber-500' : 'text-gray-400' }}">
+                                        {{ $isExpireToday ? 'หมดอายุวันนี้' : 'ยังไม่หมดอายุ' }}
+                                    </div>
+                                @else
+                                    <!-- Open indefinitely -->
+                                    <span class="rounded-full text-xs text-emerald-500">
+                                        เปิดรับตลอด
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-3">
+                                @if($isOpenActive)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> เปิดรับ
+                                    </span>
+                                @elseif($isExpired)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> หมดอายุ
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span> ปิดรับ
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="flex items-center justify-center gap-1.5">
                                     @if ($isAdmin)
-                                        <form method="POST" action="{{ route('admin.recruitments.status', $r->rc_id) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="to" value="{{ $toVal }}">
-                                            <button type="submit"
-                                                class="flex items-center justify-center w-10 h-10 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600"
-                                                title="{{ $isOpen ? 'ตั้งเป็นฉบับร่าง' : 'เผยแพร่' }}">
-                                                <i class="fa-solid {{ $isOpen ? 'fa-eye' : 'fa-eye-slash' }} text-gray-600"></i>
-                                            </button>
-                                        </form>
-                                        <a href="{{ route('admin.recruitments.edit', $r->rc_id) }}"
-                                           class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600 hover:text-white"
-                                           title="แก้ไข">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
+                                        @if(!$isExpired)
+                                            <!-- Not expired yet: allow status toggle and edit -->
+                                            @if(!$r->rc_expire_at)
+                                                <form method="POST" action="{{ route('admin.recruitments.status', $r->rc_id) }}">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="to" value="{{ $toVal }}">
+                                                    <button type="submit"
+                                                        class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition"
+                                                        title="{{ $isOpenActive ? 'ปิดรับ' : 'เปิดรับ' }}">
+                                                        <i class="fa-solid {{ $isOpenActive ? 'fa-eye' : 'fa-eye-slash' }} text-sm {{ $isOpenActive ? 'text-blue-500' : 'text-gray-400' }}"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <a href="{{ route('admin.recruitments.edit', $r->rc_id) }}"
+                                               class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
+                                               title="แก้ไข">
+                                                <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                            </a>
+                                        @else
+                                            <!-- Expired: only show view details -->
+                                            <a href="{{ route('admin.recruitments.show', $r->rc_id) }}"
+                                               class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
+                                               title="ดูรายละเอียด">
+                                                <i class="fa-solid fa-file-lines text-sm"></i>
+                                            </a>
+                                        @endif
                                         <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" class="delete-form">
-                                            @csrf
-                                            @method('DELETE')
+                                            @csrf @method('DELETE')
                                             <button type="button"
-                                                class="delete-btn flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-red-600 hover:text-white"
+                                                class="delete-btn flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-red-50 hover:border-red-400 transition text-gray-600 hover:text-red-600"
                                                 data-title="{{ addslashes($r->rc_title) }}"
                                                 title="ลบ">
-                                                <i class="fa-solid fa-trash"></i>
+                                                <i class="fa-solid fa-trash text-sm"></i>
                                             </button>
                                         </form>
                                     @else
-                                        <form method="POST" action="{{ route('provider.recruitments.status', $r->rc_id) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="to" value="{{ $toVal }}">
-                                            <button type="submit"
-                                                class="flex items-center justify-center w-10 h-10 transition border border-gray-400 rounded-2xl bg-base-100 {{ $isOpen ? 'hover:bg-yellow-200' : 'hover:bg-green-200' }}"
-                                                title="{{ $isOpen ? 'ตั้งเป็นฉบับร่าง' : 'เผยแพร่' }}">
-                                                <i class="fa-solid {{ $isOpen ? 'fa-eye' : 'fa-eye-slash' }} {{ $isOpen ? 'text-blue-600' : 'text-gray-600' }}"></i>
-                                            </button>
-                                        </form>
-                                        <a href="{{ route('provider.recruitments.edit', $r->rc_id) }}"
-                                           class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600 hover:text-white"
-                                           title="แก้ไข">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
+                                        @if(!$isExpired)
+                                            <!-- Not expired yet: allow status toggle and edit -->
+                                            @if(!$r->rc_expire_at)
+                                                <form method="POST" action="{{ route('provider.recruitments.status', $r->rc_id) }}">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="to" value="{{ $toVal }}">
+                                                    <button type="submit"
+                                                        class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition"
+                                                        title="{{ $isOpenActive ? 'ปิดรับ' : 'เปิดรับ' }}">
+                                                        <i class="fa-solid {{ $isOpenActive ? 'fa-eye' : 'fa-eye-slash' }} text-sm {{ $isOpenActive ? 'text-blue-500' : 'text-gray-400' }}"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <a href="{{ route('provider.recruitments.edit', $r->rc_id) }}"
+                                               class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
+                                               title="แก้ไข">
+                                                <i class="fa-solid fa-pen-to-square text-sm"></i>
+                                            </a>
+                                        @else
+                                            <!-- Expired: only show view details -->
+                                            <a href="{{ route('provider.recruitments.show', $r->rc_id) }}"
+                                               class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
+                                               title="ดูรายละเอียด">
+                                                <i class="fa-solid fa-file-lines text-sm"></i>
+                                            </a>
+                                        @endif
                                         <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" class="delete-form">
-                                            @csrf
-                                            @method('DELETE')
+                                            @csrf @method('DELETE')
                                             <button type="button"
-                                                class="delete-btn flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-red-600 hover:text-white"
+                                                class="delete-btn flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-red-50 hover:border-red-400 transition text-gray-600 hover:text-red-600"
                                                 data-title="{{ addslashes($r->rc_title) }}"
                                                 title="ลบ">
-                                                <i class="fa-solid fa-trash"></i>
+                                                <i class="fa-solid fa-trash text-sm"></i>
                                             </button>
                                         </form>
                                     @endif
@@ -179,7 +273,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-gray-500">
+                            <td colspan="7" class="py-16 text-center text-gray-400">
+                                <i class="fa-solid fa-briefcase text-3xl mb-3 block opacity-40"></i>
                                 ไม่มีประกาศงาน
                             </td>
                         </tr>

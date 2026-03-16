@@ -43,6 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.providers.recruitments.store');
     Route::get('/admin/recruitments/{rcId}/edit', [RecruitmentController::class, 'edit'])
         ->name('admin.recruitments.edit');
+    Route::get('/admin/recruitments/{rcId}', [RecruitmentController::class, 'manageShow'])
+        ->name('admin.recruitments.show');
     Route::patch('/admin/recruitments/{rcId}', [RecruitmentController::class, 'update'])
         ->name('admin.recruitments.update');
     Route::delete('/admin/recruitments/{rcId}', [RecruitmentController::class, 'destroy'])
@@ -59,6 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('provider.recruitments.create');
     Route::get('/my/recruitments/{rcId}/edit', [RecruitmentController::class, 'edit'])
         ->name('provider.recruitments.edit');
+    Route::get('/my/recruitments/{rcId}', [RecruitmentController::class, 'manageShow'])
+        ->name('provider.recruitments.show');
     Route::patch('/my/recruitments/{rcId}', [RecruitmentController::class, 'update'])
         ->name('provider.recruitments.update');
     Route::delete('/my/recruitments/{rcId}', [RecruitmentController::class, 'destroy'])

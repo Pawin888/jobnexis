@@ -22,7 +22,7 @@
                 <legend class="mb-1 fieldset-legend">ประเภท</legend>
                 <select name="type" class="w-full border border-gray-300 select select-bordered">
                     <option value="">— ทั้งหมด —</option>
-                    @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
+                    @foreach (['full-time' => 'เต็มเวลา (Full-time)', 'part-time' => 'พาร์ทไทม์ (Part-time)', 'intern' => 'ฝึกงาน (Internship)', 'freelance' => 'ฟรีแลนซ์ (Freelance)'] as $k => $v)
                         <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
                     @endforeach
                 </select>
@@ -31,7 +31,7 @@
                 <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
                 <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
                     <option value="">— ทั้งหมด —</option>
-                    @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
+                        @foreach (['onsite' => 'เข้าออฟฟิศ (Work on Site)', 'remote' => 'ทำที่บ้าน (Work from Home)', 'hybrid' => 'ผสมผสาน (Hybrid Work)', 'distributed' => 'ทำที่ไหนก็ได้ (Distributed Work)'] as $k => $v)
                         <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
                     @endforeach
                 </select>
@@ -71,9 +71,11 @@
 
                     <div class="flex flex-col gap-2 mt-3 text-xs">
                         <div class="flex flex-wrap gap-2 ">
-                            <span class="px-2 py-1 text-blue-700 bg-blue-100 rounded-full">{{ ucfirst($r->rc_type) }}</span>
-                        <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">{{ ucfirst($r->rc_work_mode) }}</span>
-                    </div>
+                            @foreach ($r->type_labels as $typeLabel)
+                                <span class="px-2 py-1 text-blue-700 bg-blue-100 rounded-full">{{ $typeLabel }}</span>
+                            @endforeach
+                            <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">{{ $r->work_mode_label }}</span>
+                        </div>
 
                         @if($r->rc_salary)
                             <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full ">เงินเดือน: {{ $r->rc_salary }}</span>
@@ -85,15 +87,9 @@
 
                     <div class="flex items-center justify-between mt-4">
                         <span class="text-xs text-gray-500">โพสต์เมื่อ {{ optional($r->rc_posted_at)->timezone('Asia/Bangkok')->format('Y-m-d H:i') }}</span>
-                        @if($r->rc_application_url)
-                            <div class="flex items-center gap-2">
-                                <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-2 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">ดูรายละเอียด</a>
-                            </div>
-                        @else
-                            <div class="flex items-center gap-2">
-                                <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">ดูรายละเอียด</a>
-                            </div>
-                        @endif
+                        <div class="flex items-center gap-2">
+                            <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">ดูรายละเอียด</a>
+                        </div>
                     </div>
                 </div>
             @empty

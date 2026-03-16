@@ -10,6 +10,20 @@ class Recruitment extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const TYPE_LABELS = [
+        'full-time' => 'เต็มเวลา (Full-time)',
+        'part-time' => 'พาร์ทไทม์ (Part-time)',
+        'intern' => 'ฝึกงาน (Internship)',
+        'freelance' => 'ฟรีแลนซ์ (Freelance)',
+    ];
+
+    public const WORK_MODE_LABELS = [
+        'onsite' => 'เข้าออฟฟิศ (Work on Site)',
+        'remote' => 'ทำที่บ้าน (Work from Home)',
+        'hybrid' => 'ผสมผสาน (Hybrid Work)',
+        'distributed' => 'ทำที่ไหนก็ได้ (Distributed Work)',
+    ];
+
     protected $table = 'recruitments';
     protected $primaryKey = 'rc_id';
 
@@ -17,6 +31,9 @@ class Recruitment extends Model
         'rc_title',
         'rc_description',
         'rc_requirements',
+        'rc_gender',
+        'rc_education_level',
+        'rc_experience_level',
         'rc_salary',
         'rc_location_text',
         'rc_location_link',
@@ -34,6 +51,66 @@ class Recruitment extends Model
         'rc_posted_at' => 'datetime',
         'rc_expire_at' => 'date',
     ];
+
+    public static function typeLabel(?string $value): string
+    {
+        return self::TYPE_LABELS[$value] ?? ($value ?: 'ไม่ระบุ');
+    }
+
+    public static function workModeLabel(?string $value): string
+    {
+        return self::WORK_MODE_LABELS[$value] ?? 'ไม่ระบุ';
+    }
+
+    public function getWorkModeValuesAttribute(): array
+    {
+        return collect(explode(',', (string) ($this->attributes['rc_work_mode'] ?? '')))
+            ->map(fn ($mode) => trim($mode))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function getWorkModeLabelsAttribute(): array
+    {
+        $values = $this->work_mode_values;
+
+        if (empty($values)) {
+            return ['ไม่ระบุ'];
+        }
+
+        return array_map(fn ($mode) => self::workModeLabel($mode), $values);
+    }
+
+    public function getTypeValuesAttribute(): array
+    {
+        return collect(explode(',', (string) ($this->attributes['rc_type'] ?? '')))
+            ->map(fn ($type) => trim($type))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function getTypeLabelsAttribute(): array
+    {
+        $values = $this->type_values;
+
+        if (empty($values)) {
+            return ['ไม่ระบุ'];
+        }
+
+        return array_map(fn ($type) => self::typeLabel($type), $values);
+    }
+
+    public function getTypeTextAttribute(): string
+    {
+        return implode(', ', $this->type_labels);
+    }
+
+    public function getWorkModeLabelAttribute(): string
+    {
+        return implode(', ', $this->work_mode_labels);
+    }
 
     /**
      * เจ้าของประกาศ (User)
