@@ -95,17 +95,17 @@
                         </h3>
                         <p class="mt-2 text-sm text-gray-700 line-clamp-3">{{ $r->rc_description }}</p>
                         <div class="flex flex-wrap gap-2 mt-3 text-xs">
-                            <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700">{{ ucfirst($r->rc_type) }}</span>
-                            <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">{{ ucfirst($r->rc_work_mode) }}</span>
+                            @foreach ($r->type_labels as $typeLabel)
+                                <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700">{{ $typeLabel }}</span>
+                            @endforeach
+                            <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">{{ $r->work_mode_label }}</span>
                             @if($r->rc_salary)
                                 <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700">{{ $r->rc_salary }}</span>
                             @endif
                         </div>
                         <div class="flex items-center justify-between mt-4">
                             <span class="text-xs text-gray-500">โพสต์เมื่อ {{ optional($r->rc_posted_at)->timezone('Asia/Bangkok')->format('Y-m-d H:i') }}</span>
-                            @if($r->rc_application_url)
-                                <a href="{{ $r->rc_application_url }}" target="_blank" rel="noopener" class="px-3 py-1 text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-sm">สมัคร</a>
-                            @endif
+                            <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-3 py-1 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 text-sm">ดูรายละเอียด</a>
                         </div>
                     </div>
                 @empty

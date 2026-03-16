@@ -120,6 +120,14 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('jobs.index') }}"
+                    class="flex items-center {{ request()->is('jobs*') ? 'text-blue-600' : '' }}">
+                    <i
+                        class="fa-solid fa-magnifying-glass w-5 text-blue-600 text-center mr-1 {{ request()->is('jobs*') ? 'text-blue-600' : '' }}"></i>
+                    งานที่เปิดรับสมัคร
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('provider.applications.index') }}"
                     class="flex items-center {{ request()->is('provider/applications*') ? 'text-blue-600' : '' }}">
                     <i class="fa-solid fa-file-signature w-5 text-blue-600 text-center mr-1 {{ request()->is('provider/applications*') ? 'text-blue-600' : '' }}"></i>

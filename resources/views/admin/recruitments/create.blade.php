@@ -22,19 +22,27 @@
             : route('provider.recruitments.store') }}">
         @csrf
 
-        <div class="space-y-4">
+        @php
+            $selectedType = old('rc_type', '');
+            $selectedWorkMode = old('rc_work_mode', '');
+            $oldSkills = collect(old('skills', []))->filter(fn ($skill) => filled($skill['skill_group_id'] ?? null) || filled($skill['skill_id'] ?? null))->values();
+            $langs = collect(old('languages', []))->filter(fn ($lang) => filled($lang['language'] ?? null))->values();
+            $tomorrow = now()->addDay()->toDateString();
+        @endphp
 
-            {{-- ================= SECTION: ข้อมูลหลัก ================= --}}
-            <div class="bg-base-200 rounded-2xl px-6 py-5">
-                <h2 class="text-base font-semibold mb-4 flex items-center gap-2">
+        <div class="space-y-3">
+
+            {{-- ================= SECTION: ข้อมูลตำแหน่งงาน ================= --}}
+            <div class="bg-base-200 rounded-2xl px-5 py-4">
+                <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
                     <span class="w-1.5 h-5 bg-primary rounded-full inline-block"></span>
-                    ข้อมูลพื้นฐาน
+                    ข้อมูลตำแหน่งงาน
                 </h2>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 
                     {{-- ชื่องาน --}}
                     <div class="md:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">ชื่องาน <span class="text-error">*</span></span></label>
+                        <label class="label py-0"><span class="label-text font-medium">ชื่องาน <span class="text-error">*</span></span></label>
                         <input type="text" name="rc_title"
                             class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น Senior Frontend Developer"
@@ -42,195 +50,212 @@
                         @error('rc_title') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- รายละเอียด --}}
                     <div class="md:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">รายละเอียด <span class="text-error">*</span></span></label>
-                        <textarea name="rc_description" rows="5"
+                        <label class="label py-0"><span class="label-text font-medium">รายละเอียดงาน</span></label>
+                        <textarea name="rc_description" rows="4"
                             class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
-                            placeholder="อธิบายเกี่ยวกับตำแหน่งงานและความรับผิดชอบ..."
-                            required>{{ old('rc_description') }}</textarea>
+                            placeholder="ระบุรายละเอียดงาน เช่น หน้าที่ความรับผิดชอบ ลักษณะงาน...">{{ old('rc_description') }}</textarea>
                         @error('rc_description') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- คุณสมบัติ --}}
-                    <div class="md:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">คุณสมบัติ / ข้อกำหนด</span></label>
-                        <textarea name="rc_requirements" rows="4"
-                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
-                            placeholder="ระบุคุณสมบัติที่ต้องการ เช่น ประสบการณ์ วุฒิการศึกษา...">{{ old('rc_requirements') }}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ================= SECTION: รายละเอียดงาน ================= --}}
-            <div class="bg-base-200 rounded-2xl px-6 py-5">
-                <h2 class="text-base font-semibold mb-4 flex items-center gap-2">
-                    <span class="w-1.5 h-5 bg-secondary rounded-full inline-block"></span>
-                    รายละเอียดงาน
-                </h2>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-
-                    {{-- เงินเดือน --}}
-                    <div class="lg:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">เงินเดือน</span></label>
-                        <input type="text" name="rc_salary"
-                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
-                            placeholder="เช่น 30,000 - 50,000 บาท หรือ ตามที่ตกลง"
-                            value="{{ old('rc_salary') }}">
                     </div>
 
                     {{-- โหมดการทำงาน --}}
                     <div>
-                        <label class="label py-1"><span class="label-text font-medium">โหมดการทำงาน</span></label>
-                        <select name="rc_work_mode" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2" required>
-                            @foreach (['onsite','remote','hybrid'] as $mode)
-                                <option value="{{ $mode }}" @selected(old('rc_work_mode','onsite') === $mode)>
-                                    {{ ucfirst($mode) }}
-                                </option>
+                        <label class="label py-0"><span class="label-text font-medium">โหมดการทำงาน</span></label>
+                        <select name="rc_work_mode" id="rc_work_mode" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2 work-mode-radio">
+                            <option value="">ไม่ระบุ</option>
+                            <option value="onsite" @selected((string) $selectedWorkMode === 'onsite')>เข้าออฟฟิศ (Work on Site)</option>
+                            <option value="remote" @selected((string) $selectedWorkMode === 'remote')>ทำที่บ้าน (Work from Home)</option>
+                            <option value="hybrid" @selected((string) $selectedWorkMode === 'hybrid')>ผสมผสาน (Hybrid Work)</option>
+                            <option value="distributed" @selected((string) $selectedWorkMode === 'distributed')>ทำที่ไหนก็ได้ (Distributed Work)</option>
+                        </select>
+                        @error('rc_work_mode') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div id="location-fields" class="contents">
+                    <div id="location-text-field" class="md:col-span-2">
+                        <label class="label py-0"><span class="label-text font-medium">สถานที่</span></label>
+                        <select name="rc_location_text" id="rc_location_text" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                            <option value="">-- เลือกจังหวัด --</option>
+                            @foreach(config('th_provinces', []) as $province)
+                                <option value="{{ $province }}" @selected(old('rc_location_text') === $province)>{{ $province }}</option>
                             @endforeach
                         </select>
+                        @error('rc_location_text') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- ประเภทงาน --}}
-                    <div>
-                        <label class="label py-1"><span class="label-text font-medium">ประเภทงาน</span></label>
-                        <select name="rc_type" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2" required>
-                            @foreach (['full-time','part-time','intern','freelance'] as $type)
-                                <option value="{{ $type }}" @selected(old('rc_type','full-time') === $type)>
-                                    {{ ucfirst($type) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- สถานที่ --}}
-                    <div class="lg:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">สถานที่ (ข้อความ)</span></label>
-                        <input type="text" name="rc_location_text"
-                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
-                            placeholder="เช่น กรุงเทพฯ, อโศก"
-                            value="{{ old('rc_location_text') }}">
-                    </div>
-
-                    {{-- ลิงก์สถานที่ --}}
-                    <div class="lg:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">ลิงก์สถานที่</span></label>
-                        <input type="url" name="rc_location_link"
+                    <div id="location-link-field" class="md:col-span-2">
+                        <label class="label py-0"><span class="label-text font-medium">ลิงก์สถานที่</span></label>
+                        <input type="url" name="rc_location_link" id="rc_location_link"
                             class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="https://maps.google.com/..."
                             value="{{ old('rc_location_link') }}">
+                        @error('rc_location_link') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    </div>
+
+                    <div>
+                        <label class="label py-0"><span class="label-text font-medium">ประเภทงาน</span></label>
+                        <select name="rc_type" id="rc_type" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                            <option value="">ไม่ระบุ</option>
+                            <option value="full-time" @selected((string) $selectedType === 'full-time')>เต็มเวลา (Full-time)</option>
+                            <option value="part-time" @selected((string) $selectedType === 'part-time')>พาร์ทไทม์ (Part-time)</option>
+                            <option value="intern" @selected((string) $selectedType === 'intern')>ฝึกงาน (Internship)</option>
+                            <option value="freelance" @selected((string) $selectedType === 'freelance')>ฟรีแลนซ์ (Freelance)</option>
+                        </select>
+                        @error('rc_type') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
 
-            {{-- ================= SECTION: การสมัครและเวลา ================= --}}
-            <div class="bg-base-200 rounded-2xl px-6 py-5">
-                <h2 class="text-base font-semibold mb-4 flex items-center gap-2">
-                    <span class="w-1.5 h-5 bg-accent rounded-full inline-block"></span>
-                    การสมัครและช่วงเวลา
+            {{-- ================= SECTION: เงินเดือน ================= --}}
+            <div class="bg-base-200 rounded-2xl px-5 py-4">
+                <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
+                    <span class="w-1.5 h-5 bg-secondary rounded-full inline-block"></span>
+                    เงินเดือน
                 </h2>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-2">
 
-                    {{-- ลิงก์สมัคร --}}
-                    <div class="lg:col-span-1 md:col-span-2">
-                        <label class="label py-1"><span class="label-text font-medium">ลิงก์สมัครงาน</span></label>
-                        <input type="url" name="rc_application_url"
-                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
-                            placeholder="https://..."
-                            value="{{ old('rc_application_url') }}">
-                    </div>
-
-                    {{-- วันที่โพสต์ --}}
-                    <div>
-                        <label class="label py-1"><span class="label-text font-medium">วันที่เปิดรับสมัคร</span></label>
-                        <input type="date" name="rc_posted_at"
-                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
-                            value="{{ old('rc_posted_at') }}">
-                    </div>
-
-                    {{-- วันหมดอายุ --}}
-                    <div>
-                        <label class="label py-1"><span class="label-text font-medium">วันหมดอายุ</span></label>
-                        <input type="date" name="rc_expire_at"
-                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
-                            value="{{ old('rc_expire_at') }}">
-                    </div>
-
-                    {{-- สถานะ --}}
-                    <div class="md:col-span-2 lg:col-span-3">
-                        <label class="label py-1"><span class="label-text font-medium">สถานะการเผยแพร่</span></label>
-                        <div class="flex items-center gap-4 p-4 bg-base-100 border border-base-300 rounded-xl w-full md:w-fit">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-medium" id="status-label">ฉบับร่าง</span>
-                                <span class="text-xs opacity-50">แตะเพื่อเปลี่ยนสถานะ</span>
+                    {{-- เงินเดือน --}}
+                    <div class="lg:col-span-2">
+                        <label class="label py-0"><span class="label-text font-medium">ช่วงเงินเดือน (บาท)</span></label>
+                        <input type="hidden" name="rc_salary" id="rc_salary" value="{{ old('rc_salary') }}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div>
+                                <label class="label py-0"><span class="label-text text-xs opacity-70">ขั้นต่ำ</span></label>
+                                <select id="salary_min" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                                    <option value="">ไม่ระบุ</option>
+                                    @foreach([10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000] as $s)
+                                        <option value="{{ $s }}">{{ number_format($s) }} บาท</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <input type="checkbox" id="toggle-status"
-                                class="toggle toggle-primary toggle-lg border-2 border-base-300 checked:border-primary"
-                                {{ old('rc_status','draft') === 'open' ? 'checked' : '' }}>
-                            <input type="hidden" name="rc_status" id="rc_status_input"
-                                value="{{ old('rc_status', 'draft') }}">
+                            <div>
+                                <label class="label py-0"><span class="label-text text-xs opacity-70">สูงสุด</span></label>
+                                <select id="salary_max" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                                    <option value="">ไม่ระบุ</option>
+                                    @foreach([10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000] as $s)
+                                        <option value="{{ $s }}">{{ number_format($s) }} บาท</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="lg:col-span-2">
+                        <label class="inline-flex items-center gap-3 cursor-pointer px-3 py-2 rounded-lg border border-base-300 bg-base-100 transition hover:border-blue-300 hover:bg-blue-50">
+                            <input type="checkbox" id="salary_negotiable"
+                                class="checkbox checkbox-sm border-2 border-slate-500 bg-white checked:bg-blue-600 checked:border-blue-600">
+                            <span class="text-sm font-medium text-base-content">เงินเดือนตามตกลง</span>
+                        </label>
+                        <p class="text-xs opacity-70 mt-1">เลือกช่วงเงินเดือน หรือเลือกตามตกลงเพื่อไม่ระบุช่วงเงินเดือน</p>
+                        @error('rc_salary') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+
                 </div>
             </div>
 
-            {{-- ================= SECTION: SKILLS ================= --}}
-            <div class="bg-base-200 rounded-2xl px-6 py-5">
-                <h2 class="text-base font-semibold mb-4 flex items-center gap-2">
+            {{-- ================= SECTION: คุณสมบัติผู้สมัคร ================= --}}
+            <div class="bg-base-200 rounded-2xl px-5 py-4">
+                <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
+                    <span class="w-1.5 h-5 bg-warning rounded-full inline-block"></span>
+                    คุณสมบัติผู้สมัคร
+                </h2>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <div>
+                        <label class="label py-0"><span class="label-text font-medium">เพศ</span></label>
+                        <select name="rc_gender" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                            @foreach (['any' => 'ไม่จำกัดเพศ', 'male' => 'ชาย', 'female' => 'หญิง'] as $k => $v)
+                                <option value="{{ $k }}" @selected(old('rc_gender', 'any') === $k)>{{ $v }}</option>
+                            @endforeach
+                        </select>
+                        @error('rc_gender') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="label py-0"><span class="label-text font-medium">วุฒิการศึกษา</span></label>
+                        <select name="rc_education_level" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                            @foreach (['any' => 'ไม่จำกัดวุฒิ', 'below_bachelor' => 'ต่ำกว่าปริญญาตรี', 'bachelor' => 'ปริญญาตรี', 'master' => 'ปริญญาโท', 'doctorate' => 'ปริญญาเอก'] as $k => $v)
+                                <option value="{{ $k }}" @selected(old('rc_education_level', 'any') === $k)>{{ $v }}</option>
+                            @endforeach
+                        </select>
+                        @error('rc_education_level') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="label py-0"><span class="label-text font-medium">ประสบการณ์ทำงาน</span></label>
+                        <select name="rc_experience_level" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                            @foreach (['no_experience' => 'ไม่ต้องมีประสบการณ์', '0_1' => '0-1 ปี', '1_3' => '1-3 ปี', '3_5' => '3-5 ปี', 'more_5' => 'มากกว่า 5 ปี'] as $k => $v)
+                                <option value="{{ $k }}" @selected(old('rc_experience_level', 'no_experience') === $k)>{{ $v }}</option>
+                            @endforeach
+                        </select>
+                        @error('rc_experience_level') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+
+            {{-- ================= SECTION: ทักษะที่ต้องการ ================= --}}
+            <div class="bg-base-200 rounded-2xl px-5 py-4">
+                <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
                     <span class="w-1.5 h-5 bg-warning rounded-full inline-block"></span>
                     ทักษะที่ต้องการ
                 </h2>
 
-                <div id="skills-wrapper" class="space-y-3">
-                    <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
-                         style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
-
-                        <div class="relative min-w-0 overflow-hidden">
-                            <select name="skills[0][skill_group_id]"
-                                class="select select-bordered select-sm focus:select-primary skill-group w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
-                                <option value="">-- กลุ่มสกิล --</option>
-                                @foreach ($skillGroups as $group)
-                                    <option value="{{ $group->id }}">{{ $group->name }}</option>
+                <div class="grid items-center gap-2 px-3 mb-1" style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
+                    <span class="text-xs font-medium opacity-60">กลุ่มทักษะ <span class="text-error">*</span></span>
+                    <span class="text-xs font-medium opacity-60">ทักษะ <span class="text-error">*</span></span>
+                    <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
+                    <span></span>
+                </div>
+                <div id="skills-wrapper" class="space-y-2">
+                    @foreach ($oldSkills as $i => $skill)
+                        @php
+                            $selectedGroupId = $skill['skill_group_id'] ?? null;
+                            $selectedGroup = $skillGroups->firstWhere('id', (int) $selectedGroupId);
+                            $selectedSkillId = $skill['skill_id'] ?? null;
+                        @endphp
+                        <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
+                             style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
+                            <div class="relative min-w-0 overflow-hidden">
+                                <select name="skills[{{ $i }}][skill_group_id]"
+                                    class="select select-bordered select-sm focus:select-primary skill-group w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
+                                    <option value="">-- กลุ่มทักษะ --</option>
+                                    @foreach ($skillGroups as $group)
+                                        <option value="{{ $group->id }}" @selected((string) $selectedGroupId === (string) $group->id)>{{ $group->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                                    <span class="truncate text-sm skill-group-label {{ $selectedGroupId ? '' : 'opacity-60' }}">{{ $selectedGroup?->name ?? '-- กลุ่มทักษะ --' }}</span>
+                                </div>
+                            </div>
+                            <div class="relative min-w-0 overflow-hidden">
+                                <select name="skills[{{ $i }}][skill_id]"
+                                    class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer" {{ $selectedGroup ? '' : 'disabled' }}>
+                                    <option value="">-- ทักษะ --</option>
+                                    @foreach (($selectedGroup?->skills ?? collect())->sortBy(fn ($item) => mb_strtolower($item->name)) as $groupSkill)
+                                        <option value="{{ $groupSkill->id }}" @selected((string) $selectedSkillId === (string) $groupSkill->id)>{{ $groupSkill->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                                    <span class="truncate text-sm skill-select-label {{ $selectedSkillId ? '' : 'opacity-60' }}">{{ $selectedGroup?->skills?->firstWhere('id', (int) $selectedSkillId)?->name ?? '-- ทักษะ --' }}</span>
+                                </div>
+                            </div>
+                            <select name="skills[{{ $i }}][proficiency_level]" class="select select-bordered select-sm focus:select-primary">
+                                @foreach (['beginner' => 'เริ่มต้น', 'intermediate' => 'ปานกลาง', 'advanced' => 'ขั้นสูง', 'expert' => 'ผู้เชี่ยวชาญ'] as $level => $label)
+                                    <option value="{{ $level }}" @selected(($skill['proficiency_level'] ?? 'beginner') === $level)>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
-                                <span class="truncate text-sm skill-group-label opacity-60">-- กลุ่มสกิล --</span>
-                            </div>
+                            <button type="button" class="remove-skill btn btn-xs shrink-0" style="background-color:#ef4444; color:white; border:none; min-width:2rem">✕</button>
                         </div>
-
-                        <div class="relative min-w-0 overflow-hidden">
-                            <select name="skills[0][skill_id]"
-                                class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer"
-                                disabled>
-                                <option value="">-- สกิล --</option>
-                            </select>
-                            <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
-                                <span class="truncate text-sm skill-select-label opacity-60">-- สกิล --</span>
-                            </div>
-                        </div>
-
-                        <select name="skills[0][proficiency_level]"
-                            class="select select-bordered select-sm focus:select-primary">
-                            <option value="beginner">เริ่มต้น</option>
-                            <option value="intermediate">ปานกลาง</option>
-                            <option value="advanced">ขั้นสูง</option>
-                            <option value="expert">ผู้เชี่ยวชาญ</option>
-                        </select>
-
-                        <button type="button"
-                            class="remove-skill hidden btn btn-xs shrink-0"
-                            style="background-color:#ef4444; color:white; border:none; min-width:2rem">
-                            ✕
-                        </button>
-                    </div>
+                    @endforeach
                 </div>
 
                 <button type="button" id="add-skill"
-                    class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
+                    class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    เพิ่มสกิล
+                    เพิ่มทักษะ
                 </button>
             </div>
 
@@ -238,33 +263,40 @@
 
         {{-- ================= SECTION: LANGUAGES ================= --}}
         @php
-            $langs = old('languages', isset($rec) ? $rec->languages->toArray() : [['language'=>'','proficiency'=>'basic']]);
             $languageOptions = [
-                'ภาษาไทย (Thai)', 'မြန်မာဘာသာ (Burmese)', 'ភាសាខ្មែរ (Khmer)', 'ພາສາລາວ (Lao)',
-                'Tiếng Việt (Vietnamese)', 'Bahasa Melayu (Malay)', 'Bahasa Indonesia (Indonesian)', 'Filipino (Tagalog)',
-                'English', '中文 普通话 (Mandarin)', '粵語 (Cantonese)',
-                '日本語 (Japanese)', '한국어 (Korean)', 'Монгол (Mongolian)',
-                'हिन्दी (Hindi)', 'اردو (Urdu)', 'বাংলা (Bengali)', 'தமிழ் (Tamil)',
-                'తెలుగు (Telugu)', 'සිංහල (Sinhala)', 'नेपाली (Nepali)',
-                'العربية (Arabic)', 'فارسی (Persian)', 'עברית (Hebrew)',
-                'Türkçe (Turkish)', 'Қазақша (Kazakh)', 'Oʻzbek (Uzbek)',
-                'Français (French)', 'Deutsch (German)', 'Español (Spanish)', 'Italiano (Italian)',
-                'Português (Portuguese)', 'Nederlands (Dutch)', 'Svenska (Swedish)', 'Norsk (Norwegian)',
-                'Dansk (Danish)', 'Suomi (Finnish)', 'Ελληνικά (Greek)',
-                'Русский (Russian)', 'Українська (Ukrainian)', 'Polski (Polish)', 'Čeština (Czech)',
-                'Magyar (Hungarian)', 'Română (Romanian)', 'Български (Bulgarian)',
-                'Српски (Serbian)', 'Hrvatski (Croatian)',
-                'Kiswahili (Swahili)', 'አማርኛ (Amharic)', 'Hausa', 'Yorùbá (Yoruba)', 'Afrikaans',
+                'ภาษาไทย', 'ภาษาอังกฤษ', 'ภาษาจีนกลาง', 'ภาษาจีนกวางตุ้ง', 'ภาษาญี่ปุ่น', 'ภาษาเกาหลี',
+                'ภาษาฝรั่งเศส', 'ภาษาเยอรมัน', 'ภาษาสเปน', 'ภาษาโปรตุเกส', 'ภาษาอิตาลี', 'ภาษาดัตช์',
+                'ภาษารัสเซีย', 'ภาษายูเครน', 'ภาษาโปแลนด์', 'ภาษาเช็ก', 'ภาษาสโลวัก', 'ภาษาฮังการี',
+                'ภาษาโรมาเนีย', 'ภาษาบัลแกเรีย', 'ภาษาเซอร์เบีย', 'ภาษาโครเอเชีย', 'ภาษาสโลวีเนีย',
+                'ภาษาบอสเนีย', 'ภาษาแอลเบเนีย', 'ภาษากรีก', 'ภาษาตุรกี', 'ภาษาอาหรับ', 'ภาษาฮีบรู',
+                'ภาษาเปอร์เซีย', 'ภาษาอูรดู', 'ภาษาฮินดี', 'ภาษาเบงกาลี', 'ภาษาปัญจาบ', 'ภาษาคุชราตี',
+                'ภาษามราฐี', 'ภาษาทมิฬ', 'ภาษาเตลูกู', 'ภาษากันนาดา', 'ภาษามาลายาลัม', 'ภาษาสิงหล',
+                'ภาษาเนปาลี', 'ภาษาพม่า', 'ภาษามลายู', 'ภาษาอินโดนีเซีย', 'ภาษาตากาล็อก', 'ภาษาเวียดนาม',
+                'ภาษาลาว', 'ภาษาเขมร', 'ภาษามองโกเลีย', 'ภาษาคาซัค', 'ภาษาอุซเบก', 'ภาษาอาเซอร์ไบจาน',
+                'ภาษาจอร์เจีย', 'ภาษาอาร์เมเนีย', 'ภาษาสวาฮีลี', 'ภาษาอัมฮาริก', 'ภาษาโซมาลี',
+                'ภาษาโยรูบา', 'ภาษาอิกโบ', 'ภาษาเฮาซา', 'ภาษาแอฟริคานส์', 'ภาษาซูลู', 'ภาษาโคซา',
+                'ภาษาเดนมาร์ก', 'ภาษานอร์เวย์', 'ภาษาสวีเดน', 'ภาษาฟินแลนด์', 'ภาษาไอซ์แลนด์',
+                'ภาษาเอสโตเนีย', 'ภาษาลัตเวีย', 'ภาษาลิทัวเนีย', 'ภาษาไอริช', 'ภาษาเวลส์', 'ภาษาสก็อตเกลิก',
+                'ภาษามอลตา', 'ภาษาคาตาลัน', 'ภาษาบาสก์', 'ภาษากาลิเซีย', 'ภาษาละติน',
+                'ภาษากลาง (ลิงกวาฟรังกา)', 'ภาษานาวาโฮ', 'ภาษาอินุกติตุต', 'ภาษาเมารี', 'ภาษาฮาวาย',
+                'ภาษาซามัว', 'ภาษาตองกา', 'ภาษาฟิจิ', 'ภาษาปาปิอาเมนโต', 'ภาษาเครโอลเฮติ',
+                'ภาษาลักเซมเบิร์ก', 'ภาษามาซิโดเนีย', 'ภาษาเบลารุส', 'ภาษามอลโดวา', 'ภาษาคีร์กีซ',
+                'ภาษาทาจิก', 'ภาษาเตอร์กเมน', 'ภาษาเคิร์ด', 'ภาษาอัสสัม', 'ภาษาโอเดีย', 'ภาษาสันสกฤต'
             ];
         @endphp
 
         <div class="bg-base-200 rounded-2xl px-6 py-5 mt-4">
-            <h2 class="text-base font-semibold mb-4 flex items-center gap-2">
+            <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
                 <span class="w-1.5 h-5 bg-info rounded-full inline-block"></span>
                 ภาษาที่ต้องการ
             </h2>
 
-            <div id="languages-wrapper" class="space-y-3">
+            <div class="grid items-center gap-2 px-3 mb-1" style="grid-template-columns: 2fr 2fr 2rem">
+                <span class="text-xs font-medium opacity-60">ภาษา <span class="text-error">*</span></span>
+                <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
+                <span></span>
+            </div>
+            <div id="languages-wrapper" class="space-y-2">
                 @foreach ($langs as $i => $lang)
                 <div class="language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
                     style="grid-template-columns: 2fr 2fr 2rem">
@@ -296,7 +328,7 @@
                     </select>
 
                     <button type="button"
-                        class="remove-language {{ $i == 0 && count($langs) == 1 ? 'hidden' : '' }} btn btn-xs shrink-0"
+                        class="remove-language btn btn-xs shrink-0"
                         style="background-color:#ef4444; color:white; border:none; min-width:2rem">
                         ✕
                     </button>
@@ -305,16 +337,50 @@
             </div>
 
             <button type="button" id="add-language"
-                class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
+                class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 เพิ่มภาษา
             </button>
+
+            <div class="mt-3">
+                <label class="label py-0"><span class="label-text font-medium">คุณสมบัติทั่วไป</span></label>
+                <textarea name="rc_requirements" rows="4"
+                    class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
+                    placeholder="ระบุข้อมูลเพิ่มเติมเกี่ยวกับคุณสมบัติ (ถ้ามี)">{{ old('rc_requirements') }}</textarea>
+                @error('rc_requirements') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        {{-- ================= SECTION: ช่วงเวลา ================= --}}
+        <div class="bg-base-200 rounded-2xl px-5 py-4 mt-3">
+            <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
+                <span class="w-1.5 h-5 bg-accent rounded-full inline-block"></span>
+                ช่วงเวลา
+            </h2>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                    <label class="label py-0"><span class="label-text font-medium">วันปิดรับสมัคร</span></label>
+                    <input type="date" name="rc_expire_at" id="rc_expire_at"
+                        class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
+                        value="{{ old('rc_expire_at') }}" min="{{ $tomorrow }}">
+                    @error('rc_expire_at') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    <div class="mt-2">
+                        <label class="inline-flex items-center gap-3 cursor-pointer px-3 py-2 rounded-lg border border-base-300 bg-base-100 transition hover:border-blue-300 hover:bg-blue-50">
+                            <input type="checkbox" id="expire_no_limit" name="expire_no_limit" value="1"
+                                @checked(old('expire_no_limit') === '1')
+                                class="checkbox checkbox-sm border-2 border-slate-500 bg-white checked:bg-blue-600 checked:border-blue-600">
+                            <span class="text-sm font-medium text-base-content">ไม่กำหนดวันปิด (เปิดรับตลอด)</span>
+                        </label>
+                        <p class="text-xs opacity-70 mt-1">หากไม่กำหนดวันปิด ประกาศจะเปิดรับสมัครจนกว่าจะปิดด้วยตนเอง</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- ================= ACTIONS ================= --}}
-        <div class="flex justify-end gap-3 mt-4 pb-6">
+        <div class="flex justify-end gap-2 mt-3 pb-4">
             <a href="{{ $isAdmin
                 ? route('admin.providers.recruitments.index', $ownerId)
                 : route('provider.recruitments.index') }}"
@@ -335,22 +401,6 @@
 
 @push('scripts')
 <script>
-(function () {
-    const toggle = document.getElementById('toggle-status');
-    const input  = document.getElementById('rc_status_input');
-    const label  = document.getElementById('status-label');
-
-    const sync = () => {
-        const isOpen = toggle.checked;
-        input.value = isOpen ? 'open' : 'draft';
-        label.textContent = isOpen ? 'เผยแพร่แล้ว' : 'ฉบับร่าง';
-        label.className = isOpen
-            ? 'text-sm font-medium text-success'
-            : 'text-sm font-medium';
-    };
-    toggle.addEventListener('change', sync);
-    sync();
-})();
 
 window.SKILLS_BY_GROUP = @json(
     $skillGroups->mapWithKeys(fn ($g) => [
@@ -361,6 +411,110 @@ window.SKILLS_BY_GROUP = @json(
 const LANGUAGE_OPTIONS = @json($languageOptions);
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ===== Salary =====
+    const salaryValues = [10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000];
+    const salaryMinEl = document.getElementById('salary_min');
+    const salaryMaxEl = document.getElementById('salary_max');
+    const salaryNegotiableEl = document.getElementById('salary_negotiable');
+    const salaryHiddenEl = document.getElementById('rc_salary');
+
+    const formatSalary = n => Number(n).toLocaleString('en-US');
+
+    const updateSalaryMaxOptions = () => {
+        if (!salaryMinEl || !salaryMaxEl) return;
+        const minVal = parseInt(salaryMinEl.value || '0', 10);
+        Array.from(salaryMaxEl.options).forEach(opt => {
+            if (!opt.value) return;
+            opt.disabled = parseInt(opt.value, 10) <= minVal;
+        });
+        if (salaryMaxEl.value && parseInt(salaryMaxEl.value, 10) <= minVal) {
+            salaryMaxEl.value = '';
+        }
+    };
+
+    const syncSalaryHidden = () => {
+        if (!salaryHiddenEl || !salaryMinEl || !salaryMaxEl || !salaryNegotiableEl) return;
+
+        if (salaryNegotiableEl.checked) {
+            salaryHiddenEl.value = 'ตามตกลง';
+            salaryMinEl.disabled = true;
+            salaryMaxEl.disabled = true;
+            return;
+        }
+
+        salaryMinEl.disabled = false;
+        salaryMaxEl.disabled = false;
+        const minVal = salaryMinEl.value;
+        const maxVal = salaryMaxEl.value;
+
+        if (minVal && maxVal) {
+            salaryHiddenEl.value = `${formatSalary(minVal)} - ${formatSalary(maxVal)} บาท`;
+        } else if (minVal) {
+            salaryHiddenEl.value = `${formatSalary(minVal)} บาทขึ้นไป`;
+        } else if (maxVal) {
+            salaryHiddenEl.value = `ไม่เกิน ${formatSalary(maxVal)} บาท`;
+        } else {
+            salaryHiddenEl.value = '';
+        }
+    };
+
+    const initSalaryFromHidden = () => {
+        if (!salaryHiddenEl || !salaryMinEl || !salaryMaxEl || !salaryNegotiableEl) return;
+        const raw = (salaryHiddenEl.value || '').trim();
+        if (!raw) return true;
+
+        if (raw.includes('ตามตกลง')) {
+            salaryNegotiableEl.checked = true;
+            syncSalaryHidden();
+            return true;
+        }
+
+        const nums = (raw.match(/\d[\d,]*/g) || [])
+            .map(v => parseInt(v.replace(/,/g, ''), 10))
+            .filter(v => salaryValues.includes(v));
+
+        if (nums.length >= 2) {
+            salaryMinEl.value = String(nums[0]);
+            salaryMaxEl.value = String(nums[1]);
+            return true;
+        } else if (nums.length === 1) {
+            if (raw.includes('ไม่เกิน')) {
+                salaryMaxEl.value = String(nums[0]);
+            } else {
+                salaryMinEl.value = String(nums[0]);
+            }
+            return true;
+        }
+
+        return false;
+    };
+
+    const salaryParsed = initSalaryFromHidden();
+    updateSalaryMaxOptions();
+    if (salaryParsed) syncSalaryHidden();
+    if (salaryMinEl) salaryMinEl.addEventListener('change', () => { updateSalaryMaxOptions(); syncSalaryHidden(); });
+    if (salaryMaxEl) salaryMaxEl.addEventListener('change', syncSalaryHidden);
+    if (salaryNegotiableEl) salaryNegotiableEl.addEventListener('change', syncSalaryHidden);
+
+    // ===== Expire date toggle =====
+    const expireNoLimitEl = document.getElementById('expire_no_limit');
+    const expireDateEl = document.getElementById('rc_expire_at');
+
+    const syncExpireDate = () => {
+        if (!expireNoLimitEl || !expireDateEl) return;
+        if (expireNoLimitEl.checked) {
+            expireDateEl.value = '';
+            expireDateEl.disabled = true;
+            expireDateEl.classList.add('opacity-40');
+        } else {
+            expireDateEl.disabled = false;
+            expireDateEl.classList.remove('opacity-40');
+        }
+    };
+
+    if (expireNoLimitEl) expireNoLimitEl.addEventListener('change', syncExpireDate);
+    syncExpireDate();
 
     const syncOverlayLabel = (select, labelEl) => {
         const selected = select.options[select.selectedIndex];
@@ -374,7 +528,72 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ===== Skills =====
-    let skillIndex = 1;
+    let skillIndex = document.querySelectorAll('.skill-row').length;
+    let langIndex = document.querySelectorAll('.language-row').length;
+    const workModeEls = document.getElementById('rc_work_mode');
+    const locationFieldsEl = document.getElementById('location-fields');
+    const locationTextEl = document.getElementById('rc_location_text');
+    const locationLinkEl = document.getElementById('rc_location_link');
+
+    const skillGroupOptions = @json($skillGroups->map(fn ($group) => ['id' => $group->id, 'name' => $group->name])->values());
+
+    const buildSkillRowHtml = index => `
+        <div class="relative min-w-0 overflow-hidden">
+            <select name="skills[${index}][skill_group_id]" class="select select-bordered select-sm focus:select-primary skill-group w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
+                <option value="">-- กลุ่มทักษะ --</option>
+                ${skillGroupOptions.map(group => `<option value="${group.id}">${group.name}</option>`).join('')}
+            </select>
+            <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                <span class="truncate text-sm skill-group-label opacity-60">-- กลุ่มทักษะ --</span>
+            </div>
+        </div>
+        <div class="relative min-w-0 overflow-hidden">
+            <select name="skills[${index}][skill_id]" class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer" disabled>
+                <option value="">-- ทักษะ --</option>
+            </select>
+            <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                <span class="truncate text-sm skill-select-label opacity-60">-- ทักษะ --</span>
+            </div>
+        </div>
+        <select name="skills[${index}][proficiency_level]" class="select select-bordered select-sm focus:select-primary">
+            <option value="beginner">เริ่มต้น</option>
+            <option value="intermediate">ปานกลาง</option>
+            <option value="advanced">ขั้นสูง</option>
+            <option value="expert">ผู้เชี่ยวชาญ</option>
+        </select>
+        <button type="button" class="remove-skill btn btn-xs shrink-0" style="background-color:#ef4444; color:white; border:none; min-width:2rem">✕</button>
+    `;
+
+    const toggleLocationFields = () => {
+        const selectedWorkMode = workModeEls?.value || '';
+        const requiresLocation = ['onsite', 'hybrid'].includes(selectedWorkMode);
+        [locationTextEl, locationLinkEl].forEach(field => {
+            if (!field) return;
+            field.disabled = !requiresLocation;
+        });
+
+        if (locationTextEl) {
+            if (requiresLocation) {
+                locationTextEl.setAttribute('required', 'required');
+            } else {
+                locationTextEl.removeAttribute('required');
+                locationTextEl.value = '';
+            }
+        }
+
+        if (locationLinkEl) {
+            if (requiresLocation) {
+                locationLinkEl.setAttribute('required', 'required');
+            } else {
+                locationLinkEl.removeAttribute('required');
+                locationLinkEl.value = '';
+            }
+        }
+
+        if (locationFieldsEl) {
+            locationFieldsEl.classList.toggle('hidden', !requiresLocation);
+        }
+    };
 
     document.addEventListener('change', e => {
         if (e.target.classList.contains('skill-group')) {
@@ -382,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
             syncOverlayLabel(e.target, row.querySelector('.skill-group-label'));
             const skillSelect = row.querySelector('.skill-select');
             const groupId = e.target.value;
-            skillSelect.innerHTML = '<option value="">-- สกิล --</option>';
+            skillSelect.innerHTML = '<option value="">-- ทักษะ --</option>';
             skillSelect.disabled = true;
             syncOverlayLabel(skillSelect, row.querySelector('.skill-select-label'));
             if (!groupId) return;
@@ -408,25 +627,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('add-skill').addEventListener('click', () => {
         const wrapper = document.getElementById('skills-wrapper');
-        const template = wrapper.querySelector('.skill-row').cloneNode(true);
-        template.querySelectorAll('select').forEach(select => {
-            select.name = select.name.replace(/\d+/, skillIndex);
-            select.disabled = select.classList.contains('skill-select');
-            if (select.classList.contains('skill-select')) {
-                select.innerHTML = '<option value="">-- สกิล --</option>';
-            }
-            if (!select.classList.contains('skill-group') && !select.classList.contains('skill-select')) {
-                select.value = 'beginner';
-            } else {
-                select.value = '';
-            }
-        });
-        const groupLabel = template.querySelector('.skill-group-label');
-        const skillLabel = template.querySelector('.skill-select-label');
-        if (groupLabel) { groupLabel.textContent = '-- กลุ่มสกิล --'; groupLabel.classList.add('opacity-60'); }
-        if (skillLabel) { skillLabel.textContent = '-- สกิล --'; skillLabel.classList.add('opacity-60'); }
-        template.querySelector('.remove-skill').classList.remove('hidden');
-        wrapper.appendChild(template);
+        const row = document.createElement('div');
+        row.className = 'skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300';
+        row.style.gridTemplateColumns = '2fr 2fr 1.5fr 2rem';
+        row.innerHTML = buildSkillRowHtml(skillIndex);
+        wrapper.appendChild(row);
         skillIndex++;
     });
 
@@ -437,8 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===== Languages =====
-    let langIndex = document.querySelectorAll('.language-row').length;
-
     const buildLangOptions = () =>
         `<option value="">-- เลือกภาษา --</option>` +
         LANGUAGE_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
@@ -473,8 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('click', e => {
         if (e.target.classList.contains('remove-language') || e.target.closest('.remove-language')) {
-            const rows = document.querySelectorAll('.language-row');
-            if (rows.length > 1) e.target.closest('.language-row').remove();
+            e.target.closest('.language-row').remove();
         }
     });
 
@@ -521,6 +723,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('recruitment-form');
 
         form.querySelectorAll('[required]').forEach(field => {
+            if (field.disabled) {
+                return;
+            }
             field.style.outline = '';
             if (!field.value.trim()) {
                 field.style.outline = '2px solid #ef4444';
@@ -543,10 +748,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const groupVal = row.querySelector('.skill-group')?.value || '';
             const skillVal = row.querySelector('.skill-select')?.value || '';
             if (!groupVal) {
-                showErr(row, 'กรุณาเลือกกลุ่มสกิล', 'skill-row-err');
+                showErr(row, 'กรุณาเลือกกลุ่มทักษะ', 'skill-row-err');
                 valid = false;
             } else if (!skillVal) {
-                showErr(row, 'กรุณาเลือกสกิล', 'skill-row-err');
+                showErr(row, 'กรุณาเลือกทักษะ', 'skill-row-err');
                 valid = false;
             }
         });
@@ -572,12 +777,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const title      = document.querySelector('[name="rc_title"]')?.value?.trim() || '—';
-        const statusVal  = document.getElementById('rc_status_input')?.value;
-        const statusText = statusVal === 'open'
-            ? '<span style="color:#16a34a;font-weight:600;">เผยแพร่ทันที</span>'
-            : '<span style="color:#b45309;font-weight:600;">บันทึกเป็นฉบับร่าง</span>';
-
         Swal.fire({
             title: 'ยืนยันการบันทึก',
             icon: 'question',
@@ -593,6 +792,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    workModeEls?.addEventListener('change', toggleLocationFields);
+    toggleLocationFields();
 
 }); // end DOMContentLoaded
 </script>

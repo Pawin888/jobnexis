@@ -6,18 +6,8 @@
 <div class="w-full p-4 md:p-6 shadow bg-base-200 rounded-2xl">
 
     @php
-        $typeLabel = [
-            'full-time' => 'Full-time',
-            'part-time' => 'Part-time',
-            'intern' => 'Intern',
-            'freelance' => 'Freelance',
-        ][$rec->rc_type] ?? ucfirst($rec->rc_type ?? '-');
-
-        $modeLabel = [
-            'onsite' => 'Onsite',
-            'remote' => 'Remote',
-            'hybrid' => 'Hybrid',
-        ][$rec->rc_work_mode] ?? ucfirst($rec->rc_work_mode ?? '-');
+        $typeLabels = $rec->type_labels;
+        $modeLabel = $rec->work_mode_label;
 
         $statusLabel = [
             'open' => 'เผยแพร่แล้ว',
@@ -56,7 +46,9 @@
                 <p class="text-sm text-gray-500">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
 
                 <div class="flex flex-wrap gap-2 mt-3 text-xs">
-                    <span class="px-3 py-1 text-blue-700 bg-blue-100 rounded-full">{{ $typeLabel }}</span>
+                    @foreach($typeLabels as $typeLabel)
+                        <span class="px-3 py-1 text-blue-700 bg-blue-100 rounded-full">{{ $typeLabel }}</span>
+                    @endforeach
                     <span class="px-3 py-1 text-emerald-700 bg-emerald-100 rounded-full">{{ $modeLabel }}</span>
                     <span class="px-3 py-1 rounded-full {{ $rec->rc_status === 'open' ? 'text-green-700 bg-green-100' : 'text-gray-700 bg-gray-100' }}">
                         {{ $statusLabel }}
@@ -126,7 +118,46 @@
 
             {{-- Requirements --}}
             <div class="p-5 bg-white shadow rounded-xl">
-                <h2 class="text-lg font-semibold">คุณสมบัติ / ข้อกำหนด</h2>
+                <h2 class="text-lg font-semibold">คุณสมบัติเบื้องต้น</h2>
+                @php
+                    $genderLabel = [
+                        'any' => 'ไม่จำกัดเพศ',
+                        'male' => 'ชาย',
+                        'female' => 'หญิง',
+                    ][$rec->rc_gender ?? 'any'] ?? 'ไม่จำกัดเพศ';
+
+                    $educationLabel = [
+                        'any' => 'ไม่จำกัดวุฒิ',
+                        'below_bachelor' => 'ต่ำกว่าปริญญาตรี',
+                        'bachelor' => 'ปริญญาตรี',
+                        'master' => 'ปริญญาโท',
+                    ][$rec->rc_education_level ?? 'any'] ?? 'ไม่จำกัดวุฒิ';
+
+                    $experienceLabel = [
+                        'no_experience' => 'ไม่ต้องมีประสบการณ์',
+                        '0_1' => '0-1 ปี',
+                        '1_3' => '1-3 ปี',
+                        '3_5' => '3-5 ปี',
+                        'more_5' => 'มากกว่า 5 ปี',
+                    ][$rec->rc_experience_level ?? 'no_experience'] ?? 'ไม่ต้องมีประสบการณ์';
+                @endphp
+
+                <div class="grid grid-cols-1 gap-3 mt-3 md:grid-cols-2">
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">เพศ</p>
+                        <p class="text-sm font-medium text-gray-800">{{ $genderLabel }}</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">วุฒิการศึกษา</p>
+                        <p class="text-sm font-medium text-gray-800">{{ $educationLabel }}</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-gray-50">
+                        <p class="text-xs text-gray-500">ประสบการณ์ทำงาน</p>
+                        <p class="text-sm font-medium text-gray-800">{{ $experienceLabel }}</p>
+                    </div>
+                </div>
+
+                <h3 class="mt-4 text-sm font-semibold text-gray-700">คุณสมบัติทั่วไป</h3>
                 <p class="mt-3 text-gray-800 whitespace-pre-line">{{ $rec->rc_requirements ?: '-' }}</p>
             </div>
 
