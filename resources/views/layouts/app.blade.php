@@ -27,6 +27,10 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
+    {{-- SweetAlert2 --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body { font-family: 'Kanit', sans-serif; }
     </style>
@@ -48,6 +52,7 @@
             </main>
         </div>
     </div>
+    @stack('scripts')
 </body>
 @else
 <body class="h-full min-h-screen px-6 bg-gray-200">
@@ -63,6 +68,7 @@
             </main>
         </div>
     </div>
+    @stack('scripts')
 </body>
 @endif
 </html>

@@ -219,34 +219,90 @@
     @if($application->status === 'reviewing')
     <div class="p-4 border shadow bg-base-200 rounded-2xl">
         <h2 class="font-semibold mb-3">ผลการพิจารณา</h2>
+
+        {{-- hidden forms สำหรับ submit --}}
+        <form id="form-rejected" action="{{ route('provider.applications.updateStatus', $application->id) }}" method="POST">
+            @csrf @method('PUT')
+            <input type="hidden" name="status" value="rejected">
+        </form>
+        <form id="form-accepted" action="{{ route('provider.applications.updateStatus', $application->id) }}" method="POST">
+            @csrf @method('PUT')
+            <input type="hidden" name="status" value="accepted">
+        </form>
+
         <div class="flex gap-3 justify-end">
             <a href="{{ route('provider.applications.index') }}"
                class="px-4 py-2 border border-gray-400 rounded-lg hover:bg-gray-100">
                 ยกเลิก
             </a>
-            <form action="{{ route('provider.applications.updateStatus', $application->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="status" value="rejected">
-                <button type="submit"
-                    onclick="return confirm('ยืนยันไม่ผ่านการพิจารณา?')"
-                    class="px-4 py-2 text-red-600 border border-red-400 rounded-lg hover:bg-red-50">
-                    ไม่ผ่าน
-                </button>
-            </form>
-            <form action="{{ route('provider.applications.updateStatus', $application->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="status" value="accepted">
-                <button type="submit"
-                    onclick="return confirm('ยืนยันผ่านการพิจารณา?')"
-                    class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
-                    ผ่าน
-                </button>
-            </form>
+            <button type="button" id="btn-rejected"
+                class="px-4 py-2 text-red-600 border border-red-400 rounded-lg hover:bg-red-50">
+                ไม่ผ่าน
+            </button>
+            <button type="button" id="btn-accepted"
+                class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
+                ผ่าน
+            </button>
         </div>
     </div>
     @endif
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    @if(session('swal_success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ session('swal_success') }}',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    @endif
+
+    const applicantName = "{{ $application->resume->first_name }} {{ $application->resume->last_name }}";
+    const jobTitle      = "{{ $application->recruitment->rc_title }}";
+
+    // ปุ่ม ไม่ผ่าน
+    document.getElementById('btn-rejected')?.addEventListener('click', () => {
+        Swal.fire({
+            title: 'ยืนยันไม่ผ่านการพิจารณา',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-xmark" style="margin-right:6px"></i> ยืนยัน ไม่ผ่าน',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+            focusCancel: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('form-rejected').submit();
+            }
+        });
+    });
+
+    // ปุ่ม ผ่าน
+    document.getElementById('btn-accepted')?.addEventListener('click', () => {
+        Swal.fire({
+            title: 'ยืนยันผ่านการพิจารณา',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px"></i> ยืนยัน ผ่าน',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+            focusCancel: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('form-accepted').submit();
+            }
+        });
+    });
+</script>
+@endpush
