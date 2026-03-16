@@ -36,7 +36,7 @@
                     <div class="md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">ชื่องาน <span class="text-error">*</span></span></label>
                         <input type="text" name="rc_title"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น Senior Frontend Developer"
                             value="{{ old('rc_title') }}" required>
                         @error('rc_title') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -46,7 +46,7 @@
                     <div class="md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">รายละเอียด <span class="text-error">*</span></span></label>
                         <textarea name="rc_description" rows="5"
-                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300"
+                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
                             placeholder="อธิบายเกี่ยวกับตำแหน่งงานและความรับผิดชอบ..."
                             required>{{ old('rc_description') }}</textarea>
                         @error('rc_description') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -56,7 +56,7 @@
                     <div class="md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">คุณสมบัติ / ข้อกำหนด</span></label>
                         <textarea name="rc_requirements" rows="4"
-                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300"
+                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
                             placeholder="ระบุคุณสมบัติที่ต้องการ เช่น ประสบการณ์ วุฒิการศึกษา...">{{ old('rc_requirements') }}</textarea>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                     <div class="lg:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">เงินเดือน</span></label>
                         <input type="text" name="rc_salary"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น 30,000 - 50,000 บาท หรือ ตามที่ตกลง"
                             value="{{ old('rc_salary') }}">
                     </div>
@@ -82,7 +82,7 @@
                     {{-- โหมดการทำงาน --}}
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">โหมดการทำงาน</span></label>
-                        <select name="rc_work_mode" class="w-full select select-bordered focus:select-primary border border-base-300" required>
+                        <select name="rc_work_mode" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2" required>
                             @foreach (['onsite','remote','hybrid'] as $mode)
                                 <option value="{{ $mode }}" @selected(old('rc_work_mode','onsite') === $mode)>
                                     {{ ucfirst($mode) }}
@@ -94,7 +94,7 @@
                     {{-- ประเภทงาน --}}
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">ประเภทงาน</span></label>
-                        <select name="rc_type" class="w-full select select-bordered focus:select-primary border border-base-300" required>
+                        <select name="rc_type" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2" required>
                             @foreach (['full-time','part-time','intern','freelance'] as $type)
                                 <option value="{{ $type }}" @selected(old('rc_type','full-time') === $type)>
                                     {{ ucfirst($type) }}
@@ -107,7 +107,7 @@
                     <div class="lg:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">สถานที่ (ข้อความ)</span></label>
                         <input type="text" name="rc_location_text"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น กรุงเทพฯ, อโศก"
                             value="{{ old('rc_location_text') }}">
                     </div>
@@ -116,7 +116,7 @@
                     <div class="lg:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">ลิงก์สถานที่</span></label>
                         <input type="url" name="rc_location_link"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="https://maps.google.com/..."
                             value="{{ old('rc_location_link') }}">
                     </div>
@@ -135,7 +135,7 @@
                     <div class="lg:col-span-1 md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">ลิงก์สมัครงาน</span></label>
                         <input type="url" name="rc_application_url"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="https://..."
                             value="{{ old('rc_application_url') }}">
                     </div>
@@ -144,7 +144,7 @@
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">วันที่เปิดรับสมัคร</span></label>
                         <input type="date" name="rc_posted_at"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             value="{{ old('rc_posted_at') }}">
                     </div>
 
@@ -152,7 +152,7 @@
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">วันหมดอายุ</span></label>
                         <input type="date" name="rc_expire_at"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             value="{{ old('rc_expire_at') }}">
                     </div>
 
