@@ -109,8 +109,33 @@
                         $languageLevelLabels = ['basic' => 'พื้นฐาน', 'conversational' => 'สนทนาได้', 'fluent' => 'คล่องแคล่ว', 'native' => 'เจ้าของภาษา'];
 
                         $fullName = trim(($resume->first_name ?? '') . ' ' . ($resume->middle_name ?? '') . ' ' . ($resume->last_name ?? ''));
-                        $birthDate = $resume->birth_date ? \Carbon\Carbon::parse($resume->birth_date)->format('d/m/Y') : '-';
+                        $birthDateObj = $resume->birth_date ? \Carbon\Carbon::parse($resume->birth_date) : null;
+                        $birthDate = $birthDateObj ? $birthDateObj->format('d/m/Y') : '-';
+                        $ageText = '';
+                        if ($birthDateObj) {
+                            $now = \Carbon\Carbon::now();
+                            $diff = $birthDateObj->diff($now);
+                            if ($diff->y > 0) {
+                                $ageText = $diff->y . ' ปี';
+                                if ($diff->m > 0) $ageText .= ' ' . $diff->m . ' เดือน';
+                            } elseif ($diff->m > 0) {
+                                $ageText = $diff->m . ' เดือน';
+                            } else {
+                                $ageText = 'น้อยกว่า 1 เดือน';
+                            }
+                        }
                         $availableStartDate = $resume->available_start_date ? \Carbon\Carbon::parse($resume->available_start_date)->format('d/m/Y') : '-';
+                        // เงินเดือน min-max
+                        $salaryMin = $resume->salary_min ?? null;
+                        $salaryMax = $resume->salary_max ?? null;
+                        $salaryText = '-';
+                        if ($salaryMin && $salaryMax) {
+                            $salaryText = number_format($salaryMin) . ' - ' . number_format($salaryMax) . ' บาท';
+                        } elseif ($salaryMin) {
+                            $salaryText = number_format($salaryMin) . ' บาทขึ้นไป';
+                        } elseif ($salaryMax) {
+                            $salaryText = 'ไม่เกิน ' . number_format($salaryMax) . ' บาท';
+                        }
                     @endphp
 
                     <details class="overflow-hidden bg-white border shadow-sm group rounded-2xl" open>
@@ -147,7 +172,15 @@
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                                 <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">อีเมล</div><div class="font-medium">{{ $resume->email ?? '-' }}</div></div>
                                 <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">เบอร์โทร</div><div class="font-medium">{{ $resume->phone ?? '-' }}</div></div>
-                                <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">วันเกิด</div><div class="font-medium">{{ $birthDate }}</div></div>
+                                <div class="p-3 rounded-xl bg-slate-50">
+                                    <div class="text-xs text-gray-500">วันเกิด</div>
+                                    <div class="font-medium">
+                                        {{ $birthDate }}
+                                        @if($ageText)
+                                            <span class="text-xs text-gray-500"> (อายุ: {{ $ageText }})</span>
+                                        @endif
+                                    </div>
+                                </div>
                                 <div class="p-3 rounded-xl bg-slate-50"><div class="text-xs text-gray-500">เพศ</div><div class="font-medium">{{ $genderLabels[$resume->gender ?? ''] ?? '-' }}</div></div>
                             </div>
 
@@ -162,7 +195,7 @@
                                     <div class="space-y-1 text-sm">
                                         <div><span class="text-gray-500">เริ่มงานได้:</span> {{ $availableStartDate }}</div>
                                         <div><span class="text-gray-500">สถานที่ต้องการ:</span> {{ $resume->preferred_location ?? '-' }}</div>
-                                        <div><span class="text-gray-500">เงินเดือนคาดหวัง:</span> {{ !empty($resume->expected_salary) ? number_format((float) $resume->expected_salary) . ' บาท' : '-' }}</div>
+                                        <div><span class="text-gray-500">เงินเดือนคาดหวัง:</span> {{ $salaryText }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -198,9 +231,26 @@
                             <div class="p-4 border rounded-xl">
                                 <h4 class="mb-2 font-semibold">ประสบการณ์ทำงาน</h4>
                                 @forelse ($workExperiences as $we)
+                                    @php
+                                        $start = $we->start_date ? \Carbon\Carbon::parse($we->start_date) : null;
+                                        $end = $we->is_current ? \Carbon\Carbon::now() : ($we->end_date ? \Carbon\Carbon::parse($we->end_date) : null);
+                                        $durationText = '-';
+                                        if ($start && $end) {
+                                            $diff = $start->diff($end);
+                                            if ($diff->y > 0) {
+                                                $durationText = $diff->y . ' ปี';
+                                                if ($diff->m > 0) $durationText .= ' ' . $diff->m . ' เดือน';
+                                            } elseif ($diff->m > 0) {
+                                                $durationText = $diff->m . ' เดือน';
+                                            } else {
+                                                $durationText = 'น้อยกว่า 1 เดือน';
+                                            }
+                                        }
+                                    @endphp
                                     <div class="p-3 mb-2 border rounded-lg bg-slate-50">
                                         <div class="text-sm font-medium">{{ $we->job_title ?: '-' }} - {{ $we->company_name ?: '-' }}</div>
                                         <div class="text-xs text-gray-500">{{ $we->start_date ?: '-' }} ถึง {{ $we->is_current ? 'ปัจจุบัน' : ($we->end_date ?: '-') }}</div>
+                                        <div class="text-xs text-gray-500 mt-1">ระยะเวลา: {{ $durationText }}</div>
                                         @if (!empty($we->description))
                                             <div class="mt-2 text-sm text-gray-700 whitespace-pre-line">{{ $we->description }}</div>
                                         @endif
@@ -213,10 +263,24 @@
                             <div class="p-4 border rounded-xl">
                                 <h4 class="mb-2 font-semibold">การศึกษา</h4>
                                 @forelse ($educations as $ed)
+                                    @php
+                                        $startYear = $ed->start_year ? (int) $ed->start_year : null;
+                                        $endYear = $ed->end_year ? (int) $ed->end_year : null;
+                                        $studyDuration = ($startYear && $endYear && $endYear >= $startYear) ? ($endYear - $startYear + 1) : null;
+                                        $studyDurationText = '-';
+                                        if ($studyDuration) {
+                                            if ($studyDuration < 1) {
+                                                $studyDurationText = 'ต่ำกว่า 1 ปี';
+                                            } else {
+                                                $studyDurationText = $studyDuration . ' ปี';
+                                            }
+                                        }
+                                    @endphp
                                     <div class="p-3 mb-2 border rounded-lg bg-slate-50">
                                         <div class="text-sm font-medium">{{ $ed->education_level ?: '-' }} - {{ $ed->field_of_study ?: '-' }}</div>
                                         <div class="text-sm text-gray-600">{{ $ed->institution ?: '-' }}</div>
                                         <div class="text-xs text-gray-500">ปี {{ $ed->start_year ?: '-' }} - {{ $ed->end_year ?: 'ปัจจุบัน' }}</div>
+                                        <div class="text-xs text-gray-500 mt-1">ระยะเวลา: {{ $studyDurationText }}</div>
                                     </div>
                                 @empty
                                     <p class="text-sm text-gray-500">ไม่มีข้อมูล</p>

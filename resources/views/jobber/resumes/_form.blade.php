@@ -90,7 +90,7 @@
             </svg>
         </div>
         <div class="ml-3 flex-1">
-            <h3 class="text-red-800 font-medium mb-2">กรุณาแก้ไขข้อผิดพลาดต่อไปนี้:</h3>
+            <h3 class="text-red-800 font-medium mb-2">กรุณากรอกข้อมูลต่อไปนี้:</h3>
             <ul id="validation-error-list" class="list-disc list-inside text-red-700 space-y-1"></ul>
         </div>
         <button type="button" onclick="document.getElementById('validation-errors').classList.add('hidden')" class="flex-shrink-0 ml-4 text-red-500 hover:text-red-700">
@@ -98,6 +98,31 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
+    </div>
+</div>
+
+<div id="submit-confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" style="display:none">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m9 0A9 9 0 1112 3a9 9 0 019 9z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">ยืนยันการบันทึกเรซูเม่</h3>
+                <p class="text-sm text-gray-500">กรุณาตรวจสอบความถูกต้องก่อนบันทึก</p>
+            </div>
+        </div>
+        <p class="text-gray-600 mb-6">{{ isset($resume) ? 'คุณแน่ใจหรือว่าต้องการบันทึกการแก้ไขเรซูเม่นี้?' : 'คุณแน่ใจหรือว่าต้องการสร้างเรซูเม่นี้?' }}</p>
+        <div class="flex gap-3 justify-end">
+            <button type="button" id="cancel-submit-confirm" class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                ยกเลิก
+            </button>
+            <button type="button" id="confirm-submit-confirm" class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                ยืนยันการบันทึก
+            </button>
+        </div>
     </div>
 </div>
 
@@ -195,18 +220,20 @@
 
         {{-- Name Fields --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ <span class="text-red-500">*</span></label>
                     <input type="text" name="first_name" placeholder="ชื่อ" value="{{ old('first_name', $resume->first_name ?? '') }}" required class="input @error('first_name') border-red-500 @enderror">
                     @error('first_name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อกลาง</label>
                     <input type="text" name="middle_name" placeholder="ชื่อกลาง (ถ้ามี)" value="{{ old('middle_name', $resume->middle_name ?? '') }}" class="input">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล <span class="text-red-500">*</span></label>
                     <input type="text" name="last_name" placeholder="นามสกุล" value="{{ old('last_name', $resume->last_name ?? '') }}" required class="input @error('last_name') border-red-500 @enderror">
                     @error('last_name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -219,7 +246,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">วันเกิด <span class="text-red-500">*</span></label>
-                <input type="date" name="birth_date" value="{{ old('birth_date', isset($resume->birth_date) ? \Carbon\Carbon::parse($resume->birth_date)->format('Y-m-d') : '') }}" required class="input @error('birth_date') border-red-500 @enderror">
+                <input type="date" name="birth_date" max="{{ now()->format('Y-m-d') }}" value="{{ old('birth_date', isset($resume->birth_date) ? \Carbon\Carbon::parse($resume->birth_date)->format('Y-m-d') : '') }}" required class="input @error('birth_date') border-red-500 @enderror">
                 @error('birth_date')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -264,7 +291,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
                         </div>
-                        <input type="text" name="phone" placeholder="เบอร์ติดต่อ" value="{{ old('phone', $resume->phone ?? '') }}" required class="input pl-10 @error('phone') border-red-500 @enderror">
+                        <input type="text" name="phone" placeholder="เบอร์ติดต่อ" value="{{ old('phone', $resume->phone ?? '') }}" required inputmode="numeric" maxlength="10" class="input pl-10 @error('phone') border-red-500 @enderror">
                     </div>
                     @error('phone')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -397,19 +424,45 @@
         </h2>
         <p class="text-gray-600 mb-6">ระบุรายละเอียดเกี่ยวกับความต้องการในการทำงาน</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">เริ่มงานได้เมื่อ</label>
-                <input type="date" name="available_start_date" value="{{ old('available_start_date', $resume->available_start_date ?? '') }}" class="input">
+                <input type="date" name="available_start_date" min="{{ now()->format('Y-m-d') }}" value="{{ old('available_start_date', $resume->available_start_date ?? '') }}" class="input">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">สถานที่ทำงานที่ต้องการ</label>
-                <input type="text" name="preferred_location" placeholder="เช่น กรุงเทพฯ, ระยอง" value="{{ old('preferred_location', $resume->preferred_location ?? '') }}" class="input">
+                <select name="preferred_location" class="input">
+                    <option value="">-- เลือกจังหวัด --</option>
+                    @foreach(config('th_provinces', []) as $province)
+                        <option value="{{ $province }}" {{ old('preferred_location', $resume->preferred_location ?? '') == $province ? 'selected' : '' }}>{{ $province }}</option>
+                    @endforeach
+                </select>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">เงินเดือนที่คาดหวัง (บาท)</label>
-                <input type="number" name="expected_salary" placeholder="0" value="{{ old('expected_salary', $resume->expected_salary ?? '') }}" class="input">
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">ช่วงเงินเดือนที่คาดหวัง (บาท)</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">ขั้นต่ำ</label>
+                    <select name="salary_min" class="input">
+                        <option value="">ไม่ระบุ</option>
+                        @foreach([10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000] as $s)
+                        <option value="{{ $s }}" {{ old('salary_min', $resume->salary_min ?? '') == $s ? 'selected' : '' }}>{{ number_format($s) }} บาท</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">สูงสุด</label>
+                    <select name="salary_max" class="input">
+                        <option value="">ไม่ระบุ</option>
+                        @foreach([10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000] as $s)
+                        <option value="{{ $s }}" {{ old('salary_max', $resume->salary_max ?? '') == $s ? 'selected' : '' }}>{{ number_format($s) }} บาท</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
+            <p class="text-xs text-gray-500 mt-1">เลือกช่วงเงินเดือนที่คุณต้องการ หรือเว้นว่างไว้หากยังไม่ระบุ</p>
         </div>
 
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -446,6 +499,69 @@
         const languageContainer = document.getElementById('language-container');
         const addLanguageBtn = document.getElementById('add-language');
         const profileInput = document.getElementById('profile-image');
+        const submitConfirmModal = document.getElementById('submit-confirm-modal');
+        const submitConfirmButton = document.getElementById('confirm-submit-confirm');
+        const submitCancelButton = document.getElementById('cancel-submit-confirm');
+        const resumeForm = document.getElementById('resume-form');
+        let isSubmitConfirmed = false;
+
+    const worldLanguagesThai = [
+        'ภาษาไทย', 'ภาษาอังกฤษ', 'ภาษาจีนกลาง', 'ภาษาจีนกวางตุ้ง', 'ภาษาญี่ปุ่น', 'ภาษาเกาหลี',
+        'ภาษาฝรั่งเศส', 'ภาษาเยอรมัน', 'ภาษาสเปน', 'ภาษาโปรตุเกส', 'ภาษาอิตาลี', 'ภาษาดัตช์',
+        'ภาษารัสเซีย', 'ภาษายูเครน', 'ภาษาโปแลนด์', 'ภาษาเช็ก', 'ภาษาสโลวัก', 'ภาษาฮังการี',
+        'ภาษาโรมาเนีย', 'ภาษาบัลแกเรีย', 'ภาษาเซอร์เบีย', 'ภาษาโครเอเชีย', 'ภาษาสโลวีเนีย',
+        'ภาษาบอสเนีย', 'ภาษาแอลเบเนีย', 'ภาษากรีก', 'ภาษาตุรกี', 'ภาษาอาหรับ', 'ภาษาฮีบรู',
+        'ภาษาเปอร์เซีย', 'ภาษาอูรดู', 'ภาษาฮินดี', 'ภาษาเบงกาลี', 'ภาษาปัญจาบ', 'ภาษาคุชราตี',
+        'ภาษามราฐี', 'ภาษาทมิฬ', 'ภาษาเตลูกู', 'ภาษากันนาดา', 'ภาษามาลายาลัม', 'ภาษาสิงหล',
+        'ภาษาเนปาลี', 'ภาษาพม่า', 'ภาษามลายู', 'ภาษาอินโดนีเซีย', 'ภาษาตากาล็อก', 'ภาษาเวียดนาม',
+        'ภาษาลาว', 'ภาษาเขมร', 'ภาษามองโกเลีย', 'ภาษาคาซัค', 'ภาษาอุซเบก', 'ภาษาอาเซอร์ไบจาน',
+        'ภาษาจอร์เจีย', 'ภาษาอาร์เมเนีย', 'ภาษาสวาฮีลี', 'ภาษาอัมฮาริก', 'ภาษาโซมาลี',
+        'ภาษาโยรูบา', 'ภาษาอิกโบ', 'ภาษาเฮาซา', 'ภาษาแอฟริคานส์', 'ภาษาซูลู', 'ภาษาโคซา',
+        'ภาษาเดนมาร์ก', 'ภาษานอร์เวย์', 'ภาษาสวีเดน', 'ภาษาฟินแลนด์', 'ภาษาไอซ์แลนด์',
+        'ภาษาเอสโตเนีย', 'ภาษาลัตเวีย', 'ภาษาลิทัวเนีย', 'ภาษาไอริช', 'ภาษาเวลส์', 'ภาษาสก็อตเกลิก',
+        'ภาษามอลตา', 'ภาษาคาตาลัน', 'ภาษาบาสก์', 'ภาษากาลิเซีย', 'ภาษาละติน',
+        'ภาษากลาง (ลิงกวาฟรังกา)', 'ภาษานาวาโฮ', 'ภาษาอินุกติตุต', 'ภาษาเมารี', 'ภาษาฮาวาย',
+        'ภาษาซามัว', 'ภาษาตองกา', 'ภาษาฟิจิ', 'ภาษาปาปิอาเมนโต', 'ภาษาเครโอลเฮติ',
+        'ภาษาลักเซมเบิร์ก', 'ภาษามาซิโดเนีย', 'ภาษาเบลารุส', 'ภาษามอลโดวา', 'ภาษาคีร์กีซ',
+        'ภาษาทาจิก', 'ภาษาเตอร์กเมน', 'ภาษาเคิร์ด', 'ภาษาอัสสัม', 'ภาษาโอเดีย', 'ภาษาสันสกฤต'
+    ];
+
+    // Salary min/max cross-filtering
+    const salaryMinSel = document.querySelector('select[name="salary_min"]');
+    const salaryMaxSel = document.querySelector('select[name="salary_max"]');
+    function updateSalaryMaxOptions() {
+        if (!salaryMinSel || !salaryMaxSel) return;
+        const minVal = parseInt(salaryMinSel.value) || 0;
+        Array.from(salaryMaxSel.options).forEach(opt => {
+            if (opt.value === '') return;
+            opt.disabled = parseInt(opt.value) <= minVal;
+        });
+        // If current max selection is now invalid, reset it
+        if (salaryMaxSel.value && parseInt(salaryMaxSel.value) <= minVal) {
+            salaryMaxSel.value = '';
+        }
+    }
+    if (salaryMinSel) salaryMinSel.addEventListener('change', updateSalaryMaxOptions);
+    updateSalaryMaxOptions();
+
+    function buildYearOptions(selectedValue, allowFutureYears = false) {
+        const selected = String(selectedValue ?? '');
+        const currentBEYear = new Date().getFullYear() + 543;
+        const maxYear = allowFutureYears ? currentBEYear + 5 : currentBEYear;
+        let options = '<option value="">-- เลือกปี พ.ศ. --</option>';
+
+        for (let year = maxYear; year >= 2500; year--) {
+            const value = String(year);
+            options += `<option value="${value}" ${selected === value ? 'selected' : ''}>${value}</option>`;
+        }
+
+        return options;
+    }
+
+    function getFileNameFromPath(path) {
+        if (!path) return '';
+        return path.split('/').pop();
+    }
 
     // Profile Image Preview
    if (profileInput) {
@@ -478,14 +594,19 @@
     });
 }
 
+    // Phone input: digits only, max 10 digits
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    }
+
     // Tab Navigation
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
-    const prevBtn = document.getElementById('prev-tab');
-    const nextBtn = document.getElementById('next-tab');
     const submitBtn = document.getElementById('submit-btn');
     let currentTab = 0;
-    let maxUnlockedTab = 0;
     const tabs = ['personal', 'experience', 'skills', 'education', 'application'];
 
     function showTab(index) {
@@ -501,51 +622,15 @@
 
         currentTab = index;
 
-        // Update navigation buttons
-        if (prevBtn) prevBtn.style.display = index === 0 ? 'none' : 'block';
-        if (nextBtn) nextBtn.style.display = index === tabs.length - 1 ? 'none' : 'block';
-        if (submitBtn) submitBtn.style.display = index === tabs.length - 1 ? 'block' : 'none';
-
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function canGoToTab(index) {
-        if (index <= maxUnlockedTab) return true;
-        if (index === currentTab + 1) {
-            const isCurrentStepValid = validateCurrentTab();
-            if (isCurrentStepValid) {
-                maxUnlockedTab = index;
-                return true;
-            }
-        }
-        return false;
-    }
-
     tabButtons.forEach((btn, index) => {
         btn.addEventListener('click', () => {
-            if (canGoToTab(index)) {
-                showTab(index);
-            }
+            showTab(index);
         });
     });
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            if (currentTab > 0) showTab(currentTab - 1);
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (currentTab < tabs.length - 1) {
-                if (validateCurrentTab()) {
-                    maxUnlockedTab = Math.max(maxUnlockedTab, currentTab + 1);
-                    showTab(currentTab + 1);
-                }
-            }
-        });
-    }
 
     showTab(0);
 
@@ -756,67 +841,175 @@
         document.getElementById('validation-errors').classList.add('hidden');
     }
 
+    function openSubmitConfirmModal() {
+        if (submitConfirmModal) {
+            submitConfirmModal.style.display = 'flex';
+        }
+    }
+
+    function closeSubmitConfirmModal() {
+        if (submitConfirmModal) {
+            submitConfirmModal.style.display = 'none';
+        }
+    }
+
+    if (submitCancelButton) {
+        submitCancelButton.addEventListener('click', closeSubmitConfirmModal);
+    }
+
+    if (submitConfirmButton) {
+        submitConfirmButton.addEventListener('click', function() {
+            isSubmitConfirmed = true;
+            closeSubmitConfirmModal();
+            if (resumeForm) {
+                resumeForm.requestSubmit();
+            }
+        });
+    }
+
+    if (submitConfirmModal) {
+        submitConfirmModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSubmitConfirmModal();
+            }
+        });
+    }
+
+    function getFieldLabel(field) {
+        const name = field.name || '';
+
+        const flatFieldLabels = {
+            first_name: 'ชื่อ',
+            middle_name: 'ชื่อกลาง',
+            last_name: 'นามสกุล',
+            birth_date: 'วันเกิด',
+            gender: 'เพศ',
+            email: 'อีเมล',
+            phone: 'เบอร์ติดต่อ',
+            summary: 'เกี่ยวกับตัวคุณ',
+            available_start_date: 'วันที่พร้อมเริ่มงาน',
+            preferred_location: 'สถานที่ทำงานที่ต้องการ',
+            salary_min: 'เงินเดือนขั้นต่ำ',
+            salary_max: 'เงินเดือนสูงสุด',
+            is_visible: 'การเปิดเผยเรซูเม่',
+            profile_image: 'รูปโปรไฟล์',
+        };
+
+        if (flatFieldLabels[name]) {
+            return flatFieldLabels[name];
+        }
+
+        const groupedFieldLabels = {
+            skills: {
+                skill_group_id: 'กลุ่มทักษะ',
+                skill_id: 'ทักษะ',
+                proficiency_level: 'ระดับความชำนาญ',
+            },
+            work_experiences: {
+                job_title: 'ตำแหน่งงาน',
+                company_name: 'บริษัท/องค์กร',
+                start_date: 'วันที่เริ่มงาน',
+                end_date: 'วันที่สิ้นสุดงาน',
+                description: 'รายละเอียดงาน',
+            },
+            educations: {
+                education_level: 'ระดับการศึกษา',
+                field_of_study: 'สาขาวิชา',
+                institution: 'สถาบันการศึกษา',
+                start_year: 'ปีที่เริ่มศึกษา',
+                end_year: 'ปีที่จบการศึกษา',
+            },
+            certificates: {
+                name: 'ชื่อใบรับรอง',
+                issued_by: 'ออกโดย',
+                issued_year: 'ปีที่ออกใบรับรอง',
+                file: 'ไฟล์ใบรับรอง',
+            },
+            languages: {
+                language: 'ภาษา',
+                level: 'ระดับความสามารถ',
+            },
+        };
+
+        const groupedNameMatch = name.match(/^([^\[]+)\[\d+]\[([^\]]+)]$/);
+        if (groupedNameMatch) {
+            const groupName = groupedNameMatch[1];
+            const keyName = groupedNameMatch[2];
+            if (groupedFieldLabels[groupName] && groupedFieldLabels[groupName][keyName]) {
+                return groupedFieldLabels[groupName][keyName];
+            }
+        }
+
+        const fieldBlock = field.closest('div');
+        const label = fieldBlock ? fieldBlock.querySelector('label') : null;
+        if (label) {
+            return label.textContent.replace('*', '').trim();
+        }
+
+        return 'ข้อมูลที่จำเป็น';
+    }
+
     // Form validation before submit
     document.getElementById('resume-form').addEventListener('submit', function(e) {
-        // Only validate personal information tab (required fields)
-        const personalTab = document.querySelector('[data-content="personal"]');
-
-        const firstName = personalTab.querySelector('input[name="first_name"]');
-        const lastName = personalTab.querySelector('input[name="last_name"]');
-        const birthDate = personalTab.querySelector('input[name="birth_date"]');
-        const gender = personalTab.querySelector('select[name="gender"]');
-        const email = personalTab.querySelector('input[name="email"]');
-        const phone = personalTab.querySelector('input[name="phone"]');
+        // Clear previous error highlights
+        document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+        hideValidationErrors();
 
         let hasError = false;
         const errors = [];
+        const invalidFields = Array.from(this.querySelectorAll(':invalid')).filter(field => !field.disabled);
 
-        console.log('=== Submit Validation Debug ===');
-        console.log('Email value on submit:', email ? email.value : 'NOT FOUND');
+        invalidFields.forEach(field => {
+            field.classList.add('border-red-500');
+            const isSelect = field.tagName === 'SELECT';
 
-        if (!firstName || !firstName.value.trim()) {
-            errors.push('กรุณากรอกชื่อ');
-            if (firstName) firstName.classList.add('border-red-500');
-            hasError = true;
+            if (field.validity.valueMissing) {
+                errors.push(`${isSelect ? 'กรุณาเลือก' : 'กรุณากรอก'}${getFieldLabel(field)}`);
+                return;
+            }
+
+            errors.push(`กรุณากรอก${getFieldLabel(field)}ให้ถูกต้อง`);
+        });
+
+        const phone = this.querySelector('input[name="phone"]');
+        if (phone && phone.value && phone.value.length !== 10) {
+            phone.classList.add('border-red-500');
+            errors.push('เบอร์ติดต่อจะต้องเป็นตัวเลข 10 หลัก');
         }
-        if (!lastName || !lastName.value.trim()) {
-            errors.push('กรุณากรอกนามสกุล');
-            if (lastName) lastName.classList.add('border-red-500');
-            hasError = true;
-        }
-        if (!birthDate || !birthDate.value) {
-            errors.push('กรุณาเลือกวันเกิด');
-            if (birthDate) birthDate.classList.add('border-red-500');
-            hasError = true;
-        }
-        if (!gender || !gender.value) {
-            errors.push('กรุณาเลือกเพศ');
-            if (gender) gender.classList.add('border-red-500');
-            hasError = true;
-        }
-        if (!email || !email.value.trim()) {
-            errors.push('กรุณากรอกอีเมล');
-            if (email) email.classList.add('border-red-500');
-            hasError = true;
-        } else {
-            const emailValue = email.value.trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(emailValue)) {
-                errors.push('กรุณากรอกอีเมลให้ถูกต้อง (ตัวอย่าง: example@email.com)');
-                if (email) email.classList.add('border-red-500');
-                hasError = true;
+
+        const salaryMin = this.querySelector('select[name="salary_min"]');
+        const salaryMax = this.querySelector('select[name="salary_max"]');
+        if (salaryMin && salaryMax && salaryMin.value && salaryMax.value) {
+            if (parseInt(salaryMax.value) <= parseInt(salaryMin.value)) {
+                salaryMin.classList.add('border-red-500');
+                salaryMax.classList.add('border-red-500');
+                errors.push('เงินเดือนสูงสุดต้องมากกว่าเงินเดือนขั้นต่ำ');
             }
         }
-        if (!phone || !phone.value.trim()) {
-            errors.push('กรุณากรอกเบอร์ติดต่อ');
-            if (phone) phone.classList.add('border-red-500');
+
+        if (invalidFields.length > 0 || errors.length > 0) {
             hasError = true;
         }
 
         if (hasError) {
             e.preventDefault();
-            showValidationErrors(errors);
-            showTab(0); // Go back to personal info tab
+
+            const uniqueErrors = [...new Set(errors)];
+            showValidationErrors(uniqueErrors);
+
+            const firstInvalidField = invalidFields[0];
+            if (firstInvalidField) {
+                const tabContent = firstInvalidField.closest('.tab-content');
+                if (tabContent && tabContent.dataset.content) {
+                    const tabIndex = tabs.indexOf(tabContent.dataset.content);
+                    if (tabIndex >= 0) {
+                        showTab(tabIndex);
+                    }
+                }
+            } else {
+                showTab(2);
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return false;
         }
@@ -839,8 +1032,16 @@ if (hasInvalidFile) {
     return false;
 }
 
+        if (!isSubmitConfirmed) {
+            e.preventDefault();
+            openSubmitConfirmModal();
+            return false;
+        }
+
+        isSubmitConfirmed = false;
+
         // Show loading state
-        const submitButton = this.querySelector('button[type="submit"]');
+        const submitButton = document.getElementById('submit-btn');
         if (submitButton) {
             submitButton.disabled = true;
             submitButton.innerHTML = '<span class="flex items-center gap-2"><svg class="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>กำลังบันทึก...</span>';
@@ -928,20 +1129,14 @@ if (hasInvalidFile) {
                         <input type="text" name="work_experiences[${index}][company_name]" placeholder="เช่น ABC Company" value="${data.company_name ?? ''}" class="input" required>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">วันที่เริ่มงาน <span class="text-red-500">*</span></label>
-                        <input type="date" name="work_experiences[${index}][start_date]" value="${data.start_date ?? ''}" class="input" required>
+                        <input type="date" name="work_experiences[${index}][start_date]" value="${data.start_date ?? ''}" class="input start-date" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">วันที่สิ้นสุด</label>
-                        <input type="date" name="work_experiences[${index}][end_date]" value="${data.end_date ?? ''}" class="input end-date">
-                    </div>
-                    <div class="flex items-end">
-                        <label class="flex items-center gap-2 pb-3">
-                            <input type="checkbox" name="work_experiences[${index}][is_current]" value="1" ${data.is_current ? 'checked' : ''} class="is-current">
-                            <span class="text-sm">ทำงานอยู่ปัจจุบัน</span>
-                        </label>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">วันที่สิ้นสุด <span class="text-red-500">*</span></label>
+                        <input type="date" name="work_experiences[${index}][end_date]" value="${data.end_date ?? ''}" class="input end-date" required>
                     </div>
                 </div>
                 <div>
@@ -954,31 +1149,39 @@ if (hasInvalidFile) {
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
-                            ลบประสบการณ์นี้
+                            ลบ
                         </span>
                     </button>
                 </div>
             </div>
         `;
 
-        const isCurrentCheckbox = div.querySelector('.is-current');
+        const startDateInput = div.querySelector('.start-date');
         const endDateInput = div.querySelector('.end-date');
+        const today = new Date().toISOString().slice(0, 10);
 
-        isCurrentCheckbox.addEventListener('change', function() {
-            endDateInput.disabled = this.checked;
-            if (this.checked) {
-                endDateInput.value = '';
-                endDateInput.classList.add('bg-gray-100');
-                endDateInput.removeAttribute('required');
-            } else {
-                endDateInput.classList.remove('bg-gray-100');
+        function syncEndDateMin() {
+            if (!startDateInput || !endDateInput) return;
+
+            endDateInput.max = today;
+
+            if (startDateInput.value) {
+                endDateInput.min = startDateInput.value;
+                if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                    endDateInput.value = '';
+                }
+                return;
             }
-        });
 
-        if (isCurrentCheckbox.checked) {
-            endDateInput.disabled = true;
-            endDateInput.classList.add('bg-gray-100');
+            endDateInput.removeAttribute('min');
         }
+
+        if (startDateInput) {
+            startDateInput.addEventListener('change', syncEndDateMin);
+            startDateInput.addEventListener('input', syncEndDateMin);
+        }
+
+        syncEndDateMin();
 
         div.querySelector('.remove').onclick = () => {
             if (confirm('คุณต้องการลบประสบการณ์นี้หรือไม่?')) {
@@ -1010,11 +1213,15 @@ if (hasInvalidFile) {
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่เริ่มศึกษา <span class="text-red-500">*</span></label>
-                    <input type="number" name="educations[${index}][start_year]" placeholder="พ.ศ." value="${data.start_year ?? ''}" class="input" min="2500" max="2570" required>
+                    <select name="educations[${index}][start_year]" class="input" required>
+                        ${buildYearOptions(data.start_year, true)}
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่จบการศึกษา</label>
-                    <input type="number" name="educations[${index}][end_year]" placeholder="พ.ศ." value="${data.end_year ?? ''}" class="input" min="2500" max="2570">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่จบการศึกษา <span class="text-red-500">*</span></label>
+                    <select name="educations[${index}][end_year]" class="input" required>
+                        ${buildYearOptions(data.end_year)}
+                    </select>
                 </div>
             </div>
             <div class="flex justify-end">
@@ -1023,7 +1230,7 @@ if (hasInvalidFile) {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
-                        ลบการศึกษานี้
+                        ลบ
                     </span>
                 </button>
             </div>
@@ -1047,20 +1254,31 @@ if (hasInvalidFile) {
                     <input type="text" name="certificates[${index}][name]" placeholder="เช่น AWS Certified" value="${data.name ?? ''}" class="input" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ออกโดย</label>
-                    <input type="text" name="certificates[${index}][issued_by]" placeholder="เช่น Amazon Web Services" value="${data.issued_by ?? ''}" class="input">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ออกโดย <span class="text-red-500">*</span></label>
+                    <input type="text" name="certificates[${index}][issued_by]" placeholder="เช่น Amazon Web Services" value="${data.issued_by ?? ''}" class="input" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่ออกใบรับรอง</label>
-                    <input type="number" name="certificates[${index}][issued_year]" placeholder="พ.ศ." value="${data.issued_year ?? ''}" class="input" min="2500" max="2570">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่ออกใบรับรอง <span class="text-red-500">*</span></label>
+                    <select name="certificates[${index}][issued_year]" class="input" required>
+                        ${buildYearOptions(data.issued_year)}
+                    </select>
                 </div>
             </div>
             <div class="flex items-center justify-between">
                 <div class="flex-1">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ไฟล์ใบรับรอง (PDF, JPG, PNG)</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ไฟล์ใบรับรอง (PDF, JPG, PNG) <span class="text-red-500">*</span></label>
                     <input type="hidden" name="certificates[${index}][existing_file_path]" value="${data.file_path ?? ''}">
-                    <input type="file" name="certificates[${index}][file]" class="input" accept=".pdf,.jpg,.jpeg,.png">
-                    ${data.file_path ? `<a href="/storage/${data.file_path}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1 inline-block">ดูไฟล์เดิม</a>` : ''}
+                    <input id="certificate-file-${index}" type="file" name="certificates[${index}][file]" class="hidden certificate-file-input" accept=".pdf,.jpg,.jpeg,.png" ${data.file_path ? '' : 'required'}>
+                    <div class="flex flex-col gap-2">
+                        <label for="certificate-file-${index}" class="inline-flex w-fit items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition text-sm text-gray-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.656-5.656L5.757 10.757a6 6 0 108.486 8.486L20.5 13"></path>
+                            </svg>
+                            เลือกไฟล์
+                        </label>
+                        <p class="certificate-file-name text-xs text-gray-500">${data.file_path ? `ไฟล์ปัจจุบัน: ${getFileNameFromPath(data.file_path)}` : 'ยังไม่ได้เลือกไฟล์'}</p>
+                        ${data.file_path ? `<a href="/storage/${data.file_path}" target="_blank" class="text-xs text-blue-600 hover:underline inline-block">ดูไฟล์เดิม</a>` : ''}
+                    </div>
                 </div>
                 <button type="button" class="remove ml-3 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
                     <span class="flex items-center gap-1">
@@ -1072,6 +1290,22 @@ if (hasInvalidFile) {
                 </button>
             </div>
         `;
+        const fileInput = div.querySelector('.certificate-file-input');
+        const fileNameText = div.querySelector('.certificate-file-name');
+
+        if (fileInput && fileNameText) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    fileNameText.textContent = `ไฟล์ที่เลือก: ${this.files[0].name}`;
+                    return;
+                }
+
+                fileNameText.textContent = data.file_path
+                    ? `ไฟล์ปัจจุบัน: ${getFileNameFromPath(data.file_path)}`
+                    : 'ยังไม่ได้เลือกไฟล์';
+            });
+        }
+
         div.querySelector('.remove').onclick = () => {
             if (confirm('คุณต้องการลบใบรับรองนี้หรือไม่?')) {
                 div.remove();
@@ -1088,7 +1322,10 @@ if (hasInvalidFile) {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ภาษา <span class="text-red-500">*</span></label>
-                    <input type="text" name="languages[${index}][language]" placeholder="เช่น ภาษาอังกฤษ" value="${data.language ?? ''}" class="input" required>
+                    <select name="languages[${index}][language]" class="input" required>
+                        <option value="">-- เลือกภาษา --</option>
+                        ${worldLanguagesThai.map(language => `<option value="${language}" ${data.language === language ? 'selected' : ''}>${language}</option>`).join('')}
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความสามารถ <span class="text-red-500">*</span></label>

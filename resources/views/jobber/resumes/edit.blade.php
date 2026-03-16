@@ -16,20 +16,11 @@
         </div>
     </div>
 
-    <form id="resume-form" method="POST" action="{{ route('jobber.resumes.update', $resume->id) }}" enctype="multipart/form-data">
+    <form id="resume-form" method="POST" action="{{ route('jobber.resumes.update', $resume->id) }}" enctype="multipart/form-data" novalidate>
         @include('jobber.resumes._form')
     </form>
 
-    <div class="mt-8 flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border">
-        <div class="flex gap-3">
-            <button type="button" id="prev-tab" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                ← ย้อนกลับ
-            </button>
-            <button type="button" id="next-tab" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                ถัดไป →
-            </button>
-        </div>
-
+    <div class="mt-8 flex justify-end items-center bg-white p-6 rounded-lg shadow-sm border">
         <div class="flex gap-3">
             <button type="button" id="delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                 <span class="flex items-center gap-2">
@@ -39,7 +30,7 @@
                     ลบเรซูเม่
                 </span>
             </button>
-            <button type="submit" form="resume-form" id="submit-btn" class="px-8 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden">
+            <button type="submit" form="resume-form" id="submit-btn" class="px-8 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                 <span class="flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -55,6 +46,32 @@
         @csrf
         @method('DELETE')
     </form>
+
+    {{-- Custom Delete Confirmation Modal --}}
+    <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" style="display:none">
+        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">ยืนยันการลบเรซูเม่</h3>
+                    <p class="text-sm text-gray-500">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6">คุณแน่ใจหรือว่าต้องการลบเรซูเม่นี้? ข้อมูลทั้งหมดรวมถึงทักษะ ประสบการณ์ และไฟล์แนบจะถูกลบออกอย่างถาวร</p>
+            <div class="flex gap-3 justify-end">
+                <button type="button" id="cancel-delete" class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                    ยกเลิก
+                </button>
+                <button type="button" id="confirm-delete" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                    ยืนยันการลบ
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -200,10 +217,25 @@
 </style>
 
 <script>
-    // Delete button confirmation
+    // Delete modal
+    const deleteModal = document.getElementById('delete-modal');
+
     document.getElementById('delete-btn').addEventListener('click', function() {
-        if (confirm('คุณแน่ใจหรือว่าต้องการลบเรซูเม่นี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
-            document.getElementById('delete-form').submit();
+        deleteModal.style.display = 'flex';
+    });
+
+    document.getElementById('cancel-delete').addEventListener('click', function() {
+        deleteModal.style.display = 'none';
+    });
+
+    document.getElementById('confirm-delete').addEventListener('click', function() {
+        document.getElementById('delete-form').submit();
+    });
+
+    // Close modal when clicking the backdrop
+    deleteModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
         }
     });
 </script>

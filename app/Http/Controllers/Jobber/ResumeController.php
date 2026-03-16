@@ -46,26 +46,29 @@ class ResumeController extends Controller
      */
     public function store(Request $request)
     {
+        $currentBEYear = now()->year + 543;
+
         $validated = $request->validate([
             // --- Resume core ---
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
-            'birth_date' => 'required|date',
+            'birth_date' => 'required|date|before_or_equal:today',
             'gender' => 'required|in:male,female,other',
             'email' => 'required|email',
-            'phone' => 'required|string|max:50',
+            'phone' => 'required|digits:10',
             'summary' => 'nullable|string',
-            'available_start_date' => 'nullable|date',
+            'available_start_date' => 'nullable|date|after_or_equal:today',
             'preferred_location' => 'nullable|string|max:255',
-            'expected_salary' => 'nullable|numeric|min:0',
+            'salary_min' => 'nullable|integer|min:0',
+            'salary_max' => 'nullable|integer|min:0|gt:salary_min',
             'is_visible' => 'boolean',
 
             // --- Profile Image ---
             'profile_image' => 'nullable|image|max:2048',
 
             // --- Skills ---
-            'skills' => 'required|array|min:1',
+            'skills' => 'nullable|array',
             'skills.*.skill_group_id' => 'required|exists:master_skill_groups,id',
             'skills.*.skill_id' => 'required|exists:master_skills,id',
             'skills.*.proficiency_level' => 'required|in:beginner,intermediate,advanced,expert',
@@ -75,7 +78,7 @@ class ResumeController extends Controller
             'work_experiences.*.job_title' => 'required|string|max:255',
             'work_experiences.*.company_name' => 'required|string|max:255',
             'work_experiences.*.start_date' => 'required|date',
-            'work_experiences.*.end_date' => 'nullable|date|after_or_equal:work_experiences.*.start_date',
+            'work_experiences.*.end_date' => 'required|date|after_or_equal:work_experiences.*.start_date|before_or_equal:today',
             'work_experiences.*.is_current' => 'boolean',
             'work_experiences.*.description' => 'nullable|string',
 
@@ -85,15 +88,15 @@ class ResumeController extends Controller
             'educations.*.field_of_study' => 'required|string|max:255',
             'educations.*.institution' => 'required|string|max:255',
             'educations.*.start_year' => 'required|digits:4|integer',
-            'educations.*.end_year' => 'nullable|digits:4|integer',
+            'educations.*.end_year' => 'required|digits:4|integer|max:' . $currentBEYear,
 
             // --- Certificates ---
             'certificates' => 'nullable|array',
             'certificates.*.name' => 'required|string|max:255',
-            'certificates.*.issued_by' => 'nullable|string|max:255',
-            'certificates.*.issued_year' => 'nullable|digits:4|integer',
+            'certificates.*.issued_by' => 'required|string|max:255',
+            'certificates.*.issued_year' => 'required|digits:4|integer|max:' . $currentBEYear,
             'certificates.*.existing_file_path' => 'nullable|string|max:2048',
-            'certificates.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificates.*.file' => 'required_without:certificates.*.existing_file_path|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             // --- Languages ---
             'languages' => 'nullable|array',
@@ -122,14 +125,17 @@ class ResumeController extends Controller
                 'summary' => $validated['summary'] ?? null,
                 'available_start_date' => $validated['available_start_date'] ?? null,
                 'preferred_location' => $validated['preferred_location'] ?? null,
-                'expected_salary' => $validated['expected_salary'] ?? null,
+                'salary_min' => $validated['salary_min'] ?? null,
+                'salary_max' => $validated['salary_max'] ?? null,
                 'is_visible' => $validated['is_visible'] ?? true,
                 'profile_image' => $profileImagePath,
             ]);
 
             // --- Skills ---
-            foreach ($validated['skills'] as $skill) {
-                $resume->resumeSkills()->create($skill);
+            if (!empty($validated['skills'])) {
+                foreach ($validated['skills'] as $skill) {
+                    $resume->resumeSkills()->create($skill);
+                }
             }
 
             // --- Work Experiences ---
@@ -218,23 +224,26 @@ class ResumeController extends Controller
     {
         abort_if($resume->user_id !== auth()->id(), 403);
 
+        $currentBEYear = now()->year + 543;
+
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
-            'birth_date' => 'required|date',
+            'birth_date' => 'required|date|before_or_equal:today',
             'gender' => 'nullable|in:male,female,other',
             'email' => 'required|email',
-            'phone' => 'required|string|max:50',
+            'phone' => 'required|digits:10',
             'summary' => 'nullable|string',
-            'available_start_date' => 'nullable|date',
+            'available_start_date' => 'nullable|date|after_or_equal:today',
             'preferred_location' => 'nullable|string|max:255',
-            'expected_salary' => 'nullable|numeric|min:0',
+            'salary_min' => 'nullable|integer|min:0',
+            'salary_max' => 'nullable|integer|min:0|gt:salary_min',
             'is_visible' => 'boolean',
 
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
 
-            'skills' => 'required|array|min:1',
+            'skills' => 'nullable|array',
             'skills.*.skill_group_id' => 'required|exists:master_skill_groups,id',
             'skills.*.skill_id' => 'required|exists:master_skills,id',
             'skills.*.proficiency_level' => 'required|in:beginner,intermediate,advanced,expert',
@@ -243,7 +252,7 @@ class ResumeController extends Controller
             'work_experiences.*.job_title' => 'required|string|max:255',
             'work_experiences.*.company_name' => 'required|string|max:255',
             'work_experiences.*.start_date' => 'required|date',
-            'work_experiences.*.end_date' => 'nullable|date|after_or_equal:work_experiences.*.start_date',
+            'work_experiences.*.end_date' => 'required|date|after_or_equal:work_experiences.*.start_date|before_or_equal:today',
             'work_experiences.*.is_current' => 'boolean',
             'work_experiences.*.description' => 'nullable|string',
 
@@ -252,14 +261,14 @@ class ResumeController extends Controller
             'educations.*.field_of_study' => 'required|string|max:255',
             'educations.*.institution' => 'required|string|max:255',
             'educations.*.start_year' => 'required|digits:4|integer',
-            'educations.*.end_year' => 'nullable|digits:4|integer',
+            'educations.*.end_year' => 'required|digits:4|integer|max:' . $currentBEYear,
 
             'certificates' => 'nullable|array',
             'certificates.*.name' => 'required|string|max:255',
-            'certificates.*.issued_by' => 'nullable|string|max:255',
-            'certificates.*.issued_year' => 'nullable|digits:4|integer',
+            'certificates.*.issued_by' => 'required|string|max:255',
+            'certificates.*.issued_year' => 'required|digits:4|integer|max:' . $currentBEYear,
             'certificates.*.existing_file_path' => 'nullable|string|max:2048',
-            'certificates.*.file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificates.*.file' => 'required_without:certificates.*.existing_file_path|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             'languages' => 'nullable|array',
             'languages.*.language' => 'required|string|max:255',
@@ -282,8 +291,10 @@ class ResumeController extends Controller
 
             // --- Reset Skills ---
             $resume->resumeSkills()->delete();
-            foreach ($validated['skills'] as $skill) {
-                $resume->resumeSkills()->create($skill);
+            if (!empty($validated['skills'])) {
+                foreach ($validated['skills'] as $skill) {
+                    $resume->resumeSkills()->create($skill);
+                }
             }
 
             // --- Reset Work Experiences ---
