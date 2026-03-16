@@ -35,7 +35,7 @@
                     <div class="md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">ชื่องาน <span class="text-error">*</span></span></label>
                         <input type="text" name="rc_title" id="rc_title"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น Senior Frontend Developer"
                             value="{{ old('rc_title', $rec->rc_title) }}">
                         @error('rc_title') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -44,7 +44,7 @@
                     <div class="md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">รายละเอียด <span class="text-error">*</span></span></label>
                         <textarea name="rc_description" id="rc_description" rows="5"
-                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300"
+                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
                             placeholder="อธิบายเกี่ยวกับตำแหน่งงานและความรับผิดชอบ...">{{ old('rc_description', $rec->rc_description) }}</textarea>
                         @error('rc_description') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -52,7 +52,7 @@
                     <div class="md:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">คุณสมบัติ / ข้อกำหนด</span></label>
                         <textarea name="rc_requirements" rows="4"
-                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300"
+                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
                             placeholder="ระบุคุณสมบัติที่ต้องการ เช่น ประสบการณ์ วุฒิการศึกษา...">{{ old('rc_requirements', $rec->rc_requirements) }}</textarea>
                         @error('rc_requirements') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -70,7 +70,7 @@
                     <div class="lg:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">เงินเดือน</span></label>
                         <input type="text" name="rc_salary"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น 30,000 - 50,000 บาท"
                             value="{{ old('rc_salary', $rec->rc_salary) }}">
                         @error('rc_salary') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -78,7 +78,7 @@
 
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">โหมดการทำงาน</span></label>
-                        <select name="rc_work_mode" class="w-full select select-bordered focus:select-primary border border-base-300">
+                        <select name="rc_work_mode" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
                             @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
                                 <option value="{{ $k }}" @selected(old('rc_work_mode', $rec->rc_work_mode) === $k)>{{ $v }}</option>
                             @endforeach
@@ -88,7 +88,7 @@
 
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">ประเภทงาน</span></label>
-                        <select name="rc_type" class="w-full select select-bordered focus:select-primary border border-base-300">
+                        <select name="rc_type" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
                             @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
                                 <option value="{{ $k }}" @selected(old('rc_type', $rec->rc_type) === $k)>{{ $v }}</option>
                             @endforeach
@@ -99,7 +99,7 @@
                     <div class="lg:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">สถานที่ (ข้อความ)</span></label>
                         <input type="text" name="rc_location_text"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="เช่น กรุงเทพฯ, อโศก"
                             value="{{ old('rc_location_text', $rec->rc_location_text) }}">
                         @error('rc_location_text') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -108,7 +108,7 @@
                     <div class="lg:col-span-2">
                         <label class="label py-1"><span class="label-text font-medium">ลิงก์สถานที่</span></label>
                         <input type="url" name="rc_location_link"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="https://maps.google.com/..."
                             value="{{ old('rc_location_link', $rec->rc_location_link) }}">
                         @error('rc_location_link') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -127,7 +127,7 @@
                     <div class="md:col-span-2 lg:col-span-1">
                         <label class="label py-1"><span class="label-text font-medium">ลิงก์สมัครงาน</span></label>
                         <input type="url" name="rc_application_url"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             placeholder="https://..."
                             value="{{ old('rc_application_url', $rec->rc_application_url) }}">
                         @error('rc_application_url') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -137,7 +137,7 @@
                         <label class="label py-1"><span class="label-text font-medium">วันที่เปิดรับสมัคร</span></label>
                         @php $postedVal = optional($rec->rc_posted_at)->format('Y-m-d\TH:i'); @endphp
                         <input type="date" name="rc_posted_at"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             value="{{ old('rc_posted_at', $postedVal) }}">
                         @error('rc_posted_at') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -145,7 +145,7 @@
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">วันหมดอายุ</span></label>
                         <input type="date" name="rc_expire_at"
-                            class="w-full input input-bordered focus:input-primary border border-base-300"
+                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
                             value="{{ old('rc_expire_at', optional($rec->rc_expire_at)->format('Y-m-d')) }}">
                         @error('rc_expire_at') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
