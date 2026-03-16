@@ -77,7 +77,7 @@
                     <tr>
                         <th class="w-[30%]">ชื่องาน</th>
                         <th class="w-[12%]">ประเภท</th>
-                        <th class="w-[16%]">โพสต์เมื่อ</th>
+                        <th class="w-[16%]">เปิดรับสมัครเมื่อ</th>
                         <th class="w-[13%]">หมดอายุ</th>
                         <th class="w-[14%]">สถานะ</th>
                         <th class="w-[15%]">การทำงาน</th>
@@ -95,10 +95,10 @@
                             <td>
                                 <div class="mr-1 badge">{{ ucfirst($r->rc_type) }}</div>
                             </td>
-                            <td>{{ optional($r->rc_posted_at)->format('Y-m-d H:i') ?? '-' }}</td>
+                            <td>{{ optional($r->rc_posted_at)->format('m-d-Y') ?? '-' }}</td>
                             <td>
                                 @if ($r->rc_expire_at)
-                                    {{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('Y-m-d') }}
+                                    {{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('m-d-Y') }}
                                 @else
                                     —
                                 @endif
