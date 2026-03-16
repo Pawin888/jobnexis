@@ -8,9 +8,6 @@
             <div>
                 <h1 class="text-xl font-semibold">
                     รายการประกาศงาน
-                    {{-- <span class="opacity-70">
-                        ของ {{ $company->co_name ?? ($provider->email ?? '-') }}
-                    </span> --}}
                 </h1>
                 <p class="text-sm opacity-70">
                     ทั้งหมด {{ number_format($recs->total()) }} รายการ
@@ -32,44 +29,44 @@
         </div>
 
         {{-- ฟิลเตอร์ --}}
-<form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-4">
-    <fieldset class="fieldset">
-        <legend class="mb-1 fieldset-legend">ค้นหา</legend>
-        <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
-            class="w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
-    </fieldset>
-    <fieldset class="fieldset">
-        <legend class="mb-1 fieldset-legend">สถานะ</legend>
-        <select name="status" class="w-full border border-gray-300 select select-bordered">
-            <option value="">— ทั้งหมด —</option>
-            @foreach (['open' => 'เปิดรับ', 'closed' => 'ปิดรับ', 'draft' => 'ฉบับร่าง'] as $k => $v)
-                <option value="{{ $k }}" @selected(($filters['status'] ?? '') === $k)>{{ $v }}</option>
-            @endforeach
-        </select>
-    </fieldset>
-    <fieldset class="fieldset">
-        <legend class="mb-1 fieldset-legend">ประเภท</legend>
-        <select name="type" class="w-full border border-gray-300 select select-bordered">
-            <option value="">— ทั้งหมด —</option>
-            @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
-                <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
-            @endforeach
-        </select>
-    </fieldset>
-    <fieldset class="fieldset">
-        <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
-        <div class="flex gap-2">
-            <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
-                <option value="">— ทั้งหมด —</option>
-                @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
-                    <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
-                @endforeach
-            </select>
-            <button class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
-            <a href="{{ url()->current() }}" class="btn">ล้าง</a>
-        </div>
-    </fieldset>
-</form>
+        <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-4">
+            <fieldset class="fieldset">
+                <legend class="mb-1 fieldset-legend">ค้นหา</legend>
+                <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
+                    class="w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="mb-1 fieldset-legend">สถานะ</legend>
+                <select name="status" class="w-full border border-gray-300 select select-bordered">
+                    <option value="">— ทั้งหมด —</option>
+                    @foreach (['open' => 'เปิดรับ', 'closed' => 'ปิดรับ', 'draft' => 'ฉบับร่าง'] as $k => $v)
+                        <option value="{{ $k }}" @selected(($filters['status'] ?? '') === $k)>{{ $v }}</option>
+                    @endforeach
+                </select>
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="mb-1 fieldset-legend">ประเภท</legend>
+                <select name="type" class="w-full border border-gray-300 select select-bordered">
+                    <option value="">— ทั้งหมด —</option>
+                    @foreach (['full-time' => 'Full-time', 'part-time' => 'Part-time', 'intern' => 'Intern', 'freelance' => 'Freelance'] as $k => $v)
+                        <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
+                    @endforeach
+                </select>
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
+                <div class="flex gap-2">
+                    <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
+                        <option value="">— ทั้งหมด —</option>
+                        @foreach (['onsite' => 'Onsite', 'remote' => 'Remote', 'hybrid' => 'Hybrid'] as $k => $v)
+                            <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
+                        @endforeach
+                    </select>
+                    <button class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
+                    <a href="{{ url()->current() }}" class="btn">ล้าง</a>
+                </div>
+            </fieldset>
+        </form>
 
         <div class="flex flex-col items-center justify-center p-4 overflow-x-auto border shadow bg-base-200 rounded-2xl">
             <table class="table table-fixed w-full">
@@ -120,7 +117,6 @@
                             </td>
                             <td>
                                 <div class="gap-2 join">
-                                    {{-- Toggle eye open/closed --}}
                                     @php
                                         $toVal = $r->rc_status === 'open' ? 'draft' : 'open';
                                         $isOpen = $r->rc_status === 'open';
@@ -141,11 +137,12 @@
                                            title="แก้ไข">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน "{{ addslashes($r->rc_title) }}" ?');">
+                                        <form method="POST" action="{{ route('admin.recruitments.destroy', $r->rc_id) }}" class="delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-red-600 hover:text-white"
+                                            <button type="button"
+                                                class="delete-btn flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-red-600 hover:text-white"
+                                                data-title="{{ addslashes($r->rc_title) }}"
                                                 title="ลบ">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
@@ -166,11 +163,12 @@
                                            title="แก้ไข">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" onsubmit="return confirm('ยืนยันลบประกาศงาน "{{ addslashes($r->rc_title) }}" ?');">
+                                        <form method="POST" action="{{ route('provider.recruitments.destroy', $r->rc_id) }}" class="delete-form">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-red-600 hover:text-white"
+                                            <button type="button"
+                                                class="delete-btn flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-red-600 hover:text-white"
+                                                data-title="{{ addslashes($r->rc_title) }}"
                                                 title="ลบ">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
@@ -194,8 +192,6 @@
         @if ($recs->isNotEmpty())
             <div class="bg-white rounded-xl shadow p-4">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-
-                    {{-- Left: Items per page + Info --}}
                     <div class="flex items-center gap-2">
                         <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
                         <select
@@ -208,7 +204,6 @@
                             @endforeach
                         </select>
                         <span class="text-sm text-gray-700">รายการต่อหน้า</span>
-
                         <span class="text-sm text-gray-600 ml-4">
                             (แสดง
                             <span class="font-semibold text-gray-800">{{ $recs->firstItem() ?? 0 }}</span>
@@ -219,18 +214,13 @@
                             รายการ)
                         </span>
                     </div>
-
-                    {{-- Right: Pagination Controls --}}
                     <div class="flex items-center gap-2">
-                        {{-- Previous --}}
                         @if ($recs->onFirstPage())
                             <button disabled class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm">ก่อนหน้า</button>
                         @else
                             <a href="{{ $recs->appends(request()->except('page'))->previousPageUrl() }}"
                                class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">ก่อนหน้า</a>
                         @endif
-
-                        {{-- Page Numbers --}}
                         <div class="flex items-center gap-1">
                             @php
                                 $current = $recs->currentPage();
@@ -238,7 +228,6 @@
                                 $start = max(1, $current - 2);
                                 $end = min($last, $current + 2);
                             @endphp
-
                             @if ($start > 1)
                                 <a href="{{ $recs->appends(request()->except('page'))->url(1) }}"
                                    class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">1</a>
@@ -246,7 +235,6 @@
                                     <span class="px-2 text-gray-500">...</span>
                                 @endif
                             @endif
-
                             @for ($i = $start; $i <= $end; $i++)
                                 @if ($i == $current)
                                     <span class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg text-sm font-medium">{{ $i }}</span>
@@ -255,7 +243,6 @@
                                        class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">{{ $i }}</a>
                                 @endif
                             @endfor
-
                             @if ($end < $last)
                                 @if ($end < $last - 1)
                                     <span class="px-2 text-gray-500">...</span>
@@ -264,8 +251,6 @@
                                    class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">{{ $last }}</a>
                             @endif
                         </div>
-
-                        {{-- Next --}}
                         @if ($recs->hasMorePages())
                             <a href="{{ $recs->appends(request()->except('page'))->nextPageUrl() }}"
                                class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">ถัดไป</a>
@@ -273,9 +258,60 @@
                             <button disabled class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm">ถัดไป</button>
                         @endif
                     </div>
-
                 </div>
             </div>
         @endif
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const form = this.closest('.delete-form');
+            const title = this.dataset.title;
+
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                html: `ต้องการลบประกาศงาน<br><strong>"${title}"</strong><br><span style="color:#6b7280;font-size:0.85rem;">รายการนี้จะถูกลบถาวร ไม่สามารถกู้คืนได้</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right:6px"></i> ลบเลย',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then(result => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    @if (session('swal_success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ session('swal_success') }}',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    @endif
+
+    @if (session('swal_error'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: '{{ session('swal_error') }}',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    @endif
+</script>
+@endpush

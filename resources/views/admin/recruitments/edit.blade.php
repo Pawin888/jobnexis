@@ -150,7 +150,6 @@
                         @error('rc_expire_at') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- สถานะ --}}
                     <div class="md:col-span-2 lg:col-span-3">
                         <label class="label py-1"><span class="label-text font-medium">สถานะการเผยแพร่</span></label>
                         <div class="flex items-center gap-4 p-4 bg-base-100 border border-base-300 rounded-xl w-full md:w-fit">
@@ -180,7 +179,6 @@
                         <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
                              style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
 
-                            {{-- กลุ่มสกิล --}}
                             @php $selectedGroupId = old("skills.$i.skill_group_id", $existingSkill->master_skill_group_id); @endphp
                             <div class="relative min-w-0 overflow-hidden">
                                 <select name="skills[{{ $i }}][skill_group_id]"
@@ -196,7 +194,6 @@
                                 </div>
                             </div>
 
-                            {{-- สกิล --}}
                             @php $selectedSkillId = old("skills.$i.skill_id", $existingSkill->master_skill_id); @endphp
                             <div class="relative min-w-0 overflow-hidden">
                                 <select name="skills[{{ $i }}][skill_id]"
@@ -214,7 +211,6 @@
                                 </div>
                             </div>
 
-                            {{-- ระดับ --}}
                             <select name="skills[{{ $i }}][proficiency_level]"
                                 class="select select-bordered select-sm focus:select-primary">
                                 @foreach (['beginner' => 'เริ่มต้น', 'intermediate' => 'ปานกลาง', 'advanced' => 'ขั้นสูง', 'expert' => 'ผู้เชี่ยวชาญ'] as $level => $label)
@@ -224,7 +220,6 @@
                                 @endforeach
                             </select>
 
-                            {{-- ปุ่มลบ --}}
                             <button type="button"
                                 class="remove-skill btn btn-xs shrink-0 {{ $loop->first ? 'hidden' : '' }}"
                                 style="background-color:#ef4444; color:white; border:none; min-width:2rem">
@@ -282,27 +277,20 @@
         @php
             $langs = old('languages', isset($rec) ? $rec->languages->toArray() : [['language'=>'','proficiency'=>'basic']]);
             $languageOptions = [
-                // ASEAN
                 'ภาษาไทย (Thai)', 'မြန်မာဘာသာ (Burmese)', 'ភាសាខ្មែរ (Khmer)', 'ພາສາລາວ (Lao)',
                 'Tiếng Việt (Vietnamese)', 'Bahasa Melayu (Malay)', 'Bahasa Indonesia (Indonesian)', 'Filipino (Tagalog)',
-                // East Asia
                 'English', '中文 普通话 (Mandarin)', '粵語 (Cantonese)',
                 '日本語 (Japanese)', '한국어 (Korean)', 'Монгол (Mongolian)',
-                // South Asia
                 'हिन्दी (Hindi)', 'اردو (Urdu)', 'বাংলা (Bengali)', 'தமிழ் (Tamil)',
                 'తెలుగు (Telugu)', 'සිංහල (Sinhala)', 'नेपाली (Nepali)',
-                // Middle East
                 'العربية (Arabic)', 'فارسی (Persian)', 'עברית (Hebrew)',
                 'Türkçe (Turkish)', 'Қазақша (Kazakh)', 'Oʻzbek (Uzbek)',
-                // Western Europe
                 'Français (French)', 'Deutsch (German)', 'Español (Spanish)', 'Italiano (Italian)',
                 'Português (Portuguese)', 'Nederlands (Dutch)', 'Svenska (Swedish)', 'Norsk (Norwegian)',
                 'Dansk (Danish)', 'Suomi (Finnish)', 'Ελληνικά (Greek)',
-                // Eastern Europe
                 'Русский (Russian)', 'Українська (Ukrainian)', 'Polski (Polish)', 'Čeština (Czech)',
                 'Magyar (Hungarian)', 'Română (Romanian)', 'Български (Bulgarian)',
                 'Српски (Serbian)', 'Hrvatski (Croatian)',
-                // Africa
                 'Kiswahili (Swahili)', 'አማርኛ (Amharic)', 'Hausa', 'Yorùbá (Yoruba)', 'Afrikaans',
             ];
         @endphp
@@ -318,7 +306,6 @@
                 <div class="language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
                     style="grid-template-columns: 2fr 2fr 2rem">
 
-                    {{-- ภาษา (custom overlay เหมือน skill) --}}
                     <div class="relative min-w-0 overflow-hidden">
                         <select name="languages[{{ $i }}][language]"
                             class="select select-bordered select-sm focus:select-primary lang-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
@@ -328,7 +315,6 @@
                                     {{ $opt }}
                                 </option>
                             @endforeach
-                            {{-- ถ้ามีค่าเดิมที่ไม่อยู่ในรายการ --}}
                             @if (!empty($lang['language']) && !in_array($lang['language'], $languageOptions))
                                 <option value="{{ $lang['language'] }}" selected>{{ $lang['language'] }}</option>
                             @endif
@@ -341,7 +327,6 @@
                         </div>
                     </div>
 
-                    {{-- ระดับภาษา --}}
                     <select name="languages[{{ $i }}][proficiency]"
                         class="select select-bordered select-sm w-full">
                         <option value="basic"          {{ ($lang['proficiency'] ?? '')=='basic'          ? 'selected' : '' }}>พื้นฐาน</option>
@@ -350,7 +335,6 @@
                         <option value="native"         {{ ($lang['proficiency'] ?? '')=='native'         ? 'selected' : '' }}>เจ้าของภาษา</option>
                     </select>
 
-                    {{-- ปุ่มลบ --}}
                     <button type="button"
                         class="remove-language {{ $i == 0 && count($langs) == 1 ? 'hidden' : '' }} btn btn-xs shrink-0"
                         style="background-color:#ef4444; color:white; border:none; min-width:2rem">
@@ -376,7 +360,7 @@
             @else
                 <a href="{{ route('provider.recruitments.index') }}" class="btn btn-ghost">ยกเลิก</a>
             @endif
-            <button type="submit" class="btn btn-primary px-8 gap-2"
+            <button type="button" id="btn-submit" class="btn btn-primary px-8 gap-2"
                 style="background-color:#2563eb; color:white; border:none">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -386,8 +370,9 @@
         </div>
     </form>
 </div>
+@endsection
 
-{{-- ================= SCRIPTS ================= --}}
+@push('scripts')
 <script>
 (function () {
     const toggle = document.getElementById('toggle-status');
@@ -417,7 +402,6 @@ const LANGUAGE_OPTIONS = @json($languageOptions);
 document.addEventListener('DOMContentLoaded', () => {
     let skillIndex = {{ $rec->skills->count() ?: 1 }};
 
-    // ===== helper: sync label ของ custom overlay select =====
     const syncOverlayLabel = (select, labelEl) => {
         const selected = select.options[select.selectedIndex];
         if (selected && selected.value) {
@@ -431,22 +415,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== Skills =====
     document.addEventListener('change', e => {
-
         if (e.target.classList.contains('skill-group')) {
             const row = e.target.closest('.skill-row');
             syncOverlayLabel(e.target, row.querySelector('.skill-group-label'));
-
             const skillSelect = row.querySelector('.skill-select');
             const groupId = e.target.value;
-
             skillSelect.innerHTML = '<option value="">-- สกิล --</option>';
             skillSelect.disabled = true;
             syncOverlayLabel(skillSelect, row.querySelector('.skill-select-label'));
-
             if (!groupId) return;
             const skills = SKILLS_BY_GROUP[parseInt(groupId)] || SKILLS_BY_GROUP[groupId];
             if (!skills || skills.length === 0) return;
-
             [...skills]
                 .sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }))
                 .forEach(skill => {
@@ -455,18 +434,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             skillSelect.disabled = false;
         }
-
         if (e.target.classList.contains('skill-select')) {
             const row = e.target.closest('.skill-row');
             syncOverlayLabel(e.target, row.querySelector('.skill-select-label'));
         }
-
         if (e.target.classList.contains('lang-select')) {
             const row = e.target.closest('.language-row');
             syncOverlayLabel(e.target, row.querySelector('.lang-label'));
         }
-
-        // เคลียร์ error เมื่อเปลี่ยนค่า
         const skillRow = e.target.closest('.skill-row');
         if (skillRow) { skillRow.style.outline = ''; skillRow.querySelector('.skill-row-err')?.remove(); }
         const langRow = e.target.closest('.language-row');
@@ -476,7 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-skill').addEventListener('click', () => {
         const wrapper = document.getElementById('skills-wrapper');
         const template = wrapper.querySelector('.skill-row').cloneNode(true);
-
         template.querySelectorAll('select').forEach(select => {
             select.name = select.name.replace(/\d+/, skillIndex);
             select.disabled = select.classList.contains('skill-select');
@@ -489,12 +463,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 select.value = '';
             }
         });
-
         const groupLabel = template.querySelector('.skill-group-label');
         const skillLabel = template.querySelector('.skill-select-label');
         if (groupLabel) { groupLabel.textContent = '-- กลุ่มสกิล --'; groupLabel.classList.add('opacity-60'); }
         if (skillLabel) { skillLabel.textContent = '-- สกิล --'; skillLabel.classList.add('opacity-60'); }
-
         template.querySelector('.remove-skill').classList.remove('hidden');
         template.style.outline = '';
         template.querySelector('.skill-row-err')?.remove();
@@ -550,13 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-}); // end DOMContentLoaded
-
-// ===== Validation (นอก DOMContentLoaded) =====
-(function attachFormValidation() {
-    const form = document.getElementById('recruitment-form');
-    if (!form) return;
-
+    // ===== Validation helpers =====
     const showErr = (row, msg, cls) => {
         row.style.outline = '2px solid #ef4444';
         let p = row.querySelector('.' + cls);
@@ -574,16 +540,14 @@ document.addEventListener('DOMContentLoaded', () => {
         row.querySelector('.' + cls)?.remove();
     };
 
-    form.addEventListener('submit', function(e) {
+    const validateForm = () => {
         let valid = true;
 
-        // เคลียร์ error เก่า
         document.querySelectorAll('.skill-row').forEach(r => clearErr(r, 'skill-row-err'));
         document.querySelectorAll('.language-row').forEach(r => clearErr(r, 'lang-row-err'));
         document.querySelectorAll('.native-err').forEach(el => el.remove());
         document.querySelectorAll('#rc_title, #rc_description').forEach(f => f.style.outline = '');
 
-        // validate ชื่องาน + รายละเอียด
         ['rc_title', 'rc_description'].forEach(id => {
             const field = document.getElementById(id);
             if (field && !field.value.trim()) {
@@ -600,7 +564,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // validate skills
         document.querySelectorAll('.skill-row').forEach(row => {
             const groupVal = row.querySelector('.skill-group')?.value || '';
             const skillVal = row.querySelector('.skill-select')?.value || '';
@@ -613,7 +576,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // validate languages
         document.querySelectorAll('.language-row').forEach(row => {
             const langVal = row.querySelector('.lang-select')?.value || '';
             if (!langVal) {
@@ -622,12 +584,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (!valid) {
-            e.preventDefault();
+        return valid;
+    };
+
+    // ===== ปุ่มบันทึก → validate → SweetAlert2 ยืนยัน → submit =====
+    document.getElementById('btn-submit').addEventListener('click', function () {
+        if (!validateForm()) {
             const firstErr = document.querySelector('[style*="outline"]');
             if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
         }
+
+        const title     = document.getElementById('rc_title')?.value?.trim() || '—';
+        const statusVal = document.getElementById('rc_status_input')?.value;
+        const statusText = statusVal === 'open'
+            ? '<span style="color:#16a34a;font-weight:600;">เผยแพร่</span>'
+            : '<span style="color:#b45309;font-weight:600;">ฉบับร่าง</span>';
+
+        Swal.fire({
+            title: 'ยืนยันการบันทึก',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i> บันทึก',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('recruitment-form').submit();
+            }
+        });
     });
-})();
+
+}); // end DOMContentLoaded
 </script>
-@endsection
+@endpush

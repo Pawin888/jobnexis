@@ -85,19 +85,11 @@
                             <span class="px-3 py-1 text-sm rounded-full col-status {{ $statusColor }}">{{ $statusLabel }}</span>
                         </td>
                         <td>
-                            @if($app->status === 'reviewing')
-                                <a href="{{ route('provider.applications.show', $app->id) }}"
-                                   class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600 hover:text-white"
-                                   title="ประเมิน">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </a>
-                            @else
                                 <a href="{{ route('provider.applications.show', $app->id) }}"
                                    class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600 hover:text-white"
                                    title="ดูรายละเอียด">
-                                    <i class="fa-solid fa-circle-info"></i>
+                                    <i class="fa-solid fa-search"></i>
                                 </a>
-                            @endif
                         </td>
                     </tr>
                 @empty

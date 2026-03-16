@@ -185,7 +185,6 @@
                     <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
                          style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
 
-                        {{-- กลุ่มสกิล --}}
                         <div class="relative min-w-0 overflow-hidden">
                             <select name="skills[0][skill_group_id]"
                                 class="select select-bordered select-sm focus:select-primary skill-group w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
@@ -199,7 +198,6 @@
                             </div>
                         </div>
 
-                        {{-- สกิล --}}
                         <div class="relative min-w-0 overflow-hidden">
                             <select name="skills[0][skill_id]"
                                 class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer"
@@ -211,7 +209,6 @@
                             </div>
                         </div>
 
-                        {{-- ระดับ --}}
                         <select name="skills[0][proficiency_level]"
                             class="select select-bordered select-sm focus:select-primary">
                             <option value="beginner">เริ่มต้น</option>
@@ -220,7 +217,6 @@
                             <option value="expert">ผู้เชี่ยวชาญ</option>
                         </select>
 
-                        {{-- ปุ่มลบ --}}
                         <button type="button"
                             class="remove-skill hidden btn btn-xs shrink-0"
                             style="background-color:#ef4444; color:white; border:none; min-width:2rem">
@@ -244,27 +240,20 @@
         @php
             $langs = old('languages', isset($rec) ? $rec->languages->toArray() : [['language'=>'','proficiency'=>'basic']]);
             $languageOptions = [
-                // ASEAN
                 'ภาษาไทย (Thai)', 'မြန်မာဘာသာ (Burmese)', 'ភាសាខ្មែរ (Khmer)', 'ພາສາລາວ (Lao)',
                 'Tiếng Việt (Vietnamese)', 'Bahasa Melayu (Malay)', 'Bahasa Indonesia (Indonesian)', 'Filipino (Tagalog)',
-                // East Asia
                 'English', '中文 普通话 (Mandarin)', '粵語 (Cantonese)',
                 '日本語 (Japanese)', '한국어 (Korean)', 'Монгол (Mongolian)',
-                // South Asia
                 'हिन्दी (Hindi)', 'اردو (Urdu)', 'বাংলা (Bengali)', 'தமிழ் (Tamil)',
                 'తెలుగు (Telugu)', 'සිංහල (Sinhala)', 'नेपाली (Nepali)',
-                // Middle East
                 'العربية (Arabic)', 'فارسی (Persian)', 'עברית (Hebrew)',
                 'Türkçe (Turkish)', 'Қазақша (Kazakh)', 'Oʻzbek (Uzbek)',
-                // Western Europe
                 'Français (French)', 'Deutsch (German)', 'Español (Spanish)', 'Italiano (Italian)',
                 'Português (Portuguese)', 'Nederlands (Dutch)', 'Svenska (Swedish)', 'Norsk (Norwegian)',
                 'Dansk (Danish)', 'Suomi (Finnish)', 'Ελληνικά (Greek)',
-                // Eastern Europe
                 'Русский (Russian)', 'Українська (Ukrainian)', 'Polski (Polish)', 'Čeština (Czech)',
                 'Magyar (Hungarian)', 'Română (Romanian)', 'Български (Bulgarian)',
                 'Српски (Serbian)', 'Hrvatski (Croatian)',
-                // Africa
                 'Kiswahili (Swahili)', 'አማርኛ (Amharic)', 'Hausa', 'Yorùbá (Yoruba)', 'Afrikaans',
             ];
         @endphp
@@ -280,7 +269,6 @@
                 <div class="language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
                     style="grid-template-columns: 2fr 2fr 2rem">
 
-                    {{-- ภาษา (custom overlay เหมือน skill) --}}
                     <div class="relative min-w-0 overflow-hidden">
                         <select name="languages[{{ $i }}][language]"
                             class="select select-bordered select-sm focus:select-primary lang-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
@@ -299,7 +287,6 @@
                         </div>
                     </div>
 
-                    {{-- ระดับภาษา --}}
                     <select name="languages[{{ $i }}][proficiency]"
                         class="select select-bordered select-sm w-full">
                         <option value="basic"          {{ ($lang['proficiency'] ?? '')=='basic'          ? 'selected' : '' }}>พื้นฐาน</option>
@@ -308,7 +295,6 @@
                         <option value="native"         {{ ($lang['proficiency'] ?? '')=='native'         ? 'selected' : '' }}>เจ้าของภาษา</option>
                     </select>
 
-                    {{-- ปุ่มลบ --}}
                     <button type="button"
                         class="remove-language {{ $i == 0 && count($langs) == 1 ? 'hidden' : '' }} btn btn-xs shrink-0"
                         style="background-color:#ef4444; color:white; border:none; min-width:2rem">
@@ -335,7 +321,7 @@
                 class="btn btn-ghost">
                 ยกเลิก
             </a>
-            <button type="submit" id="btn-submit" class="btn btn-primary px-8 gap-2"
+            <button type="button" id="btn-submit" class="btn btn-primary px-8 gap-2"
                 style="background-color:#2563eb; color:white; border:none">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -345,8 +331,9 @@
         </div>
     </form>
 </div>
+@endsection
 
-{{-- ================= SCRIPTS ================= --}}
+@push('scripts')
 <script>
 (function () {
     const toggle = document.getElementById('toggle-status');
@@ -375,7 +362,6 @@ const LANGUAGE_OPTIONS = @json($languageOptions);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ===== helper: sync label ของ custom overlay select =====
     const syncOverlayLabel = (select, labelEl) => {
         const selected = select.options[select.selectedIndex];
         if (selected && selected.value) {
@@ -391,23 +377,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let skillIndex = 1;
 
     document.addEventListener('change', e => {
-
-        // skill-group
         if (e.target.classList.contains('skill-group')) {
             const row = e.target.closest('.skill-row');
             syncOverlayLabel(e.target, row.querySelector('.skill-group-label'));
-
             const skillSelect = row.querySelector('.skill-select');
             const groupId = e.target.value;
-
             skillSelect.innerHTML = '<option value="">-- สกิล --</option>';
             skillSelect.disabled = true;
             syncOverlayLabel(skillSelect, row.querySelector('.skill-select-label'));
-
             if (!groupId) return;
             const skills = SKILLS_BY_GROUP[parseInt(groupId)] || SKILLS_BY_GROUP[groupId];
             if (!skills || skills.length === 0) return;
-
             [...skills]
                 .sort((a, b) => (a.name || '').localeCompare((b.name || ''), undefined, { sensitivity: 'base' }))
                 .forEach(skill => {
@@ -416,14 +396,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             skillSelect.disabled = false;
         }
-
-        // skill-select
         if (e.target.classList.contains('skill-select')) {
             const row = e.target.closest('.skill-row');
             syncOverlayLabel(e.target, row.querySelector('.skill-select-label'));
         }
-
-        // lang-select
         if (e.target.classList.contains('lang-select')) {
             const row = e.target.closest('.language-row');
             syncOverlayLabel(e.target, row.querySelector('.lang-label'));
@@ -433,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-skill').addEventListener('click', () => {
         const wrapper = document.getElementById('skills-wrapper');
         const template = wrapper.querySelector('.skill-row').cloneNode(true);
-
         template.querySelectorAll('select').forEach(select => {
             select.name = select.name.replace(/\d+/, skillIndex);
             select.disabled = select.classList.contains('skill-select');
@@ -446,12 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 select.value = '';
             }
         });
-
         const groupLabel = template.querySelector('.skill-group-label');
         const skillLabel = template.querySelector('.skill-select-label');
         if (groupLabel) { groupLabel.textContent = '-- กลุ่มสกิล --'; groupLabel.classList.add('opacity-60'); }
         if (skillLabel) { skillLabel.textContent = '-- สกิล --'; skillLabel.classList.add('opacity-60'); }
-
         template.querySelector('.remove-skill').classList.remove('hidden');
         wrapper.appendChild(template);
         skillIndex++;
@@ -472,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('add-language').addEventListener('click', () => {
         const wrapper = document.getElementById('languages-wrapper');
-
         const div = document.createElement('div');
         div.className = 'language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300';
         div.style.gridTemplateColumns = '2fr 2fr 2rem';
@@ -506,7 +478,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // เคลียร์ error เมื่อเปลี่ยนค่า
     document.addEventListener('change', e => {
         const skillRow = e.target.closest('.skill-row');
         if (skillRow) {
@@ -522,13 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-}); // end DOMContentLoaded
-
-// ===== Validation (นอก DOMContentLoaded เพื่อให้แน่ใจว่า bind ได้) =====
-(function attachFormValidation() {
-    const form = document.getElementById('recruitment-form');
-    if (!form) return;
-
+    // ===== Validation helpers =====
     const showErr = (row, msg, cls) => {
         row.style.outline = '2px solid #ef4444';
         let p = row.querySelector('.' + cls);
@@ -547,14 +512,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (p) p.remove();
     };
 
-    form.addEventListener('submit', function(e) {
+    const validateForm = () => {
         let valid = true;
 
-        // เคลียร์ error เก่า
         document.querySelectorAll('.skill-row').forEach(r => clearErr(r, 'skill-row-err'));
         document.querySelectorAll('.language-row').forEach(r => clearErr(r, 'lang-row-err'));
 
-        // validate native required fields ด้วยมือ (เพราะ novalidate)
+        const form = document.getElementById('recruitment-form');
+
         form.querySelectorAll('[required]').forEach(field => {
             field.style.outline = '';
             if (!field.value.trim()) {
@@ -574,7 +539,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // validate skills
         document.querySelectorAll('.skill-row').forEach(row => {
             const groupVal = row.querySelector('.skill-group')?.value || '';
             const skillVal = row.querySelector('.skill-select')?.value || '';
@@ -587,7 +551,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // validate languages
         document.querySelectorAll('.language-row').forEach(row => {
             const langVal = row.querySelector('.lang-select')?.value || '';
             if (!langVal) {
@@ -596,12 +559,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (!valid) {
-            e.preventDefault();
+        return valid;
+    };
+
+    // ===== ปุ่มบันทึก → validate → SweetAlert2 ยืนยัน → submit =====
+    document.getElementById('btn-submit').addEventListener('click', function () {
+        const form = document.getElementById('recruitment-form');
+
+        if (!validateForm()) {
             const firstErr = document.querySelector('[style*="outline"]');
             if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
         }
+
+        const title      = document.querySelector('[name="rc_title"]')?.value?.trim() || '—';
+        const statusVal  = document.getElementById('rc_status_input')?.value;
+        const statusText = statusVal === 'open'
+            ? '<span style="color:#16a34a;font-weight:600;">เผยแพร่ทันที</span>'
+            : '<span style="color:#b45309;font-weight:600;">บันทึกเป็นฉบับร่าง</span>';
+
+        Swal.fire({
+            title: 'ยืนยันการบันทึก',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i> บันทึก',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
     });
-})();
+
+}); // end DOMContentLoaded
 </script>
-@endsection
+@endpush
