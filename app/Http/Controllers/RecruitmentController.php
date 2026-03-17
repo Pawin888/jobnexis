@@ -8,6 +8,8 @@ use App\Models\RecruitmentLanguage;
 use App\Models\CompaniesProfile;
 use App\Models\MasterSkill;
 use App\Models\MasterSkillGroup;
+use App\Models\JobApplication;
+use App\Models\ProviderCandidateInvite;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -101,12 +103,12 @@ class RecruitmentController extends Controller
         ]);
     }
     
-    /** Jobber: ดูรายละเอียดงาน (เฉพาะประกาศเปิดรับ) */
+    /** Jobber: ดูรายละเอียดงาน (เปิดรับทั้งหมดสำหรับผู้ที่มีสิทธิ์เข้าถึง) */
     public function jobberShow($rcId)
     {
         if (!Auth::check() || Auth::user()->role !== 'jobber') abort(403);
 
-        $rec = Recruitment::open()
+        $rec = Recruitment::query()
             ->with([
                 'recruitmentSkills.skillGroup',
                 'recruitmentSkills.skill',
@@ -114,6 +116,32 @@ class RecruitmentController extends Controller
                 'languages',
             ])
             ->findOrFail($rcId);
+
+        $isOpen = $rec->rc_status === 'open'
+            && (
+                is_null($rec->rc_expire_at)
+                || \Illuminate\Support\Carbon::parse($rec->rc_expire_at)->endOfDay()->isFuture()
+            );
+
+        if (!$isOpen) {
+            $jobberId = Auth::id();
+
+            $hasApplication = JobApplication::query()
+                ->where('recruitment_id', $rec->rc_id)
+                ->where('jobber_id', $jobberId)
+                ->exists();
+
+            $hasInvite = ProviderCandidateInvite::query()
+                ->where('recruitment_id', $rec->rc_id)
+                ->whereHas('resume', function ($query) use ($jobberId) {
+                    $query->where('user_id', $jobberId);
+                })
+                ->exists();
+
+            if (!$hasApplication && !$hasInvite) {
+                abort(404);
+            }
+        }
 
         $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
 
@@ -513,6 +541,7 @@ public function createForProvider()
         $validator->after(function ($validator) use ($request) {
             $selectedMode = trim((string) $request->input('rc_work_mode', ''));
             $requiresLocation = in_array($selectedMode, ['onsite', 'hybrid'], true);
+            $locationLink = trim((string) $request->input('rc_location_link', ''));
 
             if ($requiresLocation) {
                 if (!filled($request->input('rc_location_text'))) {
@@ -523,6 +552,7 @@ public function createForProvider()
                     $validator->errors()->add('rc_location_link', 'กรุณาระบุลิงก์สถานที่เมื่อเลือกเข้าออฟฟิศหรือผสมผสาน');
                 }
             }
+
         });
 
         $data = $validator->validate();

@@ -54,7 +54,7 @@
                 </select>
             </fieldset>
             <fieldset class="fieldset">
-                <legend class="mb-1 fieldset-legend">โหมดทำงาน</legend>
+                <legend class="mb-1 fieldset-legend">โหมดการทำงาน</legend>
                 <div class="flex gap-2">
                     <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
                         <option value="">— ทั้งหมด —</option>
@@ -74,7 +74,7 @@
                     <tr>
                         <th class="w-[26%] py-3 px-4">ชื่องาน / สถานที่</th>
                         <th class="w-[12%] py-3 px-3">ประเภทงาน</th>
-                        <th class="w-[13%] py-3 px-3">โหมดทำงาน</th>
+                        <th class="w-[13%] py-3 px-3">โหมดการทำงาน</th>
                         <th class="w-[11%] py-3 px-3">เปิดรับเมื่อ</th>
                         <th class="w-[13%] py-3 px-3">ปิดรับ/หมดอายุ</th>
                         <th class="w-[11%] py-3 px-3">สถานะ</th>
