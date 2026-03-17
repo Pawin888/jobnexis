@@ -202,24 +202,5 @@
             }
         });
     });
-
-    // บันทึกการแก้ไข
-    document.getElementById('submit-btn').addEventListener('click', function (e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'ยืนยันการบันทึก',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#16a34a',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i> บันทึก',
-            cancelButtonText: 'ยกเลิก',
-            reverseButtons: true,
-        }).then(result => {
-            if (result.isConfirmed) {
-                document.getElementById('resume-form').submit();
-            }
-        });
-    });
 </script>
 @endpush

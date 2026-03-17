@@ -1120,10 +1120,20 @@ if (hasInvalidFile) {
         groupSelect.addEventListener('change', loadSkills);
         loadSkills();
         div.querySelector('.remove').onclick = () => {
-            if (confirm('คุณต้องการลบทักษะนี้หรือไม่?')) {
-                div.remove();
-            }
-        };
+           Swal.fire({
+            title: 'ยืนยันการลบ?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'ลบ',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+            focusCancel: true,
+        }).then(result => {
+            if (result.isConfirmed) div.remove();
+        });
+    };
         return div;
     }
 
