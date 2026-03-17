@@ -252,17 +252,17 @@
                 @enderror
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">เพศ <span class="text-red-500">*</span></label>
-                <select name="gender" class="input @error('gender') border-red-500 @enderror" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.75rem !important;">
-                    <option value="">-- เลือกเพศ --</option>
-                    <option value="male" {{ old('gender', $resume->gender ?? '') == 'male' ? 'selected' : '' }}>ชาย</option>
-                    <option value="female" {{ old('gender', $resume->gender ?? '') == 'female' ? 'selected' : '' }}>หญิง</option>
-                    <option value="other" {{ old('gender', $resume->gender ?? '') == 'other' ? 'selected' : '' }}>อื่นๆ</option>
-                </select>
-                @error('gender')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">เพศ <span class="text-red-500">*</span></label>
+    <select name="gender" class="input @error('gender') border-red-500 @enderror" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
+        <option value="">-- เลือกเพศ --</option>
+        <option value="male" {{ old('gender', $resume->gender ?? '') == 'male' ? 'selected' : '' }}>ชาย</option>
+        <option value="female" {{ old('gender', $resume->gender ?? '') == 'female' ? 'selected' : '' }}>หญิง</option>
+        <option value="other" {{ old('gender', $resume->gender ?? '') == 'other' ? 'selected' : '' }}>ไม่ระบุ</option>
+    </select>
+    @error('gender')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>
         </div>
 
         {{-- Contact Information --}}
@@ -303,7 +303,10 @@
         {{-- Summary --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">เกี่ยวกับตัวคุณ</label>
-            <textarea name="summary" rows="4" class="input" placeholder="แนะนำตัวคุณเองสั้นๆ เช่น ความสนใจ จุดเด่น หรือเป้าหมายในการทำงาน...">{{ old('summary', $resume->summary ?? '') }}</textarea>
+            <textarea name="summary" rows="4" class="input"
+    placeholder="แนะนำตัวคุณเองสั้นๆ เช่น ความสนใจ จุดเด่น หรือเป้าหมายในการทำงาน..."
+    style="white-space: pre-wrap; word-break: break-word; resize: vertical;"
+>{{ old('summary', $resume->summary ?? '') }}</textarea>
             <p class="text-xs text-gray-500 mt-1">ควรมีความยาวประมาณ 2-3 ประโยค</p>
         </div>
     </div>
@@ -326,9 +329,11 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
-            เพิ่มประสบการณ์
+            เพิ่ม
         </button>
     </div>
+
+
 </div>
 
 {{-- Tab 3: Skills --}}
@@ -348,7 +353,26 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
-            เพิ่มทักษะ
+            เพิ่ม
+        </button>
+    </div>
+
+    <div class="section-card">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+            </svg>
+            ทักษะด้านภาษา
+        </h2>
+        <p class="text-gray-600 mb-4">ระบุภาษาที่คุณสามารถใช้ได้และระดับความสามารถ</p>
+
+        <div id="language-container" class="space-y-4"></div>
+
+        <button type="button" id="add-language" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            เพิ่ม
         </button>
     </div>
 </div>
@@ -370,7 +394,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
-            เพิ่มการศึกษา
+            เพิ่ม
         </button>
     </div>
 
@@ -389,26 +413,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
-            เพิ่มใบรับรอง
-        </button>
-    </div>
-
-    <div class="section-card">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
-            </svg>
-            ทักษะด้านภาษา
-        </h2>
-        <p class="text-gray-600 mb-4">ระบุภาษาที่คุณสามารถใช้ได้และระดับความสามารถ</p>
-
-        <div id="language-container" class="space-y-4"></div>
-
-        <button type="button" id="add-language" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            เพิ่มภาษา
+            เพิ่ม
         </button>
     </div>
 </div>
@@ -848,7 +853,7 @@
         showCancelButton: true,
         confirmButtonColor: '#16a34a',
         cancelButtonColor: '#6b7280',
-        confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>สร้าง',
+        confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>บันทึก',
         cancelButtonText: 'ยกเลิก',
         reverseButtons: true,
     }).then(result => {
@@ -941,7 +946,7 @@
             },
             languages: {
                 language: 'ภาษา',
-                level: 'ระดับความสามารถ',
+                level: 'ระดับความชำนาญ',
             },
         };
 
@@ -1062,6 +1067,38 @@ if (hasInvalidFile) {
         }
     });
 
+    // Prevent selecting the same skill multiple times across rows
+    function updateSkillOptions() {
+        const skillSelects = Array.from(document.querySelectorAll('.skill'));
+        const selectedIds = skillSelects.map(s => s.value).filter(v => v);
+
+        skillSelects.forEach(select => {
+            const ownValue = select.value;
+            const otherSelected = selectedIds.filter(v => v && v !== ownValue);
+
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.disabled = otherSelected.includes(opt.value);
+            });
+        });
+    }
+
+    // Prevent selecting the same language multiple times across rows
+    function updateLanguageOptions() {
+        const languageSelects = Array.from(document.querySelectorAll('select[name^="languages"][name$="[language]"]'));
+        const selectedLanguages = languageSelects.map(s => s.value).filter(v => v);
+
+        languageSelects.forEach(select => {
+            const ownValue = select.value;
+            const otherSelected = selectedLanguages.filter(v => v && v !== ownValue);
+
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.disabled = otherSelected.includes(opt.value);
+            });
+        });
+    }
+
     // Skill Row with validation
     function skillRow(index, data = {}) {
         const div = document.createElement('div');
@@ -1070,26 +1107,27 @@ if (hasInvalidFile) {
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">กลุ่มทักษะ <span class="text-red-500">*</span></label>
-                    <select name="skills[${index}][skill_group_id]" class="input group" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.75rem !important;">
+                    <select name="skills[${index}][skill_group_id]" class="input group" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
                         <option value="">-- เลือกกลุ่ม --</option>
                         ${skillGroups.map(g => `<option value="${g.id}" ${g.id == data.skill_group_id ? 'selected' : ''}>${g.name}</option>`).join('')}
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ทักษะ <span class="text-red-500">*</span></label>
-                    <select name="skills[${index}][skill_id]" class="input skill" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.75rem !important;">
+                    <select name="skills[${index}][skill_id]" class="input skill" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
                         <option value="">-- เลือกทักษะ --</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความชำนาญ <span class="text-red-500">*</span></label>
-                    <select name="skills[${index}][proficiency_level]" class="input" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.75rem !important;">
+                    <select name="skills[${index}][proficiency_level]" class="input" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
                         <option value="">เลือกระดับ</option>
                         <option value="beginner" ${data.proficiency_level == 'beginner' ? 'selected' : ''}>เริ่มต้น</option>
                         <option value="intermediate" ${data.proficiency_level == 'intermediate' ? 'selected' : ''}>ปานกลาง</option>
                         <option value="advanced" ${data.proficiency_level == 'advanced' ? 'selected' : ''}>ขั้นสูง</option>
                         <option value="expert" ${data.proficiency_level == 'expert' ? 'selected' : ''}>ผู้เชี่ยวชาญ</option>
                     </select>
+
                 </div>
                 <div class="flex items-end">
                     <button type="button" class="remove w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
@@ -1115,25 +1153,26 @@ if (hasInvalidFile) {
                     skillSelect.innerHTML += `<option value="${s.id}" ${s.id == data.skill_id ? 'selected' : ''}>${s.name}</option>`;
                 });
             }
+
+            // Ensure we don't allow selecting the same skill across rows
+            updateSkillOptions();
         }
 
-        groupSelect.addEventListener('change', loadSkills);
+        groupSelect.addEventListener('change', function () {
+            // reset selection when group changes
+            data.skill_id = null;
+            loadSkills();
+        });
+
+        skillSelect.addEventListener('change', () => {
+            updateSkillOptions();
+        });
+
         loadSkills();
         div.querySelector('.remove').onclick = () => {
-           Swal.fire({
-            title: 'ยืนยันการลบ?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'ลบ',
-            cancelButtonText: 'ยกเลิก',
-            reverseButtons: true,
-            focusCancel: true,
-        }).then(result => {
-            if (result.isConfirmed) div.remove();
-        });
-    };
+            div.remove();
+            updateSkillOptions();
+        };
         return div;
     }
 
@@ -1208,9 +1247,9 @@ if (hasInvalidFile) {
         syncEndDateMin();
 
         div.querySelector('.remove').onclick = () => {
-            if (confirm('คุณต้องการลบประสบการณ์นี้หรือไม่?')) {
+
                 div.remove();
-            }
+
         };
         return div;
     }
@@ -1238,7 +1277,7 @@ if (hasInvalidFile) {
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่เริ่มศึกษา <span class="text-red-500">*</span></label>
                     <select name="educations[${index}][start_year]" class="input" required>
-                        ${buildYearOptions(data.start_year, true)}
+                        ${buildYearOptions(data.start_year)}
                     </select>
                 </div>
                 <div>
@@ -1259,10 +1298,32 @@ if (hasInvalidFile) {
                 </button>
             </div>
         `;
-        div.querySelector('.remove').onclick = () => {
-            if (confirm('คุณต้องการลบการศึกษานี้หรือไม่?')) {
-                div.remove();
+        const startYearSelect = div.querySelector('select[name="educations[' + index + '][start_year]"]');
+        const endYearSelect = div.querySelector('select[name="educations[' + index + '][end_year]"]');
+
+        function syncEndYearOptions() {
+            if (!startYearSelect || !endYearSelect) return;
+            const startVal = parseInt(startYearSelect.value) || 0;
+
+            Array.from(endYearSelect.options).forEach(opt => {
+                if (!opt.value) return;
+                const year = parseInt(opt.value);
+                opt.disabled = year <= startVal;
+            });
+
+            if (endYearSelect.value && parseInt(endYearSelect.value) <= startVal) {
+                endYearSelect.value = '';
             }
+        }
+
+        if (startYearSelect) {
+            startYearSelect.addEventListener('change', syncEndYearOptions);
+        }
+
+        syncEndYearOptions();
+
+        div.querySelector('.remove').onclick = () => {
+            div.remove();
         };
         return div;
     }
@@ -1331,29 +1392,28 @@ if (hasInvalidFile) {
         }
 
         div.querySelector('.remove').onclick = () => {
-            if (confirm('คุณต้องการลบใบรับรองนี้หรือไม่?')) {
+
                 div.remove();
-            }
+
         };
         return div;
     }
 
-    // Language Row with validation
     function languageRow(index, data = {}) {
         const div = document.createElement('div');
         div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
         div.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ภาษา <span class="text-red-500">*</span></label>
-                    <select name="languages[${index}][language]" class="input" required>
+                    <select name="languages[${index}][language]" class="input h-11 w-full" required>
                         <option value="">-- เลือกภาษา --</option>
                         ${worldLanguagesThai.map(language => `<option value="${language}" ${data.language === language ? 'selected' : ''}>${language}</option>`).join('')}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความสามารถ <span class="text-red-500">*</span></label>
-                    <select name="languages[${index}][level]" class="input" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.75rem !important;">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความชำนาญ <span class="text-red-500">*</span></label>
+                    <select name="languages[${index}][level]" class="input h-11 w-full" required>
                         <option value="">เลือกระดับ</option>
                         <option value="basic" ${data.level == 'basic' ? 'selected' : ''}>พื้นฐาน</option>
                         <option value="conversational" ${data.level == 'conversational' ? 'selected' : ''}>สนทนาได้</option>
@@ -1361,23 +1421,30 @@ if (hasInvalidFile) {
                         <option value="native" ${data.level == 'native' ? 'selected' : ''}>เจ้าของภาษา</option>
                     </select>
                 </div>
-                <div class="flex items-end">
+                <div>
                     <button type="button" class="remove w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
-                        <span class="flex items-center justify-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            ลบ
-                        </span>
-                    </button>
+                            <span class="flex items-center justify-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                ลบ
+                            </span>
+                        </button>
                 </div>
             </div>
         `;
+
+        const languageSelect = div.querySelector('select[name="languages[' + index + '][language]"]');
+        languageSelect.addEventListener('change', () => {
+            updateLanguageOptions();
+        });
+
         div.querySelector('.remove').onclick = () => {
-            if (confirm('คุณต้องการลบภาษานี้หรือไม่?')) {
-                div.remove();
-            }
+            div.remove();
+            updateLanguageOptions();
         };
+
+        updateLanguageOptions();
         return div;
     }
 
@@ -1392,9 +1459,11 @@ if (hasInvalidFile) {
         addSkillBtn.onclick = () => {
             skillContainer.appendChild(skillRow(skillIndex));
             skillIndex++;
+            updateSkillOptions();
         };
     }
     oldSkills.forEach((s, i) => skillContainer.appendChild(skillRow(i, s)));
+    updateSkillOptions();
 
     if (addWorkBtn) {
         addWorkBtn.onclick = () => {
@@ -1424,9 +1493,11 @@ if (hasInvalidFile) {
         addLanguageBtn.onclick = () => {
             languageContainer.appendChild(languageRow(languageIndex));
             languageIndex++;
+            updateLanguageOptions();
         };
     }
     oldLanguages.forEach((l, i) => languageContainer.appendChild(languageRow(i, l)));
+    updateLanguageOptions();
 
     }); // End of DOMContentLoaded
 </script>
