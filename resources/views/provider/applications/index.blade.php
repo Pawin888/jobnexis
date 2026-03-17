@@ -54,13 +54,13 @@
                     <th class="w-[24%] py-3 px-3">รีซูเม</th>
                     <th class="w-[16%] py-3 px-3">วันที่สมัคร</th>
                     <th class="w-[14%] py-3 px-3">สถานะ</th>
-                    <th class="w-[16%] py-3 px-3 text-center">จัดการ</th>
+                    <th class="w-[16%] py-3 px-3">จัดการ</th>
                 </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-base-300">
                 @forelse($applications as $app)
                     <tr class="table-row hover:bg-base-100 transition-colors">
-                        <td class="py-3 px-4 max-w-0">
+                        <td class="py-3 px-4">
                             <div class="truncate col-title font-medium text-sm">{{ Str::limit($app->recruitment->rc_title, 30, '...') }}</div>
                             @if($app->is_shortlisted)
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 mt-1 text-[11px] rounded-full bg-amber-100 text-amber-700">
@@ -91,22 +91,28 @@
                             <span class="inline-flex items-center px-2.5 py-1 text-xs rounded-full col-status {{ $statusColor }}">{{ $statusLabel }}</span>
                         </td>
                         <td class="py-3 px-3">
-                            <div class="flex items-center justify-center gap-1.5">
+                            <div class="flex gap-1.5">
                                 @if($app->status === 'rejected')
                                     <a href="{{ route('provider.applications.show', $app->id) }}"
                                        class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-blue-600 hover:text-white hover:border-blue-600"
                                        title="ดูรายละเอียด">
                                         <i class="fa-solid fa-search"></i>
                                     </a>
-                                    <form method="POST" action="{{ route('provider.applications.destroy', $app->id) }}" onsubmit="return confirm('ยืนยันลบใบสมัครนี้?')">
+                                    {{-- hidden form ลบใบสมัคร --}}
+                                    <form id="form-delete-app-{{ $app->id }}"
+                                          method="POST"
+                                          action="{{ route('provider.applications.destroy', $app->id) }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit"
-                                            class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-red-50 hover:text-red-600 hover:border-red-400"
-                                            title="ลบใบสมัคร">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
                                     </form>
+                                    <button type="button"
+                                        class="delete-app-btn flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-red-50 hover:text-red-600 hover:border-red-400"
+                                        data-id="{{ $app->id }}"
+                                        data-name="{{ addslashes(trim(($app->resume->first_name ?? '').' '.($app->resume->last_name ?? '')) ?: ($app->jobber->profile->up_name ?? $app->jobber->email)) }}"
+                                        data-title="{{ addslashes(Str::limit($app->recruitment->rc_title, 30, '...')) }}"
+                                        title="ลบใบสมัคร">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 @else
                                     <form method="POST" action="{{ route('provider.applications.shortlist', $app->id) }}">
                                         @csrf
@@ -154,8 +160,6 @@
     @if ($applications->isNotEmpty())
         <div class="bg-white rounded-xl shadow p-4">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-
-                {{-- Left: Items per page + Info --}}
                 <div class="flex items-center gap-2">
                     <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
                     <select
@@ -168,7 +172,6 @@
                         @endforeach
                     </select>
                     <span class="text-sm text-gray-700">รายการต่อหน้า</span>
-
                     <span class="text-sm text-gray-600 ml-4">
                         (แสดง
                         <span class="font-semibold text-gray-800">{{ $applications->firstItem() ?? 0 }}</span>
@@ -179,18 +182,13 @@
                         รายการ)
                     </span>
                 </div>
-
-                {{-- Right: Pagination Controls --}}
                 <div class="flex items-center gap-2">
-                    {{-- Previous --}}
                     @if ($applications->onFirstPage())
                         <button disabled class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm">ก่อนหน้า</button>
                     @else
                         <a href="{{ $applications->appends(request()->except('page'))->previousPageUrl() }}"
                            class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">ก่อนหน้า</a>
                     @endif
-
-                    {{-- Page Numbers --}}
                     <div class="flex items-center gap-1">
                         @php
                             $current = $applications->currentPage();
@@ -198,7 +196,6 @@
                             $start   = max(1, $current - 2);
                             $end     = min($last, $current + 2);
                         @endphp
-
                         @if ($start > 1)
                             <a href="{{ $applications->appends(request()->except('page'))->url(1) }}"
                                class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">1</a>
@@ -206,7 +203,6 @@
                                 <span class="px-2 text-gray-500">...</span>
                             @endif
                         @endif
-
                         @for ($i = $start; $i <= $end; $i++)
                             @if ($i == $current)
                                 <span class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg text-sm font-medium">{{ $i }}</span>
@@ -215,7 +211,6 @@
                                    class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">{{ $i }}</a>
                             @endif
                         @endfor
-
                         @if ($end < $last)
                             @if ($end < $last - 1)
                                 <span class="px-2 text-gray-500">...</span>
@@ -224,8 +219,6 @@
                                class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">{{ $last }}</a>
                         @endif
                     </div>
-
-                    {{-- Next --}}
                     @if ($applications->hasMorePages())
                         <a href="{{ $applications->appends(request()->except('page'))->nextPageUrl() }}"
                            class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">ถัดไป</a>
@@ -233,12 +226,13 @@
                         <button disabled class="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed text-sm">ถัดไป</button>
                     @endif
                 </div>
-
             </div>
         </div>
     @endif
 </div>
+@endsection
 
+@push('scripts')
 <script>
     function filterTable() {
         const name   = document.getElementById('filterName').value.toLowerCase();
@@ -264,8 +258,7 @@
             if (match) visibleCount++;
         });
 
-        const emptyRow = document.getElementById('emptyRow');
-        emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+        document.getElementById('emptyRow').style.display = visibleCount === 0 ? '' : 'none';
     }
 
     function clearFilter() {
@@ -275,6 +268,41 @@
         document.getElementById('filterDate').value   = '';
         filterTable();
     }
-</script>
 
-@endsection
+    document.querySelectorAll('.delete-app-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id    = this.dataset.id;
+            const name  = this.dataset.name;
+            const title = this.dataset.title;
+
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right:6px"></i> ลบ',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById(`form-delete-app-${id}`).submit();
+                }
+            });
+        });
+    });
+
+    @if(session('swal_success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ session('swal_success') }}',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    @endif
+</script>
+@endpush
