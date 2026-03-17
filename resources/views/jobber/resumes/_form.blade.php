@@ -223,18 +223,18 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ <span class="text-red-500">*</span></label>
-                    <input type="text" name="first_name" placeholder="ชื่อ" value="{{ old('first_name', $resume->first_name ?? '') }}" required class="input @error('first_name') border-red-500 @enderror">
+                    <input type="text" name="first_name" placeholder="ชื่อ" value="{{ old('first_name', $resume->first_name ?? '') }}" required class="input @error('first_name') border-red-500 @enderror" style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                     @error('first_name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อกลาง</label>
-                    <input type="text" name="middle_name" placeholder="ชื่อกลาง (ถ้ามี)" value="{{ old('middle_name', $resume->middle_name ?? '') }}" class="input">
+                    <input type="text" name="middle_name" placeholder="ชื่อกลาง (ถ้ามี)" value="{{ old('middle_name', $resume->middle_name ?? '') }}" class="input" style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล <span class="text-red-500">*</span></label>
-                    <input type="text" name="last_name" placeholder="นามสกุล" value="{{ old('last_name', $resume->last_name ?? '') }}" required class="input @error('last_name') border-red-500 @enderror">
+                    <input type="text" name="last_name" placeholder="นามสกุล" value="{{ old('last_name', $resume->last_name ?? '') }}" required class="input @error('last_name') border-red-500 @enderror" style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                     @error('last_name')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -243,17 +243,17 @@
         </div>
 
         {{-- Birth Date & Gender --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">วันเกิด <span class="text-red-500">*</span></label>
-                <input type="date" name="birth_date" max="{{ now()->format('Y-m-d') }}" value="{{ old('birth_date', isset($resume->birth_date) ? \Carbon\Carbon::parse($resume->birth_date)->format('Y-m-d') : '') }}" required class="input @error('birth_date') border-red-500 @enderror">
+                <input type="date" name="birth_date" max="{{ now()->format('Y-m-d') }}" value="{{ old('birth_date', isset($resume->birth_date) ? \Carbon\Carbon::parse($resume->birth_date)->format('Y-m-d') : '') }}" required class="input @error('birth_date') border-red-500 @enderror" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem 0.75rem !important;">
                 @error('birth_date')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
             <div>
     <label class="block text-sm font-medium text-gray-700 mb-2">เพศ <span class="text-red-500">*</span></label>
-    <select name="gender" class="input @error('gender') border-red-500 @enderror" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
+    <select name="gender" class="input @error('gender') border-red-500 @enderror" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem 0.75rem !important;">
         <option value="">-- เลือกเพศ --</option>
         <option value="male" {{ old('gender', $resume->gender ?? '') == 'male' ? 'selected' : '' }}>ชาย</option>
         <option value="female" {{ old('gender', $resume->gender ?? '') == 'female' ? 'selected' : '' }}>หญิง</option>
@@ -277,7 +277,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <input type="email" name="email" placeholder="อีเมล" value="{{ old('email', $resume->email ?? '') }}" required class="input pl-10 @error('email') border-red-500 @enderror">
+                        <input type="email" name="email" placeholder="อีเมล" value="{{ old('email', $resume->email ?? '') }}" required class="input pl-10 @error('email') border-red-500 @enderror" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important;">
                     </div>
                     @error('email')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -291,7 +291,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
                         </div>
-                        <input type="text" name="phone" placeholder="เบอร์ติดต่อ" value="{{ old('phone', $resume->phone ?? '') }}" required inputmode="numeric" maxlength="10" class="input pl-10 @error('phone') border-red-500 @enderror">
+                        <input type="text" name="phone" placeholder="เบอร์ติดต่อ" value="{{ old('phone', $resume->phone ?? '') }}" required inputmode="numeric" maxlength="10" class="input pl-10 @error('phone') border-red-500 @enderror" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important;">
                     </div>
                     @error('phone')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -429,14 +429,14 @@
         </h2>
         <p class="text-gray-600 mb-6">ระบุรายละเอียดเกี่ยวกับความต้องการในการทำงาน</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">เริ่มงานได้เมื่อ</label>
-                <input type="date" name="available_start_date" min="{{ now()->format('Y-m-d') }}" value="{{ old('available_start_date', $resume->available_start_date ?? '') }}" class="input">
+                <input type="date" name="available_start_date" min="{{ now()->format('Y-m-d') }}" value="{{ old('available_start_date', $resume->available_start_date ?? '') }}" class="input" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem 0.75rem !important;">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">สถานที่ทำงานที่ต้องการ</label>
-                <select name="preferred_location" class="input">
+                <select name="preferred_location" class="input" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem 0.75rem !important;">
                     <option value="">-- เลือกจังหวัด --</option>
                     @foreach(config('th_provinces', []) as $province)
                         <option value="{{ $province }}" {{ old('preferred_location', $resume->preferred_location ?? '') == $province ? 'selected' : '' }}>{{ $province }}</option>
@@ -450,7 +450,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">ขั้นต่ำ</label>
-                    <select name="salary_min" class="input">
+                    <select name="salary_min" class="input" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem 0.75rem !important;">
                         <option value="">ไม่ระบุ</option>
                         @foreach([10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000] as $s)
                         <option value="{{ $s }}" {{ old('salary_min', $resume->salary_min ?? '') == $s ? 'selected' : '' }}>{{ number_format($s) }} บาท</option>
@@ -459,7 +459,7 @@
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">สูงสุด</label>
-                    <select name="salary_max" class="input">
+                    <select name="salary_max" class="input" style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem 0.75rem !important;">
                         <option value="">ไม่ระบุ</option>
                         @foreach([10000,15000,20000,25000,30000,35000,40000,45000,50000,60000,70000,80000,100000,120000,150000,200000] as $s)
                         <option value="{{ $s }}" {{ old('salary_max', $resume->salary_max ?? '') == $s ? 'selected' : '' }}>{{ number_format($s) }} บาท</option>
@@ -1104,34 +1104,35 @@ if (hasInvalidFile) {
         const div = document.createElement('div');
         div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
         div.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">กลุ่มทักษะ <span class="text-red-500">*</span></label>
-                    <select name="skills[${index}][skill_group_id]" class="input group" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
-                        <option value="">-- เลือกกลุ่ม --</option>
-                        ${skillGroups.map(g => `<option value="${g.id}" ${g.id == data.skill_group_id ? 'selected' : ''}>${g.name}</option>`).join('')}
-                    </select>
+            <div class="flex flex-col md:flex-row md:items-end gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 flex-1">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">กลุ่มทักษะ <span class="text-red-500">*</span></label>
+                        <select name="skills[${index}][skill_group_id]" class="input group" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
+                            <option value="">-- เลือกกลุ่ม --</option>
+                            ${skillGroups.map(g => `<option value="${g.id}" ${g.id == data.skill_group_id ? 'selected' : ''}>${g.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">ทักษะ <span class="text-red-500">*</span></label>
+                        <select name="skills[${index}][skill_id]" class="input skill" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
+                            <option value="">-- เลือกทักษะ --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความชำนาญ <span class="text-red-500">*</span></label>
+                        <select name="skills[${index}][proficiency_level]" class="input" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
+                            <option value="">เลือกระดับ</option>
+                            <option value="beginner" ${data.proficiency_level == 'beginner' ? 'selected' : ''}>เริ่มต้น</option>
+                            <option value="intermediate" ${data.proficiency_level == 'intermediate' ? 'selected' : ''}>ปานกลาง</option>
+                            <option value="advanced" ${data.proficiency_level == 'advanced' ? 'selected' : ''}>ขั้นสูง</option>
+                            <option value="expert" ${data.proficiency_level == 'expert' ? 'selected' : ''}>ผู้เชี่ยวชาญ</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ทักษะ <span class="text-red-500">*</span></label>
-                    <select name="skills[${index}][skill_id]" class="input skill" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
-                        <option value="">-- เลือกทักษะ --</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความชำนาญ <span class="text-red-500">*</span></label>
-                    <select name="skills[${index}][proficiency_level]" class="input" required style="font-size: 1rem !important; line-height: 1.5rem !important; height: 2.75rem !important; padding: 0.5rem !important;">
-                        <option value="">เลือกระดับ</option>
-                        <option value="beginner" ${data.proficiency_level == 'beginner' ? 'selected' : ''}>เริ่มต้น</option>
-                        <option value="intermediate" ${data.proficiency_level == 'intermediate' ? 'selected' : ''}>ปานกลาง</option>
-                        <option value="advanced" ${data.proficiency_level == 'advanced' ? 'selected' : ''}>ขั้นสูง</option>
-                        <option value="expert" ${data.proficiency_level == 'expert' ? 'selected' : ''}>ผู้เชี่ยวชาญ</option>
-                    </select>
-
-                </div>
-                <div class="flex items-end">
-                    <button type="button" class="remove w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
-                        <span class="flex items-center justify-center gap-1">
+                <div class="flex justify-end md:flex-none">
+                    <button type="button" class="remove px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
+                        <span class="flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -1261,28 +1262,37 @@ if (hasInvalidFile) {
         div.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ระดับการศึกษา <span class="text-red-500">*</span></label>
-                    <input type="text" name="educations[${index}][education_level]" placeholder="เช่น ปริญญาตรี" value="${data.education_level ?? ''}" class="input" required>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">วุฒิการศึกษา <span class="text-red-500">*</span></label>
+                    <select name="educations[${index}][education_level]" class="input" required style="font-size: 1rem !important; line-height: 2rem !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
+                        <option value="">-- เลือกวุฒิการศึกษา --</option>
+                        <option value="ต่ำกว่าปริญญาตรี" ${data.education_level == 'ต่ำกว่าปริญญาตรี' ? 'selected' : ''}>ต่ำกว่าปริญญาตรี</option>
+                        <option value="ปริญญาตรี" ${data.education_level == 'ปริญญาตรี' ? 'selected' : ''}>ปริญญาตรี</option>
+                        <option value="ปริญญาโท" ${data.education_level == 'ปริญญาโท' ? 'selected' : ''}>ปริญญาโท</option>
+                        <option value="ปริญญาเอก" ${data.education_level == 'ปริญญาเอก' ? 'selected' : ''}>ปริญญาเอก</option>
+                        ${data.education_level && !['ต่ำกว่าปริญญาตรี', 'ปริญญาตรี', 'ปริญญาโท', 'ปริญญาเอก'].includes(data.education_level)
+                            ? `<option value="${data.education_level}" selected>${data.education_level}</option>`
+                            : ''}
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">สาขาวิชา <span class="text-red-500">*</span></label>
-                    <input type="text" name="educations[${index}][field_of_study]" placeholder="เช่น วิศวกรรมคอมพิวเตอร์" value="${data.field_of_study ?? ''}" class="input" required>
+                    <input type="text" name="educations[${index}][field_of_study]" placeholder="เช่น วิศวกรรมคอมพิวเตอร์" value="${data.field_of_study ?? ''}" class="input" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">สถาบันการศึกษา <span class="text-red-500">*</span></label>
-                    <input type="text" name="educations[${index}][institution]" placeholder="เช่น มหาวิทยาลัย..." value="${data.institution ?? ''}" class="input" required>
+                    <input type="text" name="educations[${index}][institution]" placeholder="เช่น มหาวิทยาลัย..." value="${data.institution ?? ''}" class="input" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่เริ่มศึกษา <span class="text-red-500">*</span></label>
-                    <select name="educations[${index}][start_year]" class="input" required>
+                    <select name="educations[${index}][start_year]" class="input" required style="font-size: 1rem !important; line-height: 2rem !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                         ${buildYearOptions(data.start_year)}
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่จบการศึกษา <span class="text-red-500">*</span></label>
-                    <select name="educations[${index}][end_year]" class="input" required>
+                    <select name="educations[${index}][end_year]" class="input" required style="font-size: 1rem !important; line-height: 2rem !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                         ${buildYearOptions(data.end_year)}
                     </select>
                 </div>
@@ -1336,15 +1346,15 @@ if (hasInvalidFile) {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อใบรับรอง <span class="text-red-500">*</span></label>
-                    <input type="text" name="certificates[${index}][name]" placeholder="เช่น AWS Certified" value="${data.name ?? ''}" class="input" required>
+                    <input type="text" name="certificates[${index}][name]" placeholder="เช่น AWS Certified" value="${data.name ?? ''}" class="input" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ออกโดย <span class="text-red-500">*</span></label>
-                    <input type="text" name="certificates[${index}][issued_by]" placeholder="เช่น Amazon Web Services" value="${data.issued_by ?? ''}" class="input" required>
+                    <input type="text" name="certificates[${index}][issued_by]" placeholder="เช่น Amazon Web Services" value="${data.issued_by ?? ''}" class="input" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">ปีที่ออกใบรับรอง <span class="text-red-500">*</span></label>
-                    <select name="certificates[${index}][issued_year]" class="input" required>
+                    <select name="certificates[${index}][issued_year]" class="input" required style="font-size: 1rem !important; line-height: 2 !important; height: 3rem !important; padding: 0.5rem 0.75rem !important;>
                         ${buildYearOptions(data.issued_year)}
                     </select>
                 </div>
@@ -1403,33 +1413,35 @@ if (hasInvalidFile) {
         const div = document.createElement('div');
         div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
         div.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ภาษา <span class="text-red-500">*</span></label>
-                    <select name="languages[${index}][language]" class="input h-11 w-full" required>
-                        <option value="">-- เลือกภาษา --</option>
-                        ${worldLanguagesThai.map(language => `<option value="${language}" ${data.language === language ? 'selected' : ''}>${language}</option>`).join('')}
-                    </select>
+            <div class="flex flex-col md:flex-row md:items-end gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">ภาษา <span class="text-red-500">*</span></label>
+                        <select name="languages[${index}][language]" class="input h-11 w-full" required>
+                            <option value="">-- เลือกภาษา --</option>
+                            ${worldLanguagesThai.map(language => `<option value="${language}" ${data.language === language ? 'selected' : ''}>${language}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความชำนาญ <span class="text-red-500">*</span></label>
+                        <select name="languages[${index}][level]" class="input h-11 w-full" required>
+                            <option value="">เลือกระดับ</option>
+                            <option value="basic" ${data.level == 'basic' ? 'selected' : ''}>พื้นฐาน</option>
+                            <option value="conversational" ${data.level == 'conversational' ? 'selected' : ''}>สนทนาได้</option>
+                            <option value="fluent" ${data.level == 'fluent' ? 'selected' : ''}>คล่องแคล่ว</option>
+                            <option value="native" ${data.level == 'native' ? 'selected' : ''}>เจ้าของภาษา</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ระดับความชำนาญ <span class="text-red-500">*</span></label>
-                    <select name="languages[${index}][level]" class="input h-11 w-full" required>
-                        <option value="">เลือกระดับ</option>
-                        <option value="basic" ${data.level == 'basic' ? 'selected' : ''}>พื้นฐาน</option>
-                        <option value="conversational" ${data.level == 'conversational' ? 'selected' : ''}>สนทนาได้</option>
-                        <option value="fluent" ${data.level == 'fluent' ? 'selected' : ''}>คล่องแคล่ว</option>
-                        <option value="native" ${data.level == 'native' ? 'selected' : ''}>เจ้าของภาษา</option>
-                    </select>
-                </div>
-                <div>
-                    <button type="button" class="remove w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
-                            <span class="flex items-center justify-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                ลบ
-                            </span>
-                        </button>
+                <div class="flex justify-end md:flex-none">
+                    <button type="button" class="remove px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            ลบ
+                        </span>
+                    </button>
                 </div>
             </div>
         `;

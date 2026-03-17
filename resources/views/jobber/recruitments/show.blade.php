@@ -60,9 +60,19 @@
     {{-- Header --}}
     <div class="p-5 mb-6 bg-white border shadow-sm rounded-2xl border-slate-200">
         <div class="flex items-center justify-between">
+            @php
+                $previousUrl = url()->previous();
+                $backUrl = route('jobber.jobs.index');
+                
+                // ตรวจสอบว่ามาจากหน้าไหน
+                if (str_contains($previousUrl, 'applications')) {
+                    $backUrl = route('jobber.applications.index');
+                } elseif (str_contains($previousUrl, 'jobs')) {
+                    $backUrl = route('jobber.jobs.index');
+                }
+            @endphp
             <a
-                href="{{ url()->previous() }}"
-                onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+                href="{{ $backUrl }}"
                 class="flex items-center justify-center w-9 h-9 border border-gray-400 rounded-2xl bg-base-100 hover:bg-gray-200 transition"
                 title="กลับ">
                 <i class="fa-solid fa-arrow-left text-gray-600"></i>
