@@ -71,26 +71,26 @@
                         @error('rc_work_mode') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <div id="location-fields" class="contents">
-                    <div id="location-text-field" class="md:col-span-2">
-                        <label class="label py-0"><span class="label-text font-medium">สถานที่</span></label>
-                        <select name="rc_location_text" id="rc_location_text" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
-                            <option value="">-- เลือกจังหวัด --</option>
-                            @foreach(config('th_provinces', []) as $province)
-                                <option value="{{ $province }}" @selected(old('rc_location_text') === $province)>{{ $province }}</option>
-                            @endforeach
-                        </select>
-                        @error('rc_location_text') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
-                    </div>
+                    <div id="location-fields" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div id="location-text-field">
+                            <label class="label py-0"><span class="label-text font-medium">สถานที่</span></label>
+                            <select name="rc_location_text" id="rc_location_text" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
+                                <option value="">-- เลือกจังหวัด --</option>
+                                @foreach(config('th_provinces', []) as $province)
+                                    <option value="{{ $province }}" @selected(old('rc_location_text') === $province)>{{ $province }}</option>
+                                @endforeach
+                            </select>
+                            @error('rc_location_text') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
 
-                    <div id="location-link-field" class="md:col-span-2">
-                        <label class="label py-0"><span class="label-text font-medium">ลิงก์สถานที่</span></label>
-                        <input type="url" name="rc_location_link" id="rc_location_link"
-                            class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
-                            placeholder="https://maps.google.com/..."
-                            value="{{ old('rc_location_link') }}">
-                        @error('rc_location_link') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
-                    </div>
+                        <div id="location-link-field">
+                            <label class="label py-0"><span class="label-text font-medium">ลิงก์สถานที่</span></label>
+                            <input type="url" name="rc_location_link" id="rc_location_link"
+                                class="w-full input input-bordered focus:input-primary border border-base-300 pl-2"
+                                placeholder="https://maps.google.com/..."
+                                value="{{ old('rc_location_link') }}">
+                            @error('rc_location_link') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                        </div>
                     </div>
 
                     <div>
@@ -193,165 +193,172 @@
                 </div>
             </div>
 
+            {{-- ================= SECTION: ทักษะที่ต้องการ (รวม ทักษะความสามารถ + ทักษะด้านภาษา) ================= --}}
+            @php
+                $languageOptions = [
+                    'ภาษาไทย', 'ภาษาอังกฤษ', 'ภาษาจีนกลาง', 'ภาษาจีนกวางตุ้ง', 'ภาษาญี่ปุ่น', 'ภาษาเกาหลี',
+                    'ภาษาฝรั่งเศส', 'ภาษาเยอรมัน', 'ภาษาสเปน', 'ภาษาโปรตุเกส', 'ภาษาอิตาลี', 'ภาษาดัตช์',
+                    'ภาษารัสเซีย', 'ภาษายูเครน', 'ภาษาโปแลนด์', 'ภาษาเช็ก', 'ภาษาสโลวัก', 'ภาษาฮังการี',
+                    'ภาษาโรมาเนีย', 'ภาษาบัลแกเรีย', 'ภาษาเซอร์เบีย', 'ภาษาโครเอเชีย', 'ภาษาสโลวีเนีย',
+                    'ภาษาบอสเนีย', 'ภาษาแอลเบเนีย', 'ภาษากรีก', 'ภาษาตุรกี', 'ภาษาอาหรับ', 'ภาษาฮีบรู',
+                    'ภาษาเปอร์เซีย', 'ภาษาอูรดู', 'ภาษาฮินดี', 'ภาษาเบงกาลี', 'ภาษาปัญจาบ', 'ภาษาคุชราตี',
+                    'ภาษามราฐี', 'ภาษาทมิฬ', 'ภาษาเตลูกู', 'ภาษากันนาดา', 'ภาษามาลายาลัม', 'ภาษาสิงหล',
+                    'ภาษาเนปาลี', 'ภาษาพม่า', 'ภาษามลายู', 'ภาษาอินโดนีเซีย', 'ภาษาตากาล็อก', 'ภาษาเวียดนาม',
+                    'ภาษาลาว', 'ภาษาเขมร', 'ภาษามองโกเลีย', 'ภาษาคาซัค', 'ภาษาอุซเบก', 'ภาษาอาเซอร์ไบจาน',
+                    'ภาษาจอร์เจีย', 'ภาษาอาร์เมเนีย', 'ภาษาสวาฮีลี', 'ภาษาอัมฮาริก', 'ภาษาโซมาลี',
+                    'ภาษาโยรูบา', 'ภาษาอิกโบ', 'ภาษาเฮาซา', 'ภาษาแอฟริคานส์', 'ภาษาซูลู', 'ภาษาโคซา',
+                    'ภาษาเดนมาร์ก', 'ภาษานอร์เวย์', 'ภาษาสวีเดน', 'ภาษาฟินแลนด์', 'ภาษาไอซ์แลนด์',
+                    'ภาษาเอสโตเนีย', 'ภาษาลัตเวีย', 'ภาษาลิทัวเนีย', 'ภาษาไอริช', 'ภาษาเวลส์', 'ภาษาสก็อตเกลิก',
+                    'ภาษามอลตา', 'ภาษาคาตาลัน', 'ภาษาบาสก์', 'ภาษากาลิเซีย', 'ภาษาละติน',
+                    'ภาษากลาง (ลิงกวาฟรังกา)', 'ภาษานาวาโฮ', 'ภาษาอินุกติตุต', 'ภาษาเมารี', 'ภาษาฮาวาย',
+                    'ภาษาซามัว', 'ภาษาตองกา', 'ภาษาฟิจิ', 'ภาษาปาปิอาเมนโต', 'ภาษาเครโอลเฮติ',
+                    'ภาษาลักเซมเบิร์ก', 'ภาษามาซิโดเนีย', 'ภาษาเบลารุส', 'ภาษามอลโดวา', 'ภาษาคีร์กีซ',
+                    'ภาษาทาจิก', 'ภาษาเตอร์กเมน', 'ภาษาเคิร์ด', 'ภาษาอัสสัม', 'ภาษาโอเดีย', 'ภาษาสันสกฤต'
+                ];
+            @endphp
 
-            {{-- ================= SECTION: ทักษะที่ต้องการ ================= --}}
             <div class="bg-base-200 rounded-2xl px-5 py-4">
-                <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
-                    <span class="w-1.5 h-5 bg-warning rounded-full inline-block"></span>
+                <h2 class="text-base font-semibold mb-4 flex items-center gap-1.5">
+                    <span class="w-1.5 h-5 bg-error rounded-full inline-block"></span>
                     ทักษะที่ต้องการ
                 </h2>
 
-                <div class="grid items-center gap-2 px-3 mb-1" style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
-                    <span class="text-xs font-medium opacity-60">กลุ่มทักษะ <span class="text-error">*</span></span>
-                    <span class="text-xs font-medium opacity-60">ทักษะ <span class="text-error">*</span></span>
-                    <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
-                    <span></span>
-                </div>
-                <div id="skills-wrapper" class="space-y-2">
-                    @foreach ($oldSkills as $i => $skill)
-                        @php
-                            $selectedGroupId = $skill['skill_group_id'] ?? null;
-                            $selectedGroup = $skillGroups->firstWhere('id', (int) $selectedGroupId);
-                            $selectedSkillId = $skill['skill_id'] ?? null;
-                        @endphp
-                        <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
-                             style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
-                            <div class="relative min-w-0 overflow-hidden">
-                                <select name="skills[{{ $i }}][skill_group_id]"
-                                    class="select select-bordered select-sm focus:select-primary skill-group w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
-                                    <option value="">-- กลุ่มทักษะ --</option>
-                                    @foreach ($skillGroups as $group)
-                                        <option value="{{ $group->id }}" @selected((string) $selectedGroupId === (string) $group->id)>{{ $group->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
-                                    <span class="truncate text-sm skill-group-label {{ $selectedGroupId ? '' : 'opacity-60' }}">{{ $selectedGroup?->name ?? '-- กลุ่มทักษะ --' }}</span>
-                                </div>
-                            </div>
-                            <div class="relative min-w-0 overflow-hidden">
-                                <select name="skills[{{ $i }}][skill_id]"
-                                    class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer" {{ $selectedGroup ? '' : 'disabled' }}>
-                                    <option value="">-- ทักษะ --</option>
-                                    @foreach (($selectedGroup?->skills ?? collect())->sortBy(fn ($item) => mb_strtolower($item->name)) as $groupSkill)
-                                        <option value="{{ $groupSkill->id }}" @selected((string) $selectedSkillId === (string) $groupSkill->id)>{{ $groupSkill->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
-                                    <span class="truncate text-sm skill-select-label {{ $selectedSkillId ? '' : 'opacity-60' }}">{{ $selectedGroup?->skills?->firstWhere('id', (int) $selectedSkillId)?->name ?? '-- ทักษะ --' }}</span>
-                                </div>
-                            </div>
-                            <select name="skills[{{ $i }}][proficiency_level]" class="select select-bordered select-sm focus:select-primary">
-                                @foreach (['beginner' => 'เริ่มต้น', 'intermediate' => 'ปานกลาง', 'advanced' => 'ขั้นสูง', 'expert' => 'ผู้เชี่ยวชาญ'] as $level => $label)
-                                    <option value="{{ $level }}" @selected(($skill['proficiency_level'] ?? 'beginner') === $level)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <button type="button" class="remove-skill btn btn-xs shrink-0" style="background-color:#ef4444; color:white; border:none; min-width:2rem">✕</button>
-                        </div>
-                    @endforeach
-                </div>
+                {{-- ---- หัวข้อย่อย: ทักษะความสามารถ ---- --}}
+                <div class="mb-5">
+                    <label class="label py-0"><span class="label-text font-medium pb-2">ทักษะความสามารถ</span></label></span>
 
-                <button type="button" id="add-skill"
-                    class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    เพิ่มทักษะ
-                </button>
-            </div>
 
-        </div>{{-- end space-y-4 --}}
-
-        {{-- ================= SECTION: LANGUAGES ================= --}}
-        @php
-            $languageOptions = [
-                'ภาษาไทย', 'ภาษาอังกฤษ', 'ภาษาจีนกลาง', 'ภาษาจีนกวางตุ้ง', 'ภาษาญี่ปุ่น', 'ภาษาเกาหลี',
-                'ภาษาฝรั่งเศส', 'ภาษาเยอรมัน', 'ภาษาสเปน', 'ภาษาโปรตุเกส', 'ภาษาอิตาลี', 'ภาษาดัตช์',
-                'ภาษารัสเซีย', 'ภาษายูเครน', 'ภาษาโปแลนด์', 'ภาษาเช็ก', 'ภาษาสโลวัก', 'ภาษาฮังการี',
-                'ภาษาโรมาเนีย', 'ภาษาบัลแกเรีย', 'ภาษาเซอร์เบีย', 'ภาษาโครเอเชีย', 'ภาษาสโลวีเนีย',
-                'ภาษาบอสเนีย', 'ภาษาแอลเบเนีย', 'ภาษากรีก', 'ภาษาตุรกี', 'ภาษาอาหรับ', 'ภาษาฮีบรู',
-                'ภาษาเปอร์เซีย', 'ภาษาอูรดู', 'ภาษาฮินดี', 'ภาษาเบงกาลี', 'ภาษาปัญจาบ', 'ภาษาคุชราตี',
-                'ภาษามราฐี', 'ภาษาทมิฬ', 'ภาษาเตลูกู', 'ภาษากันนาดา', 'ภาษามาลายาลัม', 'ภาษาสิงหล',
-                'ภาษาเนปาลี', 'ภาษาพม่า', 'ภาษามลายู', 'ภาษาอินโดนีเซีย', 'ภาษาตากาล็อก', 'ภาษาเวียดนาม',
-                'ภาษาลาว', 'ภาษาเขมร', 'ภาษามองโกเลีย', 'ภาษาคาซัค', 'ภาษาอุซเบก', 'ภาษาอาเซอร์ไบจาน',
-                'ภาษาจอร์เจีย', 'ภาษาอาร์เมเนีย', 'ภาษาสวาฮีลี', 'ภาษาอัมฮาริก', 'ภาษาโซมาลี',
-                'ภาษาโยรูบา', 'ภาษาอิกโบ', 'ภาษาเฮาซา', 'ภาษาแอฟริคานส์', 'ภาษาซูลู', 'ภาษาโคซา',
-                'ภาษาเดนมาร์ก', 'ภาษานอร์เวย์', 'ภาษาสวีเดน', 'ภาษาฟินแลนด์', 'ภาษาไอซ์แลนด์',
-                'ภาษาเอสโตเนีย', 'ภาษาลัตเวีย', 'ภาษาลิทัวเนีย', 'ภาษาไอริช', 'ภาษาเวลส์', 'ภาษาสก็อตเกลิก',
-                'ภาษามอลตา', 'ภาษาคาตาลัน', 'ภาษาบาสก์', 'ภาษากาลิเซีย', 'ภาษาละติน',
-                'ภาษากลาง (ลิงกวาฟรังกา)', 'ภาษานาวาโฮ', 'ภาษาอินุกติตุต', 'ภาษาเมารี', 'ภาษาฮาวาย',
-                'ภาษาซามัว', 'ภาษาตองกา', 'ภาษาฟิจิ', 'ภาษาปาปิอาเมนโต', 'ภาษาเครโอลเฮติ',
-                'ภาษาลักเซมเบิร์ก', 'ภาษามาซิโดเนีย', 'ภาษาเบลารุส', 'ภาษามอลโดวา', 'ภาษาคีร์กีซ',
-                'ภาษาทาจิก', 'ภาษาเตอร์กเมน', 'ภาษาเคิร์ด', 'ภาษาอัสสัม', 'ภาษาโอเดีย', 'ภาษาสันสกฤต'
-            ];
-        @endphp
-
-        <div class="bg-base-200 rounded-2xl px-6 py-5 mt-4">
-            <h2 class="text-base font-semibold mb-3 flex items-center gap-1.5">
-                <span class="w-1.5 h-5 bg-info rounded-full inline-block"></span>
-                ภาษาที่ต้องการ
-            </h2>
-
-            <div class="grid items-center gap-2 px-3 mb-1" style="grid-template-columns: 2fr 2fr 2rem">
-                <span class="text-xs font-medium opacity-60">ภาษา <span class="text-error">*</span></span>
-                <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
-                <span></span>
-            </div>
-            <div id="languages-wrapper" class="space-y-2">
-                @foreach ($langs as $i => $lang)
-                <div class="language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
-                    style="grid-template-columns: 2fr 2fr 2rem">
-
-                    <div class="relative min-w-0 overflow-hidden">
-                        <select name="languages[{{ $i }}][language]"
-                            class="select select-bordered select-sm focus:select-primary lang-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
-                            <option value="">-- เลือกภาษา --</option>
-                            @foreach ($languageOptions as $opt)
-                                <option value="{{ $opt }}" {{ ($lang['language'] ?? '') === $opt ? 'selected' : '' }}>
-                                    {{ $opt }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
-                            @php $selLang = $lang['language'] ?? ''; @endphp
-                            <span class="truncate text-sm lang-label {{ $selLang ? '' : 'opacity-60' }}">
-                                {{ $selLang ?: '-- เลือกภาษา --' }}
-                            </span>
-                        </div>
+                    <div id="skills-header" class="grid items-center gap-2 px-3 mb-1 {{ $oldSkills->isEmpty() ? 'hidden' : '' }}" style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
+                        <span class="text-xs font-medium opacity-60">กลุ่มทักษะ <span class="text-error">*</span></span>
+                        <span class="text-xs font-medium opacity-60">ทักษะ <span class="text-error">*</span></span>
+                        <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
+                        <span></span>
                     </div>
 
-                    <select name="languages[{{ $i }}][proficiency]"
-                        class="select select-bordered select-sm w-full">
-                        <option value="basic"          {{ ($lang['proficiency'] ?? '')=='basic'          ? 'selected' : '' }}>พื้นฐาน</option>
-                        <option value="conversational" {{ ($lang['proficiency'] ?? '')=='conversational' ? 'selected' : '' }}>สนทนาได้</option>
-                        <option value="fluent"         {{ ($lang['proficiency'] ?? '')=='fluent'         ? 'selected' : '' }}>คล่องแคล่ว</option>
-                        <option value="native"         {{ ($lang['proficiency'] ?? '')=='native'         ? 'selected' : '' }}>เจ้าของภาษา</option>
-                    </select>
+                    <div id="skills-wrapper" class="space-y-2">
+                        @foreach ($oldSkills as $i => $skill)
+                            @php
+                                $selectedGroupId = $skill['skill_group_id'] ?? null;
+                                $selectedGroup = $skillGroups->firstWhere('id', (int) $selectedGroupId);
+                                $selectedSkillId = $skill['skill_id'] ?? null;
+                            @endphp
+                            <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
+                                 style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
+                                <div class="relative min-w-0 overflow-hidden">
+                                    <select name="skills[{{ $i }}][skill_group_id]"
+                                        class="select select-bordered select-sm focus:select-primary skill-group w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
+                                        <option value="">-- กลุ่มทักษะ --</option>
+                                        @foreach ($skillGroups as $group)
+                                            <option value="{{ $group->id }}" @selected((string) $selectedGroupId === (string) $group->id)>{{ $group->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                                        <span class="truncate text-sm skill-group-label {{ $selectedGroupId ? '' : 'opacity-60' }}">{{ $selectedGroup?->name ?? '-- กลุ่มทักษะ --' }}</span>
+                                    </div>
+                                </div>
+                                <div class="relative min-w-0 overflow-hidden">
+                                    <select name="skills[{{ $i }}][skill_id]"
+                                        class="select select-bordered select-sm focus:select-primary skill-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer" {{ $selectedGroup ? '' : 'disabled' }}>
+                                        <option value="">-- ทักษะ --</option>
+                                        @foreach (($selectedGroup?->skills ?? collect())->sortBy(fn ($item) => mb_strtolower($item->name)) as $groupSkill)
+                                            <option value="{{ $groupSkill->id }}" @selected((string) $selectedSkillId === (string) $groupSkill->id)>{{ $groupSkill->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                                        <span class="truncate text-sm skill-select-label {{ $selectedSkillId ? '' : 'opacity-60' }}">{{ $selectedGroup?->skills?->firstWhere('id', (int) $selectedSkillId)?->name ?? '-- ทักษะ --' }}</span>
+                                    </div>
+                                </div>
+                                <select name="skills[{{ $i }}][proficiency_level]" class="select select-bordered select-sm focus:select-primary">
+                                    @foreach (['beginner' => 'เริ่มต้น', 'intermediate' => 'ปานกลาง', 'advanced' => 'ขั้นสูง', 'expert' => 'ผู้เชี่ยวชาญ'] as $level => $label)
+                                        <option value="{{ $level }}" @selected(($skill['proficiency_level'] ?? 'beginner') === $level)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="remove-skill btn btn-xs shrink-0" style="background-color:#ef4444; color:white; border:none; min-width:2rem">✕</button>
+                            </div>
+                        @endforeach
+                    </div>
 
-                    <button type="button"
-                        class="remove-language btn btn-xs shrink-0"
-                        style="background-color:#ef4444; color:white; border:none; min-width:2rem">
-                        ✕
+                    <button type="button" id="add-skill"
+                        class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        เพิ่ม
                     </button>
                 </div>
-                @endforeach
-            </div>
 
-            <button type="button" id="add-language"
-                class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                เพิ่มภาษา
-            </button>
 
-            <div class="mt-3">
-                <label class="label py-0"><span class="label-text font-medium">คุณสมบัติทั่วไป</span></label>
-                <textarea name="rc_requirements" rows="4"
-                    class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
-                    placeholder="ระบุข้อมูลเพิ่มเติมเกี่ยวกับคุณสมบัติ (ถ้ามี)">{{ old('rc_requirements') }}</textarea>
-                @error('rc_requirements') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
-            </div>
-        </div>
+
+                {{-- ---- หัวข้อย่อย: ทักษะด้านภาษา ---- --}}
+                <div class="mt-4">
+                    <label class="label py-0"><span class="label-text font-medium pb-2">ทักษะด้านภาษา</span></label></span>
+
+                    <div id="languages-header" class="grid items-center gap-2 px-3 mb-1 {{ $langs->isEmpty() ? 'hidden' : '' }}" style="grid-template-columns: 2fr 2fr 2rem">
+                        <span class="text-xs font-medium opacity-60">ภาษา <span class="text-error">*</span></span>
+                        <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
+                        <span></span>
+                    </div>
+
+                    <div id="languages-wrapper" class="space-y-2">
+                        @foreach ($langs as $i => $lang)
+                        <div class="language-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
+                            style="grid-template-columns: 2fr 2fr 2rem">
+
+                            <div class="relative min-w-0 overflow-hidden">
+                                <select name="languages[{{ $i }}][language]"
+                                    class="select select-bordered select-sm focus:select-primary lang-select w-full opacity-0 absolute inset-0 z-10 cursor-pointer">
+                                    <option value="">-- เลือกภาษา --</option>
+                                    @foreach ($languageOptions as $opt)
+                                        <option value="{{ $opt }}" {{ ($lang['language'] ?? '') === $opt ? 'selected' : '' }}>
+                                            {{ $opt }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="select select-bordered select-sm w-full flex items-center pointer-events-none overflow-hidden">
+                                    @php $selLang = $lang['language'] ?? ''; @endphp
+                                    <span class="truncate text-sm lang-label {{ $selLang ? '' : 'opacity-60' }}">
+                                        {{ $selLang ?: '-- เลือกภาษา --' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <select name="languages[{{ $i }}][proficiency]"
+                                class="select select-bordered select-sm w-full">
+                                <option value="basic"          {{ ($lang['proficiency'] ?? '')=='basic'          ? 'selected' : '' }}>พื้นฐาน</option>
+                                <option value="conversational" {{ ($lang['proficiency'] ?? '')=='conversational' ? 'selected' : '' }}>สนทนาได้</option>
+                                <option value="fluent"         {{ ($lang['proficiency'] ?? '')=='fluent'         ? 'selected' : '' }}>คล่องแคล่ว</option>
+                                <option value="native"         {{ ($lang['proficiency'] ?? '')=='native'         ? 'selected' : '' }}>เจ้าของภาษา</option>
+                            </select>
+
+                            <button type="button"
+                                class="remove-language btn btn-xs shrink-0"
+                                style="background-color:#ef4444; color:white; border:none; min-width:2rem">
+                                ✕
+                            </button>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <button type="button" id="add-language"
+                        class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        เพิ่ม
+                    </button>
+
+                    <div class="mt-3">
+                        <label class="label py-0"><span class="label-text font-medium">คุณสมบัติทั่วไป</span></label>
+                        <textarea name="rc_requirements" rows="4"
+                            class="w-full textarea textarea-bordered focus:textarea-primary border border-base-300 pl-2"
+                            placeholder="ระบุข้อมูลเพิ่มเติมเกี่ยวกับคุณสมบัติ (ถ้ามี)">{{ old('rc_requirements') }}</textarea>
+                        @error('rc_requirements') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+            </div>{{-- end ทักษะที่ต้องการ --}}
+
+        </div>{{-- end space-y-3 --}}
 
         {{-- ================= SECTION: ช่วงเวลา ================= --}}
         <div class="bg-base-200 rounded-2xl px-5 py-4 mt-3">
@@ -564,6 +571,29 @@ document.addEventListener('DOMContentLoaded', () => {
         <button type="button" class="remove-skill btn btn-xs shrink-0" style="background-color:#ef4444; color:white; border:none; min-width:2rem">✕</button>
     `;
 
+    // Prevent selecting the same skill multiple times across rows
+    function updateSkillOptions() {
+        const skillSelects = Array.from(document.querySelectorAll('select[name^="skills"][name$="[skill_id]"]'));
+        const selectedSkills = skillSelects.map(s => s.value).filter(v => v);
+
+        skillSelects.forEach(select => {
+            const ownValue = select.value;
+            const otherSelected = selectedSkills.filter(v => v && v !== ownValue);
+
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.disabled = otherSelected.includes(opt.value);
+            });
+        });
+
+        // Disable add button if all skills are selected
+        const addButton = document.getElementById('add-skill');
+        const allSkillIds = Object.values(SKILLS_BY_GROUP).flat().map(s => s.id.toString());
+        const availableSkills = allSkillIds.filter(skillId => !selectedSkills.includes(skillId));
+        addButton.disabled = availableSkills.length === 0;
+        addButton.style.opacity = availableSkills.length === 0 ? '0.5' : '1';
+    }
+
     const toggleLocationFields = () => {
         const selectedWorkMode = workModeEls?.value || '';
         const requiresLocation = ['onsite', 'hybrid'].includes(selectedWorkMode);
@@ -614,14 +644,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         `<option value="${skill.id}">${skill.name}</option>`);
                 });
             skillSelect.disabled = false;
+            updateSkillOptions();
         }
         if (e.target.classList.contains('skill-select')) {
             const row = e.target.closest('.skill-row');
             syncOverlayLabel(e.target, row.querySelector('.skill-select-label'));
+            updateSkillOptions();
         }
         if (e.target.classList.contains('lang-select')) {
             const row = e.target.closest('.language-row');
             syncOverlayLabel(e.target, row.querySelector('.lang-label'));
+            updateLanguageOptions();
         }
     });
 
@@ -633,11 +666,17 @@ document.addEventListener('DOMContentLoaded', () => {
         row.innerHTML = buildSkillRowHtml(skillIndex);
         wrapper.appendChild(row);
         skillIndex++;
+        document.getElementById('skills-header').classList.remove('hidden');
+        updateSkillOptions();
     });
 
     document.addEventListener('click', e => {
         if (e.target.classList.contains('remove-skill') || e.target.closest('.remove-skill')) {
             e.target.closest('.skill-row').remove();
+            if (document.querySelectorAll('.skill-row').length === 0) {
+                document.getElementById('skills-header').classList.add('hidden');
+            }
+            updateSkillOptions();
         }
     });
 
@@ -645,6 +684,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const buildLangOptions = () =>
         `<option value="">-- เลือกภาษา --</option>` +
         LANGUAGE_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
+
+    // Prevent selecting the same language multiple times across rows
+    function updateLanguageOptions() {
+        const languageSelects = Array.from(document.querySelectorAll('select[name^="languages"][name$="[language]"]'));
+        const selectedLanguages = languageSelects.map(s => s.value).filter(v => v);
+
+        languageSelects.forEach(select => {
+            const ownValue = select.value;
+            const otherSelected = selectedLanguages.filter(v => v && v !== ownValue);
+
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.disabled = otherSelected.includes(opt.value);
+            });
+        });
+
+        // Disable add button if all languages are selected
+        const addButton = document.getElementById('add-language');
+        const availableOptions = LANGUAGE_OPTIONS.filter(lang => !selectedLanguages.includes(lang));
+        addButton.disabled = availableOptions.length === 0;
+        addButton.style.opacity = availableOptions.length === 0 ? '0.5' : '1';
+    }
 
     document.getElementById('add-language').addEventListener('click', () => {
         const wrapper = document.getElementById('languages-wrapper');
@@ -672,11 +733,17 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         wrapper.appendChild(div);
         langIndex++;
+        document.getElementById('languages-header').classList.remove('hidden');
+        updateLanguageOptions();
     });
 
     document.addEventListener('click', e => {
         if (e.target.classList.contains('remove-language') || e.target.closest('.remove-language')) {
             e.target.closest('.language-row').remove();
+            if (document.querySelectorAll('.language-row').length === 0) {
+                document.getElementById('languages-header').classList.add('hidden');
+            }
+            updateLanguageOptions();
         }
     });
 
@@ -795,6 +862,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     workModeEls?.addEventListener('change', toggleLocationFields);
     toggleLocationFields();
+
+    // Initialize skill and language options on page load
+    updateSkillOptions();
+    updateLanguageOptions();
 
 }); // end DOMContentLoaded
 </script>

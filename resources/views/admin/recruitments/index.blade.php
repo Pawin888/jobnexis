@@ -78,7 +78,7 @@
                         <th class="w-[11%] py-3 px-3">เปิดรับเมื่อ</th>
                         <th class="w-[13%] py-3 px-3">ปิดรับ/หมดอายุ</th>
                         <th class="w-[11%] py-3 px-3">สถานะ</th>
-                        <th class="w-[14%] py-3 px-3 text-center">จัดการ</th>
+                        <th class="w-[14%] py-3 px-3">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-base-300">
@@ -184,7 +184,7 @@
                                 @endif
                             </td>
                             <td class="py-3 px-3">
-                                <div class="flex items-center justify-center gap-1.5">
+                                <div class="flex gap-1.5">
                                     @if ($isAdmin)
                                         @if(!$isExpired)
                                             <!-- Not expired: allow status toggle, edit, QR -->
@@ -376,12 +376,11 @@
             const title = this.dataset.title;
             Swal.fire({
                 title: 'ยืนยันการลบ',
-                html: `ต้องการลบประกาศงาน<br><strong>"${title}"</strong><br><span style="color:#6b7280;font-size:0.85rem;">รายการนี้จะถูกลบถาวร ไม่สามารถกู้คืนได้</span>`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right:6px"></i> ลบเลย',
+                confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right:6px"></i> ลบ',
                 cancelButtonText: 'ยกเลิก',
                 reverseButtons: true,
                 focusCancel: true,
