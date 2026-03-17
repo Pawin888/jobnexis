@@ -151,31 +151,21 @@
                             </td>
                             <td class="py-3 px-3 text-xs">
                                 @if($isExpired)
-                                    <!-- Expired posting - top priority -->
                                     <span class="text-red-600 font-medium">{{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('d/m/Y') }}</span>
                                     <div class="text-xs text-red-400 mt-0.5">หมดอายุแล้ว</div>
                                 @elseif($r->rc_status === 'closed')
-                                    <!-- Closed but not expired -->
                                     @if ($r->rc_expire_at)
-                                        <span class="rounded-full text-xs text-gray-700">
-                                             ปิดรับแล้ว
-                                        </span>
+                                        <span class="rounded-full text-xs text-gray-700">ปิดรับแล้ว</span>
                                     @else
-                                        <span class="rounded-full text-xs text-gray-700">
-                                             ปิดรับแล้ว
-                                        </span>
+                                        <span class="rounded-full text-xs text-gray-700">ปิดรับแล้ว</span>
                                     @endif
                                 @elseif ($r->rc_expire_at)
-                                    <!-- Has expiry date but not expired yet -->
                                     <span class="text-gray-700">{{ \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('d/m/Y') }}</span>
                                     <div class="text-xs mt-0.5 {{ $isExpireToday ? 'text-amber-500' : 'text-gray-400' }}">
                                         {{ $isExpireToday ? 'หมดอายุวันนี้' : 'ยังไม่หมดอายุ' }}
                                     </div>
                                 @else
-                                    <!-- Open indefinitely -->
-                                    <span class="rounded-full text-xs text-emerald-500">
-                                        เปิดรับตลอด
-                                    </span>
+                                    <span class="rounded-full text-xs text-emerald-500">เปิดรับตลอด</span>
                                 @endif
                             </td>
                             <td class="py-3 px-3">
@@ -197,7 +187,7 @@
                                 <div class="flex items-center justify-center gap-1.5">
                                     @if ($isAdmin)
                                         @if(!$isExpired)
-                                            <!-- Not expired yet: allow status toggle and edit -->
+                                            <!-- Not expired: allow status toggle, edit, QR -->
                                             @if(!$r->rc_expire_at)
                                                 <form method="POST" action="{{ route('admin.recruitments.status', $r->rc_id) }}">
                                                     @csrf @method('PATCH')
@@ -214,6 +204,15 @@
                                                title="แก้ไข">
                                                 <i class="fa-solid fa-pen-to-square text-sm"></i>
                                             </a>
+                                            @if($isOpenActive)
+                                                <button type="button"
+                                                    class="qr-link-btn flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-emerald-50 hover:border-emerald-400 transition text-gray-600 hover:text-emerald-600"
+                                                    data-job-url="{{ route('jobs.show', $r->rc_id) }}"
+                                                    data-job-title="{{ $r->rc_title }}"
+                                                    title="ลิ้งก์และ QR Code">
+                                                    <i class="fa-solid fa-qrcode text-sm"></i>
+                                                </button>
+                                            @endif
                                         @else
                                             <!-- Expired: only show view details -->
                                             <a href="{{ route('admin.recruitments.show', $r->rc_id) }}"
@@ -233,7 +232,7 @@
                                         </form>
                                     @else
                                         @if(!$isExpired)
-                                            <!-- Not expired yet: allow status toggle and edit -->
+                                            <!-- Not expired: allow status toggle, edit, QR -->
                                             @if(!$r->rc_expire_at)
                                                 <form method="POST" action="{{ route('provider.recruitments.status', $r->rc_id) }}">
                                                     @csrf @method('PATCH')
@@ -250,6 +249,15 @@
                                                title="แก้ไข">
                                                 <i class="fa-solid fa-pen-to-square text-sm"></i>
                                             </a>
+                                            @if($isOpenActive)
+                                                <button type="button"
+                                                    class="qr-link-btn flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-emerald-50 hover:border-emerald-400 transition text-gray-600 hover:text-emerald-600"
+                                                    data-job-url="{{ route('jobs.show', $r->rc_id) }}"
+                                                    data-job-title="{{ $r->rc_title }}"
+                                                    title="ลิ้งก์และ QR Code">
+                                                    <i class="fa-solid fa-qrcode text-sm"></i>
+                                                </button>
+                                            @endif
                                         @else
                                             <!-- Expired: only show view details -->
                                             <a href="{{ route('provider.recruitments.show', $r->rc_id) }}"
@@ -361,11 +369,11 @@
 
 @push('scripts')
 <script>
+    // ===== Delete confirmation =====
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const form = this.closest('.delete-form');
             const title = this.dataset.title;
-
             Swal.fire({
                 title: 'ยืนยันการลบ',
                 html: `ต้องการลบประกาศงาน<br><strong>"${title}"</strong><br><span style="color:#6b7280;font-size:0.85rem;">รายการนี้จะถูกลบถาวร ไม่สามารถกู้คืนได้</span>`,
@@ -378,10 +386,119 @@
                 reverseButtons: true,
                 focusCancel: true,
             }).then(result => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+                if (result.isConfirmed) form.submit();
             });
+        });
+    });
+
+    // ===== Shared QR / Link modal =====
+    function openQrModal(jobUrl, jobTitle, isNew) {
+        isNew = isNew || false;
+        Swal.fire({
+            title: isNew
+                ? '<span style="font-size:1.1rem;font-weight:700">บันทึกสำเร็จ! 🎉</span>'
+                : '<span style="font-size:1.1rem;font-weight:700"><i class="fa-solid fa-qrcode" style="margin-right:6px;color:#059669"></i>ลิ้งก์และ QR Code</span>',
+            html: `
+                <p style="color:#6b7280;font-size:0.875rem;margin-bottom:8px">แชร์ให้ผู้สมัครเข้าดูประกาศงาน</p>
+                <p style="font-weight:600;margin-bottom:12px;font-size:0.9rem">${jobTitle}</p>
+                <div style="display:flex;gap:6px;margin-bottom:16px;align-items:stretch">
+                    <input id="swal-job-url" value="${jobUrl}" readonly
+                        onclick="this.select()"
+                        style="flex:1;padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:0.78rem;outline:none;background:#f9fafb;color:#374151;min-width:0;cursor:pointer">
+                    <button id="swal-copy-btn"
+                        style="padding:7px 14px;background:#2563eb;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.82rem;white-space:nowrap;flex-shrink:0">
+                        <i class="fa-solid fa-copy"></i> คัดลอก
+                    </button>
+                </div>
+                <div style="display:flex;justify-content:center;margin-bottom:12px">
+                    <div id="swal-qr-div" style="background:#fff;padding:8px;border-radius:10px;border:1px solid #e5e7eb;display:inline-block"></div>
+                </div>
+                <button id="swal-dl-btn"
+                    style="padding:7px 18px;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.82rem">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลด QR Code
+                </button>
+                <p style="font-size:0.75rem;color:#9ca3af;margin-top:8px">สแกน QR Code เพื่อเปิดประกาศงาน</p>
+            `,
+            showConfirmButton: true,
+            confirmButtonText: isNew ? 'ตกลง' : 'ปิด',
+            confirmButtonColor: isNew ? '#2563eb' : '#6b7280',
+            focusConfirm: false,
+            width: 480,
+            didOpen: () => {
+                const qrDiv = document.getElementById('swal-qr-div');
+
+                // Render QR Code
+                new QRCode(qrDiv, {
+                    text: jobUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#1e3a5f',
+                    colorLight: '#ffffff',
+                });
+
+                // Copy button — proper event listener (works on HTTP & HTTPS)
+                document.getElementById('swal-copy-btn').addEventListener('click', function () {
+                    const btn = this;
+                    const restore = () => setTimeout(() => {
+                        btn.innerHTML = '<i class="fa-solid fa-copy"></i> คัดลอก';
+                        btn.style.background = '#2563eb';
+                    }, 2000);
+                    const onSuccess = () => {
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> คัดลอกแล้ว';
+                        btn.style.background = '#16a34a';
+                        restore();
+                    };
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(jobUrl).then(onSuccess).catch(() => {
+                            const inp = document.getElementById('swal-job-url');
+                            inp.removeAttribute('readonly');
+                            inp.select();
+                            document.execCommand('copy');
+                            inp.setAttribute('readonly', '');
+                            onSuccess();
+                        });
+                    } else {
+                        const inp = document.getElementById('swal-job-url');
+                        inp.removeAttribute('readonly');
+                        inp.select();
+                        document.execCommand('copy');
+                        inp.setAttribute('readonly', '');
+                        onSuccess();
+                    }
+                });
+
+                // Download QR button
+                document.getElementById('swal-dl-btn').addEventListener('click', function () {
+                    setTimeout(() => {
+                        const canvas = qrDiv.querySelector('canvas');
+                        const img    = qrDiv.querySelector('img');
+                        let dataUrl;
+                        if (canvas) {
+                            dataUrl = canvas.toDataURL('image/png');
+                        } else if (img) {
+                            const c = document.createElement('canvas');
+                            c.width  = img.naturalWidth  || img.width  || 200;
+                            c.height = img.naturalHeight || img.height || 200;
+                            c.getContext('2d').drawImage(img, 0, 0);
+                            dataUrl = c.toDataURL('image/png');
+                        }
+                        if (!dataUrl) return;
+                        const a = document.createElement('a');
+                        a.href = dataUrl;
+                        a.download = 'qr-job.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }, 150);
+                });
+            },
+        });
+    }
+
+    // ===== Per-row QR buttons =====
+    document.querySelectorAll('.qr-link-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            openQrModal(this.dataset.jobUrl, this.dataset.jobTitle);
         });
     });
 
@@ -407,6 +524,11 @@
             timer: 3000,
             timerProgressBar: true,
         });
+    @endif
+
+    @if (session('swal_qr'))
+        @php $qrData = session('swal_qr'); @endphp
+        openQrModal('{{ route('jobs.show', $qrData['rc_id']) }}', @json($qrData['rc_title']), true);
     @endif
 </script>
 @endpush

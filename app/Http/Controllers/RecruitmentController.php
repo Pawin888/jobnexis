@@ -354,12 +354,12 @@ class RecruitmentController extends Controller
         if ($user->role === 'admin') {
             return redirect()
                 ->route('admin.providers.recruitments.index', $rec->rc_u_id)
-                ->with('status', 'อัปเดตประกาศงานเรียบร้อย');
+                ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
         }
 
         return redirect()
             ->route('provider.recruitments.index')
-            ->with('status', 'อัปเดตประกาศงานเรียบร้อย');
+            ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
     }
 
     /** เปลี่ยนสถานะประกาศงานเป็น เปิดรับ(open) หรือ ปิดรับ(closed) */
@@ -433,7 +433,7 @@ public function storeForAdmin(Request $request, $userId)
 
     return redirect()
         ->route('admin.providers.recruitments.index', $userId)
-        ->with('status', 'สร้างประกาศงานเรียบร้อย');
+        ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
 }
 
 public function createForProvider()
@@ -477,7 +477,7 @@ public function createForProvider()
 
         return redirect()
             ->route('provider.recruitments.index')
-            ->with('status', 'สร้างประกาศงานเรียบร้อย');
+            ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
     }
 
 /** ----- แชร์ rules ระหว่าง create/update ----- */

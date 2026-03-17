@@ -15,15 +15,20 @@ class JobApplication extends Model
         'jobber_id',
         'resume_id',
         'status',
+        'is_shortlisted',
+        'shortlisted_at',
         'cover_letter',
         'applied_at',
         'reviewed_at',
         'review_note',
+        'internal_note',
     ];
 
     protected $casts = [
         'applied_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'shortlisted_at' => 'datetime',
+        'is_shortlisted' => 'boolean',
     ];
 
     // Relationships
