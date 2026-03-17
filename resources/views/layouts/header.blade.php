@@ -58,6 +58,11 @@
                             <li>
                                 <a href="{{ route('profile-jobber.edit') }}">โปรไฟล์</a>
                             </li>
+                            @if(auth()->user()->role === 'jobber')
+                                <li>
+                                    <a href="{{ route('jobber.applications.index') }}">ติดตามการสมัครงาน</a>
+                                </li>
+                            @endif
                             <li>
                                 <a href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

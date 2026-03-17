@@ -20,6 +20,7 @@ use App\Http\Controllers\SkillController;
 use App\Http\Controllers\Admin\MasterSkillOverviewController;
 use App\Http\Controllers\Jobber\ResumeController;
 use App\Http\Controllers\Provider\ApplicationController;
+use App\Http\Controllers\Provider\CandidateController;
 use App\Http\Controllers\Jobber\JobApplicationController;
 
 Route::get('/', fn() => view('welcome'))->name('home');
@@ -215,6 +216,7 @@ Route::middleware('role:education')->prefix('education')->group(function () {
 /** ---------------- Jobber Routes ---------------- */
 Route::middleware('role:jobber')->prefix('jobber')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'jobber'])->name('jobber.dashboard');
+    Route::get('/applications', [JobApplicationController::class, 'index'])->name('jobber.applications.index');
     Route::get('/jobs', [RecruitmentController::class, 'jobberIndex'])->name('jobber.jobs.index');
     Route::get('/jobs/{rcId}', [RecruitmentController::class, 'jobberShow'])->name('jobber.jobs.show');
     // Companies directory for jobbers
@@ -267,10 +269,29 @@ Route::middleware(['auth', 'role:jobber'])
 
 /** -------- Provider: ดูใบสมัครงาน -------- */
 Route::prefix('provider')->middleware(['auth', 'provider'])->group(function () {
+    Route::get('/candidates', [CandidateController::class, 'index'])
+        ->name('provider.candidates.index');
+    Route::get('/candidates/{resumeId}', [CandidateController::class, 'show'])
+        ->name('provider.candidates.show');
+    Route::patch('/candidates/{resumeId}/save', [CandidateController::class, 'toggleSave'])
+        ->name('provider.candidates.save');
+    Route::post('/candidates/{resumeId}/invite', [CandidateController::class, 'invite'])
+        ->name('provider.candidates.invite');
+    Route::get('/candidates/{resumeId}/resume-pdf', [CandidateController::class, 'downloadResumePdf'])
+        ->name('provider.candidates.resume-pdf');
+
     Route::get('/applications', [ApplicationController::class, 'index'])
         ->name('provider.applications.index');
     Route::get('/applications/{applicationId}', [ApplicationController::class, 'show'])
         ->name('provider.applications.show');
+    Route::patch('/applications/{applicationId}/internal-note', [ApplicationController::class, 'updateInternalNote'])
+        ->name('provider.applications.internal-note');
+    Route::patch('/applications/{applicationId}/shortlist', [ApplicationController::class, 'toggleShortlist'])
+        ->name('provider.applications.shortlist');
+    Route::get('/applications/{applicationId}/resume-pdf', [ApplicationController::class, 'downloadResumePdf'])
+        ->name('provider.applications.resume-pdf');
+    Route::delete('/applications/{applicationId}', [ApplicationController::class, 'destroy'])
+        ->name('provider.applications.destroy');
     Route::put('/applications/{applicationId}/status', [ApplicationController::class, 'updateStatus'])
         ->name('provider.applications.updateStatus');
     Route::get('/recruitments/{recruitmentId}/applications', [ApplicationController::class, 'byRecruit'])

@@ -4,11 +4,38 @@ namespace App\Http\Controllers\Jobber;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobApplication;
+use App\Models\ProviderCandidateInvite;
 use App\Models\Resume;
 use Illuminate\Http\Request;
 
 class JobApplicationController extends Controller
 {
+    public function index(Request $request)
+    {
+        $jobber = auth()->user();
+        $perPage = (int) $request->integer('perPage', 20);
+        $perPage = in_array($perPage, [10, 20, 30, 50], true) ? $perPage : 20;
+
+        $applications = JobApplication::query()
+            ->where('jobber_id', $jobber->id)
+            ->whereIn('status', ['reviewing', 'accepted', 'rejected'])
+            ->with(['recruitment', 'recruitment.owner', 'recruitment.owner.companyProfile'])
+            ->orderByDesc('applied_at')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $invites = ProviderCandidateInvite::query()
+            ->whereHas('resume', fn ($q) => $q->where('user_id', $jobber->id))
+            ->with(['recruitment', 'provider', 'provider.companyProfile'])
+            ->orderByDesc('invited_at')
+            ->get();
+
+        return view('jobber.applications.index', [
+            'applications' => $applications,
+            'invites' => $invites,
+        ]);
+    }
+
     public function apply(Request $request, $rcId)
     {
         $jobber = auth()->user();

@@ -46,30 +46,36 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-x-auto border shadow bg-base-200 rounded-2xl p-4">
-        <table class="table table-fixed w-full">
-            <thead>
+    <div class="overflow-x-auto rounded-2xl border shadow bg-base-200">
+        <table class="table table-fixed w-full min-w-[820px]">
+            <thead class="bg-base-300 text-xs uppercase tracking-wide">
                 <tr>
-                    <th class="w-[25%]">ตำแหน่งงาน</th>
-                    <th class="w-[20%]">ผู้สมัคร</th>
-                    <th class="w-[15%]">รีซูเม</th>
-                    <th class="w-[17%]">วันที่สมัคร</th>
-                    <th class="w-[13%]">สถานะ</th>
-                    <th class="w-[10%]">การทำงาน</th>
+                    <th class="w-[30%] py-3 px-4">ตำแหน่งงาน</th>
+                    <th class="w-[24%] py-3 px-3">รีซูเม</th>
+                    <th class="w-[16%] py-3 px-3">วันที่สมัคร</th>
+                    <th class="w-[14%] py-3 px-3">สถานะ</th>
+                    <th class="w-[16%] py-3 px-3 text-center">จัดการ</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
+            <tbody id="tableBody" class="divide-y divide-base-300">
                 @forelse($applications as $app)
-                    <tr class="table-row">
-                        <td class="max-w-0">
-                            <div class="truncate col-title">{{ Str::limit($app->recruitment->rc_title, 30, '...') }}</div>
+                    <tr class="table-row hover:bg-base-100 transition-colors">
+                        <td class="py-3 px-4 max-w-0">
+                            <div class="truncate col-title font-medium text-sm">{{ Str::limit($app->recruitment->rc_title, 30, '...') }}</div>
+                            @if($app->is_shortlisted)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 mt-1 text-[11px] rounded-full bg-amber-100 text-amber-700">
+                                    <i class="fa-solid fa-star"></i> ตัวเต็ง
+                                </span>
+                            @endif
                         </td>
-                        <td class="col-name truncate">{{ $app->jobber->profile->up_name ?? $app->jobber->email }}</td>
-                        <td class="truncate">{{ $app->resume->first_name }} {{ $app->resume->last_name }}</td>
-                        <td class="col-date" data-date="{{ \Carbon\Carbon::parse($app->applied_at)->format('Y-m-d') }}">
-                            {{ \Carbon\Carbon::parse($app->applied_at)->format('d/m/Y H:i') }}
+                        <td class="py-3 px-3">
+                            <div class="truncate col-name font-medium">{{ trim(($app->resume->first_name ?? '').' '.($app->resume->last_name ?? '')) ?: ($app->jobber->profile->up_name ?? $app->jobber->email) }}</div>
+                            <div class="truncate text-xs opacity-70">{{ $app->resume->email ?? $app->jobber->email }}</div>
                         </td>
-                        <td>
+                        <td class="py-3 px-3 text-xs col-date" data-date="{{ \Carbon\Carbon::parse($app->applied_at)->format('Y-m-d') }}">
+                            {{ \Carbon\Carbon::parse($app->applied_at)->format('d/m/Y') }}
+                        </td>
+                        <td class="py-3 px-3">
                             @php
                                 $statusColor = [
                                     'reviewing' => 'text-yellow-700 bg-yellow-200',
@@ -82,23 +88,63 @@
                                     'rejected'  => 'ปฏิเสธ',
                                 ][$app->status] ?? $app->status;
                             @endphp
-                            <span class="px-3 py-1 text-sm rounded-full col-status {{ $statusColor }}">{{ $statusLabel }}</span>
+                            <span class="inline-flex items-center px-2.5 py-1 text-xs rounded-full col-status {{ $statusColor }}">{{ $statusLabel }}</span>
                         </td>
-                        <td>
-                                <a href="{{ route('provider.applications.show', $app->id) }}"
-                                   class="flex items-center justify-center w-10 h-10 text-gray-700 transition border border-gray-400 rounded-2xl bg-base-100 hover:bg-blue-600 hover:text-white"
-                                   title="ดูรายละเอียด">
-                                    <i class="fa-solid fa-search"></i>
-                                </a>
+                        <td class="py-3 px-3">
+                            <div class="flex items-center justify-center gap-1.5">
+                                @if($app->status === 'rejected')
+                                    <a href="{{ route('provider.applications.show', $app->id) }}"
+                                       class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-blue-600 hover:text-white hover:border-blue-600"
+                                       title="ดูรายละเอียด">
+                                        <i class="fa-solid fa-search"></i>
+                                    </a>
+                                    <form method="POST" action="{{ route('provider.applications.destroy', $app->id) }}" onsubmit="return confirm('ยืนยันลบใบสมัครนี้?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-red-50 hover:text-red-600 hover:border-red-400"
+                                            title="ลบใบสมัคร">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('provider.applications.shortlist', $app->id) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit"
+                                            class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-400"
+                                            title="{{ $app->is_shortlisted ? 'นำออกจากตัวเต็ง' : 'บันทึกเป็นตัวเต็ง' }}">
+                                            <i class="fa-{{ $app->is_shortlisted ? 'solid' : 'regular' }} fa-star"></i>
+                                        </button>
+                                    </form>
+                                    <a href="mailto:{{ $app->resume->email ?? $app->jobber->email }}"
+                                       class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-400"
+                                       title="ส่งอีเมล">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </a>
+                                    @if($app->resume->phone)
+                                        <a href="tel:{{ preg_replace('/\s+/', '', $app->resume->phone) }}"
+                                           class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-400"
+                                           title="โทรหา">
+                                            <i class="fa-solid fa-phone"></i>
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('provider.applications.show', $app->id) }}"
+                                       class="flex items-center justify-center w-9 h-9 text-gray-700 transition border border-gray-300 rounded-xl bg-base-100 hover:bg-blue-600 hover:text-white hover:border-blue-600"
+                                       title="ดูรายละเอียด">
+                                        <i class="fa-solid fa-search"></i>
+                                    </a>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-10 text-center text-gray-500">ไม่มีใบสมัคร</td>
+                        <td colspan="5" class="py-10 text-center text-gray-500">ไม่มีใบสมัคร</td>
                     </tr>
                 @endforelse
                 <tr id="emptyRow" style="display: none;">
-                    <td colspan="6" class="py-10 text-center text-gray-500">ไม่พบใบสมัครงาน</td>
+                    <td colspan="5" class="py-10 text-center text-gray-500">ไม่พบใบสมัครงาน</td>
                 </tr>
             </tbody>
         </table>
