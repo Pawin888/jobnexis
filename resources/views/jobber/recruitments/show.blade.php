@@ -168,7 +168,6 @@
                 @php
                     $skillItems = collect();
 
-                    // กรณีเก็บแบบ recruitmentSkills (มี skill_group_id, skill_id, proficiency_level)
                     if (isset($rec->recruitmentSkills) && $rec->recruitmentSkills->count()) {
                         $skillItems = $rec->recruitmentSkills->map(function ($row) {
                             return [
@@ -178,7 +177,6 @@
                             ];
                         });
                     }
-                    // กรณีเก็บแบบ many-to-many skills + pivot
                     elseif (isset($rec->skills) && $rec->skills->count()) {
                         $skillItems = $rec->skills->map(function ($skill) {
                             return [
@@ -304,33 +302,24 @@
                     @auth
                         @if(auth()->user()->role === 'jobber')
                             @if($hasApplied)
-                                <button onclick="document.getElementById('withdraw_modal').showModal()"
+                                {{-- ปุ่มถอนการสมัคร --}}
+                                <form id="form-withdraw" action="{{ route('jobber.jobs.withdraw', $rec->rc_id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <button type="button" id="btn-withdraw"
                                         class="w-full px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700">
                                     ถอนการสมัคร
                                 </button>
-
-                                <dialog id="withdraw_modal" class="modal">
-                                    <div class="modal-box">
-                                        <h3 class="text-lg font-bold text-orange-600">ยืนยันการถอนการสมัคร</h3>
-                                        <p class="py-4">คุณต้องการถอนการสมัครตำแหน่ง <strong>{{ $rec->rc_title }}</strong> ใช่หรือไม่?</p>
-                                        <form action="{{ route('jobber.jobs.withdraw', $rec->rc_id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <div class="modal-action">
-                                                <button type="button" onclick="document.getElementById('withdraw_modal').close()" class="btn">ยกเลิก</button>
-                                                <button type="submit" class="text-white btn bg-orange-600 hover:bg-orange-700">ยืนยันการถอน</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <form method="dialog" class="modal-backdrop"><button>close</button></form>
-                                </dialog>
                             @else
-                                <form action="{{ route('jobber.jobs.apply', $rec->rc_id) }}" method="POST">
+                                {{-- ปุ่มสมัครงาน --}}
+                                <form id="form-apply" action="{{ route('jobber.jobs.apply', $rec->rc_id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                        สมัครงานด้วยเรซูเม่ของคุณ
-                                    </button>
                                 </form>
+                                <button type="button" id="btn-apply"
+                                        class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                    สมัครงานด้วยเรซูเม่ของคุณ
+                                </button>
                             @endif
                         @else
                             <p class="text-sm text-gray-600">บัญชีผู้ประกอบการไม่สามารถสมัครงานได้</p>
@@ -388,3 +377,59 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    const jobTitle = "{{ addslashes($rec->rc_title) }}";
+    const companyName = "{{ addslashes($company->co_name ?? 'ไม่ระบุบริษัท') }}";
+
+    // ปุ่มสมัครงาน
+    document.getElementById('btn-apply')?.addEventListener('click', () => {
+        Swal.fire({
+            title: 'ยืนยันการสมัครงาน',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-paper-plane" style="margin-right:6px"></i> สมัคร',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('form-apply').submit();
+            }
+        });
+    });
+
+    // ปุ่มถอนการสมัคร
+    document.getElementById('btn-withdraw')?.addEventListener('click', () => {
+        Swal.fire({
+            title: 'ยืนยันการถอนการสมัคร',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ea580c',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-xmark" style="margin-right:6px"></i> ถอนการสมัคร',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+            focusCancel: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('form-withdraw').submit();
+            }
+        });
+    });
+
+    @if(session('swal_success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ session('swal_success') }}',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    @endif
+</script>
+@endpush
