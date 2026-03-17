@@ -127,18 +127,18 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('provider.candidates.index') }}"
+                    class="flex items-center {{ request()->is('provider/candidates*') ? 'text-blue-600' : '' }}">
+                    <i class="fa-solid fa-address-book w-5 text-blue-600 text-center mr-1 {{ request()->is('provider/candidates*') ? 'text-blue-600' : '' }}"></i>
+                    ใบเรซูเม่ผู้สมัคร
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('jobs.index') }}"
                     class="flex items-center {{ request()->is('jobs*') ? 'text-blue-600' : '' }}">
                     <i
                         class="fa-solid fa-magnifying-glass w-5 text-blue-600 text-center mr-1 {{ request()->is('jobs*') ? 'text-blue-600' : '' }}"></i>
                     งานที่เปิดรับสมัคร
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('provider.candidates.index') }}"
-                    class="flex items-center {{ request()->is('provider/candidates*') ? 'text-blue-600' : '' }}">
-                    <i class="fa-solid fa-address-book w-5 text-blue-600 text-center mr-1 {{ request()->is('provider/candidates*') ? 'text-blue-600' : '' }}"></i>
-                    ใบเรซูเม่ผู้สมัคร
                 </a>
             </li>
         </ul>

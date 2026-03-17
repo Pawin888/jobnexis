@@ -62,13 +62,34 @@
         <div class="flex items-center justify-between">
             @php
                 $previousUrl = url()->previous();
-                $backUrl = route('jobber.jobs.index');
-                
-                // ตรวจสอบว่ามาจากหน้าไหน
-                if (str_contains($previousUrl, 'applications')) {
+                $previousPath = parse_url($previousUrl, PHP_URL_PATH) ?? '';
+                $backUrl = route('jobs.index');
+
+                // ใช้หน้าเดิมเป็นหลักก่อน
+                if (str_contains($previousPath, '/jobber/applications') && auth()->check() && auth()->user()->role === 'jobber') {
                     $backUrl = route('jobber.applications.index');
-                } elseif (str_contains($previousUrl, 'jobs')) {
+                } elseif (str_contains($previousPath, '/jobber/jobs') && auth()->check() && auth()->user()->role === 'jobber') {
                     $backUrl = route('jobber.jobs.index');
+                } elseif (str_contains($previousPath, '/my/recruitments') && auth()->check() && auth()->user()->role === 'provider') {
+                    $backUrl = route('provider.recruitments.index');
+                } elseif (
+                    str_contains($previousPath, '/admin/providers/')
+                    && str_contains($previousPath, '/recruitments')
+                    && auth()->check()
+                    && auth()->user()->role === 'admin'
+                ) {
+                    $backUrl = route('admin.recruitments.index', ['userId' => $rec->rc_u_id]);
+                } elseif (str_contains($previousPath, '/jobs')) {
+                    $backUrl = route('jobs.index');
+                } elseif (auth()->check()) {
+                    // fallback ตามบทบาท
+                    if (auth()->user()->role === 'provider') {
+                        $backUrl = route('provider.recruitments.index');
+                    } elseif (auth()->user()->role === 'jobber') {
+                        $backUrl = route('jobber.jobs.index');
+                    } elseif (auth()->user()->role === 'admin') {
+                        $backUrl = route('admin.recruitments.index', ['userId' => $rec->rc_u_id]);
+                    }
                 }
             @endphp
             <a

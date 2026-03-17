@@ -17,6 +17,8 @@ class CandidateController extends Controller
     {
         $providerId = Auth::id();
         $q = trim((string) $request->string('q'));
+        $location = trim((string) $request->string('location'));
+        $savedOnly = $request->boolean('saved_only');
         $perPage = (int) $request->integer('perPage', 20);
         $perPage = in_array($perPage, [10, 20, 30, 50], true) ? $perPage : 20;
 
@@ -37,6 +39,8 @@ class CandidateController extends Controller
                         ->orWhereHas('resumeSkills.skill', fn ($sq) => $sq->where('name', 'like', "%{$q}%"));
                 });
             })
+            ->when($location !== '', fn ($query) => $query->where('preferred_location', 'like', "%{$location}%"))
+            ->when($savedOnly, fn ($query) => $query->whereIn('id', $savedResumeIds))
             ->orderByDesc('updated_at')
             ->paginate($perPage)
             ->withQueryString();
@@ -57,6 +61,8 @@ class CandidateController extends Controller
             'openRecruitments' => $openRecruitments,
             'filters' => [
                 'q' => $q,
+                'location' => $location,
+                'saved_only' => $savedOnly,
             ],
         ]);
     }

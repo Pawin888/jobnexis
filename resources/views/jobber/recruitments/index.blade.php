@@ -36,12 +36,12 @@
                     @endforeach
                 </select>
             </fieldset>
-            <div class="flex gap-2 md:col-span-2">
-                <button class="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+            <div class="grid w-full grid-cols-2 gap-2 md:col-span-2">
+                <button type="submit" class="inline-flex items-center justify-center w-full h-10 px-4 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
                     ค้นหา
                 </button>
 
-                <a href="{{ url()->current() }}" class="flex items-center justify-center flex-1 px-4 py-2 text-white bg-gray-500 rounded-lg hover:bg-gray-600">
+                <a href="{{ url()->current() }}" class="btn inline-flex items-center justify-center w-full h-10">
                     ล้าง
                 </a>
             </div>

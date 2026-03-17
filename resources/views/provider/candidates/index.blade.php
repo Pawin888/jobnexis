@@ -11,17 +11,29 @@
         </div>
     </div>
 
-    <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-4">
-        <fieldset class="fieldset md:col-span-3">
+    <form method="GET" class="grid items-end grid-cols-1 gap-4 md:grid-cols-6">
+        <fieldset class="fieldset md:col-span-2">
             <legend class="mb-1 fieldset-legend">ค้นหา</legend>
             <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
                 class="w-full border border-gray-300 input input-bordered"
                 placeholder="ชื่อ, อีเมล, หรือทักษะ">
         </fieldset>
-        <fieldset class="fieldset">
-            <legend class="mb-1 fieldset-legend">การค้นหา</legend>
+        <fieldset class="fieldset md:col-span-2">
+            <legend class="mb-1 fieldset-legend">สถานที่ที่ต้องการ</legend>
+            <input type="text" name="location" value="{{ $filters['location'] ?? '' }}"
+                class="w-full border border-gray-300 input input-bordered"
+                placeholder="เช่น กรุงเทพ, เชียงใหม่">
+        </fieldset>
+        <fieldset class="fieldset md:col-span-1">
+            <legend class="mb-1 fieldset-legend">ตัวเลือก</legend>
+            <label class="h-10 px-3 border border-gray-300 rounded-lg bg-base-100 inline-flex items-center gap-2 text-sm">
+                <input type="checkbox" name="saved_only" value="1" class="checkbox checkbox-sm" {{ !empty($filters['saved_only']) ? 'checked' : '' }}>
+                เฉพาะที่บันทึก
+            </label>
+        </fieldset>
+        <fieldset class="fieldset md:col-span-1">
             <div class="flex gap-2">
-                <button class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
+                <button type="submit" class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
                 <a href="{{ url()->current() }}" class="btn">ล้าง</a>
             </div>
         </fieldset>
@@ -31,11 +43,11 @@
         <table class="table table-fixed w-full min-w-[980px]">
             <thead class="bg-base-300 text-xs uppercase tracking-wide">
                 <tr>
-                    <th class="w-[22%] py-3 px-4">ผู้สมัคร</th>
-                    <th class="w-[16%] py-3 px-3">ติดต่อ</th>
-                    <th class="w-[22%] py-3 px-3">ทักษะเด่น</th>
-                    <th class="w-[10%] py-3 px-3">อัปเดตล่าสุด</th>
-                    <th class="w-[30%] py-3 px-3 text-center">จัดการ</th>
+                    <th class="w-[25%] py-3 px-4">ผู้สมัคร</th>
+                    <th class="w-[20%] py-3 px-3">ติดต่อ</th>
+                    <th class="w-[20%] py-3 px-3">ทักษะเด่น</th>
+                    <th class="w-[15%] py-3 px-3">อัปเดตล่าสุด</th>
+                    <th class="w-[20%] py-3 px-3 text-left">จัดการ</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-base-300">
@@ -76,7 +88,7 @@
                             {{ optional($resume->updated_at)->format('d/m/Y') ?: '-' }}
                         </td>
                         <td class="py-3 px-3">
-                            <div class="flex items-center justify-center gap-1.5">
+                            <div class="flex items-center justify-start gap-1.5 whitespace-nowrap">
                                 <a href="{{ route('provider.candidates.show', $resume->id) }}"
                                    class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
                                    title="ดูรายละเอียดเรซูเม่">
@@ -132,7 +144,7 @@
                     <label for="perPage" class="text-sm text-gray-700 font-medium">แสดง:</label>
                     <select
                         id="perPage"
-                        onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&q={{ request('q') }}'"
+                        onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&q={{ request('q') }}&location={{ request('location') }}&saved_only={{ request('saved_only') }}'"
                         class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                     >
                         @foreach ([10, 20, 30, 50] as $n)

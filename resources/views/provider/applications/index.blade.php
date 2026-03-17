@@ -100,6 +100,7 @@
                                     </a>
                                     {{-- hidden form ลบใบสมัคร --}}
                                     <form id="form-delete-app-{{ $app->id }}"
+                                        class="hidden"
                                           method="POST"
                                           action="{{ route('provider.applications.destroy', $app->id) }}">
                                         @csrf
