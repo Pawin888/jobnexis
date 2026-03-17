@@ -105,6 +105,11 @@
                                     <a href="{{ $profileRoute }}">โปรไฟล์</a>
                                 @endif
                             </li>
+                            @if (Auth::user()->role === 'jobber')
+                                <li>
+                                    <a href="{{ route('jobber.applications.index') }}">ติดตามการสมัครงาน</a>
+                                </li>
+                            @endif
                             <li>
                                 @php
                                     $isAdmin = Auth::user()->role === 'admin';
@@ -125,8 +130,7 @@
                             </li>
                             <li>
                                 <a href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                                    class="p-2 ">
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     ออกจากระบบ
                                 </a>
                             </li>

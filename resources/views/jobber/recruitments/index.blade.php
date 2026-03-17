@@ -3,7 +3,7 @@
 @section('title', 'หางาน')
 
 @section('content')
-    <div class="w-full p-6 shadow bg-base-200 rounded-2xl">
+    <div class="w-full p-6 border shadow-sm bg-base-200/90 rounded-2xl border-base-300">
         <div class="flex items-center justify-between pb-4 mb-4 border-b">
             <div>
                 <h1 class="text-2xl font-semibold">หางานที่เปิดรับสมัคร</h1>
@@ -49,8 +49,20 @@
 
         <div class="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
             @forelse ($recs as $r)
-                @php $company = $companies[$r->rc_u_id] ?? null; @endphp
-                <div class="p-4 bg-white shadow rounded-xl">
+                @php
+                    $company = $companies[$r->rc_u_id] ?? null;
+                    $typeLabels = collect($r->type_labels ?? []);
+                    $modeLabel = $r->work_mode_label ?: 'ไม่ระบุโหมดการทำงาน';
+                    $descriptionText = trim((string) ($r->rc_description ?? '')) !== '' ? $r->rc_description : 'ไม่ได้ระบุรายละเอียดงาน';
+                    $salaryText = trim((string) ($r->rc_salary ?? '')) !== '' ? $r->rc_salary : 'ไม่ระบุ';
+                    $locationText = trim((string) ($r->rc_location_text ?? '')) !== '' ? $r->rc_location_text : 'ไม่ระบุ';
+                    $postedDate = optional($r->rc_posted_at)->timezone('Asia/Bangkok')->format('d/m/Y') ?: '-';
+                    $isAlwaysOpen = empty($r->rc_expire_at);
+                    $expireDateText = $r->rc_expire_at
+                        ? \Illuminate\Support\Carbon::parse($r->rc_expire_at)->format('d/m/Y')
+                        : null;
+                @endphp
+                <div class="flex flex-col h-full p-4 transition-all duration-200 bg-white border shadow-sm rounded-2xl border-slate-100 hover:-translate-y-0.5 hover:shadow-lg">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 overflow-hidden bg-gray-100 rounded-full">
                             @if($company && $company->co_profile_img)
@@ -67,28 +79,33 @@
                         </div>
                     </div>
 
-                    <p class="mt-3 text-sm text-gray-700 line-clamp-2">{{ $r->rc_description }}</p>
+                    <p class="mt-3 text-sm leading-relaxed text-gray-700 line-clamp-3">{{ $descriptionText }}</p>
 
                     <div class="flex flex-col gap-2 mt-3 text-xs">
                         <div class="flex flex-wrap gap-2 ">
-                            @foreach ($r->type_labels as $typeLabel)
-                                <span class="px-2 py-1 text-blue-700 bg-blue-100 rounded-full">{{ $typeLabel }}</span>
-                            @endforeach
-                            <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">{{ $r->work_mode_label }}</span>
+                            @if($typeLabels->count())
+                                @foreach ($typeLabels as $typeLabel)
+                                    <span class="px-2 py-1 text-blue-700 bg-blue-100 rounded-full">{{ $typeLabel }}</span>
+                                @endforeach
+                            @else
+                                <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full">ไม่ระบุประเภทงาน</span>
+                            @endif
+                            <span class="px-2 py-1 rounded-full {{ $r->work_mode_label ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700' }}">{{ $modeLabel }}</span>
+                            @if($isAlwaysOpen)
+                                <span class="px-2 py-1 text-green-700 bg-green-100 rounded-full">เปิดรับตลอด</span>
+                            @else
+                                <span class="px-2 py-1 text-amber-700 bg-amber-100 rounded-full">หมดเขตรับสมัคร {{ $expireDateText }}</span>
+                            @endif
                         </div>
 
-                        @if($r->rc_salary)
-                            <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full ">เงินเดือน: {{ $r->rc_salary }}</span>
-                        @endif
-                        @if($r->rc_location_text)
-                            <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full line-clamp-2">สถานที่: {{ $r->rc_location_text }}</span>
-                        @endif
+                        <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full">เงินเดือน: {{ $salaryText }}</span>
+                        <span class="px-2 py-1 text-gray-700 bg-gray-100 rounded-full line-clamp-2">สถานที่: {{ $locationText }}</span>
                     </div>
 
-                    <div class="flex items-center justify-between mt-4">
-                        <span class="text-xs text-gray-500">โพสต์เมื่อ {{ optional($r->rc_posted_at)->timezone('Asia/Bangkok')->format('Y-m-d H:i') }}</span>
+                    <div class="flex items-end justify-between pt-4 mt-auto border-t border-slate-100">
+                        <span class="text-xs text-gray-500">โพสต์เมื่อ {{ $postedDate }}</span>
                         <div class="flex items-center gap-2">
-                            <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50">ดูรายละเอียด</a>
+                            <a href="{{ (auth()->check() && auth()->user()->role==='jobber') ? route('jobber.jobs.show', $r->rc_id) : route('jobs.show', $r->rc_id) }}" class="px-4 py-2 text-blue-700 transition-colors border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white">ดูรายละเอียด</a>
                         </div>
                     </div>
                 </div>
