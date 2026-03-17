@@ -46,36 +46,9 @@
         @csrf
         @method('DELETE')
     </form>
-
-    {{-- Custom Delete Confirmation Modal --}}
-    <div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" style="display:none">
-        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800">ยืนยันการลบเรซูเม่</h3>
-                    <p class="text-sm text-gray-500">การกระทำนี้ไม่สามารถย้อนกลับได้</p>
-                </div>
-            </div>
-            <p class="text-gray-600 mb-6">คุณแน่ใจหรือว่าต้องการลบเรซูเม่นี้? ข้อมูลทั้งหมดรวมถึงทักษะ ประสบการณ์ และไฟล์แนบจะถูกลบออกอย่างถาวร</p>
-            <div class="flex gap-3 justify-end">
-                <button type="button" id="cancel-delete" class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
-                    ยกเลิก
-                </button>
-                <button type="button" id="confirm-delete" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
-                    ยืนยันการลบ
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 
 <style>
-    /* Reset form elements */
     input, select, textarea {
         margin: 0;
         font-family: inherit;
@@ -83,9 +56,7 @@
         line-height: inherit;
     }
 
-    select {
-        text-transform: none;
-    }
+    select { text-transform: none; }
 
     .tab-button {
         position: relative;
@@ -107,9 +78,7 @@
         background-color: #EFF6FF;
     }
 
-    .tab-button.completed {
-        color: #059669;
-    }
+    .tab-button.completed { color: #059669; }
 
     .tab-button.completed::after {
         content: '✓';
@@ -127,9 +96,7 @@
         font-size: 0.75rem;
     }
 
-    .tab-content {
-        display: none;
-    }
+    .tab-content { display: none; }
 
     .tab-content.active {
         display: block;
@@ -138,7 +105,7 @@
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     .input {
@@ -175,9 +142,7 @@
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
     }
 
-    .input::placeholder {
-        color: #9CA3AF !important;
-    }
+    .input::placeholder { color: #9CA3AF !important; }
 
     .input:disabled {
         background-color: #F3F4F6 !important;
@@ -215,28 +180,46 @@
         margin-bottom: 1.5rem;
     }
 </style>
+@endsection
 
+@push('scripts')
 <script>
-    // Delete modal
-    const deleteModal = document.getElementById('delete-modal');
-
-    document.getElementById('delete-btn').addEventListener('click', function() {
-        deleteModal.style.display = 'flex';
+    // ลบเรซูเม่
+    document.getElementById('delete-btn').addEventListener('click', function () {
+        Swal.fire({
+            title: 'ยืนยันการลบเรซูเม่',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right:6px"></i>ลบ',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+            focusCancel: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form').submit();
+            }
+        });
     });
 
-    document.getElementById('cancel-delete').addEventListener('click', function() {
-        deleteModal.style.display = 'none';
-    });
-
-    document.getElementById('confirm-delete').addEventListener('click', function() {
-        document.getElementById('delete-form').submit();
-    });
-
-    // Close modal when clicking the backdrop
-    deleteModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.style.display = 'none';
-        }
+    // บันทึกการแก้ไข
+    document.getElementById('submit-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'ยืนยันการบันทึก',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i> บันทึก',
+            cancelButtonText: 'ยกเลิก',
+            reverseButtons: true,
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('resume-form').submit();
+            }
+        });
     });
 </script>
-@endsection
+@endpush

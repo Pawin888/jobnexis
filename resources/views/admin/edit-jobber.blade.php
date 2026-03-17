@@ -125,7 +125,6 @@
                             }
                         }
                         $availableStartDate = $resume->available_start_date ? \Carbon\Carbon::parse($resume->available_start_date)->format('d/m/Y') : '-';
-                        // เงินเดือน min-max
                         $salaryMin = $resume->salary_min ?? null;
                         $salaryMax = $resume->salary_max ?? null;
                         $salaryText = '-';
@@ -316,19 +315,25 @@
                                 @endforelse
                             </div>
 
+                            {{-- Actions --}}
                             <div class="flex justify-end gap-3 pt-2">
                                 <a href="{{ route('jobber.resumes.edit', $resume->id) }}"
                                    class="px-4 py-2 text-sm text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
                                     แก้ไข
                                 </a>
-                                <form method="POST" action="{{ route('jobber.resumes.destroy', $resume->id) }}"
-                                      onsubmit="return confirm('คุณต้องการลบเรซูเม่นี้หรือไม่? การลบจะไม่สามารถกู้คืนได้');">
+                                {{-- hidden form สำหรับ submit ลบ --}}
+                                <form id="form-delete-resume-{{ $resume->id }}"
+                                      method="POST"
+                                      action="{{ route('jobber.resumes.destroy', $resume->id) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="px-4 py-2 text-sm text-white transition bg-red-600 rounded-xl hover:bg-red-700">
-                                        ลบ
-                                    </button>
                                 </form>
+                                <button type="button"
+                                    class="delete-resume-btn px-4 py-2 text-sm text-white transition bg-red-600 rounded-xl hover:bg-red-700"
+                                    data-id="{{ $resume->id }}"
+                                    data-name="{{ addslashes($fullName ?: 'เรซูเม่') }}">
+                                    ลบ
+                                </button>
                             </div>
                         </div>
                     </details>
@@ -339,13 +344,47 @@
 </div>
 @endsection
 
-
-{{-- สคริปต์เก็บไว้ทั้งหมด --}}
+@push('scripts')
 <script>
-    // Helper: attach validation between a start and end date inputs
+    @if(session('swal_success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ session('swal_success') }}',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    @endif
+
+    // ===== ลบเรซูเม่ =====
+    document.querySelectorAll('.delete-resume-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id   = this.dataset.id;
+            const name = this.dataset.name;
+
+            Swal.fire({
+                title: 'ยืนยันการลบเรซูเม่',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right:6px"></i>ลบ',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                focusCancel: true,
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById(`form-delete-resume-${id}`).submit();
+                }
+            });
+        });
+    });
+
+    // ===== Date pair validation helpers =====
     function attachDatePairValidation(startInput, endInput) {
         if (!startInput || !endInput) return;
-
         const validate = () => {
             if (startInput.value && endInput.value && endInput.value < startInput.value) {
                 endInput.setCustomValidity('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่ม');
@@ -353,36 +392,27 @@
                 endInput.setCustomValidity('');
             }
         };
-
         const syncMin = () => {
-            if (startInput.value) {
-                endInput.min = startInput.value;
-            } else {
-                endInput.removeAttribute('min');
-            }
+            if (startInput.value) { endInput.min = startInput.value; } else { endInput.removeAttribute('min'); }
             validate();
         };
-
         startInput.addEventListener('input', syncMin);
         endInput.addEventListener('input', validate);
-
-        // Initialize constraints on load
         syncMin();
     }
 
-    // Initialize validation for existing rows on page load
     function initExistingDateValidation() {
-        // Educations
         document.querySelectorAll('#education-container .relative').forEach(row => {
-            const s = row.querySelector('input[name$="[ed_start_date]"]');
-            const e = row.querySelector('input[name$="[ed_end_date]"]');
-            attachDatePairValidation(s, e);
+            attachDatePairValidation(
+                row.querySelector('input[name$="[ed_start_date]"]'),
+                row.querySelector('input[name$="[ed_end_date]"]')
+            );
         });
-        // Work experiences
         document.querySelectorAll('#work-container .relative').forEach(row => {
-            const s = row.querySelector('input[name$="[we_start_date]"]');
-            const e = row.querySelector('input[name$="[we_end_date]"]');
-            attachDatePairValidation(s, e);
+            attachDatePairValidation(
+                row.querySelector('input[name$="[we_start_date]"]'),
+                row.querySelector('input[name$="[we_end_date]"]')
+            );
         });
     }
 
@@ -391,27 +421,20 @@
     function createRow(type, index) {
         const row = document.createElement('div');
         row.classList.add('relative');
-
-        if (type === 'education') {
-            row.innerHTML = `...`; // keep your original education row template
-        }
-
-        if (type === 'work') {
-            row.innerHTML = `...`; // keep your original work row template
-        }
-
+        if (type === 'education') { row.innerHTML = `...`; }
+        if (type === 'work') { row.innerHTML = `...`; }
         row.querySelector('.delete-row').addEventListener('click', () => row.remove());
-
-        // Attach date validation for the newly created row
         if (type === 'education') {
-            const s = row.querySelector(`input[name="educations[${index}][ed_start_date]"]`);
-            const e = row.querySelector(`input[name="educations[${index}][ed_end_date]"]`);
-            attachDatePairValidation(s, e);
+            attachDatePairValidation(
+                row.querySelector(`input[name="educations[${index}][ed_start_date]"]`),
+                row.querySelector(`input[name="educations[${index}][ed_end_date]"]`)
+            );
         }
         if (type === 'work') {
-            const s = row.querySelector(`input[name="work_experiences[${index}][we_start_date]"]`);
-            const e = row.querySelector(`input[name="work_experiences[${index}][we_end_date]"]`);
-            attachDatePairValidation(s, e);
+            attachDatePairValidation(
+                row.querySelector(`input[name="work_experiences[${index}][we_start_date]"]`),
+                row.querySelector(`input[name="work_experiences[${index}][we_end_date]"]`)
+            );
         }
         return row;
     }
@@ -427,52 +450,5 @@
         const index = container.querySelectorAll('.relative').length;
         container.insertBefore(createRow('work', index), document.getElementById('add-work'));
     });
-
-    // ลบ Education
-    document.querySelectorAll('.delete-education').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            if (confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?')) {
-                fetch(`/admin/profile/education/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.closest('.relative').remove();
-                        } else {
-                            alert(data.error || 'เกิดข้อผิดพลาด');
-                        }
-                    });
-            }
-        });
-    });
-
-    // ลบ Work
-    document.querySelectorAll('.delete-work').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            if (confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?')) {
-                fetch(`/admin/profile/work/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.closest('.relative').remove();
-                        } else {
-                            alert(data.error || 'เกิดข้อผิดพลาด');
-                        }
-                    });
-            }
-        });
-    });
 </script>
+@endpush

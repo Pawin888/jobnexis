@@ -267,7 +267,7 @@
 
         {{-- Contact Information --}}
         <div class="mb-6">
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">อีเมล <span class="text-red-500">*</span></label>
@@ -842,10 +842,24 @@
     }
 
     function openSubmitConfirmModal() {
-        if (submitConfirmModal) {
-            submitConfirmModal.style.display = 'flex';
+    Swal.fire({
+        title: '{{ isset($resume) ? "ยืนยันการบันทึกการแก้ไข?" : "ยืนยันการสร้างเรซูเม่" }}',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>สร้าง',
+        cancelButtonText: 'ยกเลิก',
+        reverseButtons: true,
+    }).then(result => {
+        if (result.isConfirmed) {
+            isSubmitConfirmed = true;
+            if (resumeForm) {
+                resumeForm.requestSubmit();
+            }
         }
-    }
+    });
+}
 
     function closeSubmitConfirmModal() {
         if (submitConfirmModal) {
