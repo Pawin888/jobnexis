@@ -4,7 +4,19 @@
     <meta charset="utf-8">
     <title>Resume - {{ $resume->first_name }} {{ $resume->last_name }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; margin: 28px; }
+        @font-face {
+            font-family: 'Noto Sans Thai PDF';
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ resource_path('fonts/NotoSansThai-Regular.ttf') }}') format('truetype');
+        }
+        @font-face {
+            font-family: 'Noto Sans Thai PDF';
+            font-style: normal;
+            font-weight: 700;
+            src: url('{{ resource_path('fonts/NotoSansThai-Bold.ttf') }}') format('truetype');
+        }
+        body { font-family: 'Noto Sans Thai PDF', DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; margin: 28px; }
         h1 { font-size: 20px; margin: 0 0 4px 0; }
         h2 { font-size: 14px; margin: 18px 0 8px 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
         p { margin: 4px 0; line-height: 1.5; }
