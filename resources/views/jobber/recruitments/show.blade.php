@@ -108,30 +108,29 @@
                     <img src="{{ asset('image/web-image/logo.png') }}" class="object-contain w-full h-full p-1" alt="default-logo">
                 @endif
             </div>
+
             <div class="min-w-0">
                 <h1 class="text-2xl font-bold leading-tight md:text-3xl text-base-content break-words">{{ $rec->rc_title }}</h1>
                 <p class="mt-1 text-sm text-gray-500">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
 
                 <div class="flex flex-wrap gap-2 mt-4 text-xs">
-                    @if($typeLabels->count())
+                    @if($typeLabels->isNotEmpty())
                         @foreach($typeLabels as $typeLabel)
                             <span class="px-3 py-1 rounded-full {{ $typeBadgeClass }}">{{ $typeLabel }}</span>
                         @endforeach
                     @else
                         <span class="px-3 py-1 rounded-full text-slate-700 bg-slate-100 border border-slate-200">ไม่ระบุประเภทงาน</span>
                     @endif
+
                     <span class="px-3 py-1 rounded-full {{ $modeBadgeClass }}">{{ $modeLabel }}</span>
-                    <span class="px-3 py-1 rounded-full {{ $jobStatusMeta['class'] }}">
-                        {{ $jobStatusMeta['label'] }}
-                    </span>
+                    <span class="px-3 py-1 rounded-full {{ $jobStatusMeta['class'] }}">{{ $jobStatusMeta['label'] }}</span>
+
                     @if($rec->rc_expire_at)
                         <span class="px-3 py-1 rounded-full {{ $deadlineBadgeClass }}">
                             {{ $isExpired ? 'หมดเขตรับสมัครแล้ว' : 'หมดเขตรับสมัคร ' . $expireDateText }}
                         </span>
                     @elseif($showAlwaysOpen)
-                        <span class="px-3 py-1 rounded-full {{ $deadlineBadgeClass }}">
-                            เปิดรับตลอด
-                        </span>
+                        <span class="px-3 py-1 rounded-full {{ $deadlineBadgeClass }}">เปิดรับตลอด</span>
                     @endif
                 </div>
             </div>
@@ -188,25 +187,29 @@
                 <h2 class="text-xl font-bold text-slate-800">คุณสมบัติเบื้องต้น</h2>
                 @php
                     $genderLabel = [
+                        'unspecified' => 'ไม่ระบุ',
                         'any' => 'ไม่จำกัดเพศ',
                         'male' => 'ชาย',
                         'female' => 'หญิง',
-                    ][$rec->rc_gender ?? 'any'] ?? 'ไม่จำกัดเพศ';
+                    ][$rec->rc_gender ?? 'unspecified'] ?? 'ไม่ระบุ';
 
                     $educationLabel = [
+                        'unspecified' => 'ไม่ระบุ',
                         'any' => 'ไม่จำกัดวุฒิ',
                         'below_bachelor' => 'ต่ำกว่าปริญญาตรี',
                         'bachelor' => 'ปริญญาตรี',
                         'master' => 'ปริญญาโท',
-                    ][$rec->rc_education_level ?? 'any'] ?? 'ไม่จำกัดวุฒิ';
+                        'doctorate' => 'ปริญญาเอก',
+                    ][$rec->rc_education_level ?? 'unspecified'] ?? 'ไม่ระบุ';
 
                     $experienceLabel = [
+                        'unspecified' => 'ไม่ระบุ',
                         'no_experience' => 'ไม่ต้องมีประสบการณ์',
                         '0_1' => '0-1 ปี',
                         '1_3' => '1-3 ปี',
                         '3_5' => '3-5 ปี',
                         'more_5' => 'มากกว่า 5 ปี',
-                    ][$rec->rc_experience_level ?? 'no_experience'] ?? 'ไม่ต้องมีประสบการณ์';
+                    ][$rec->rc_experience_level ?? 'unspecified'] ?? 'ไม่ระบุ';
                 @endphp
 
                 <div class="grid grid-cols-1 gap-3 mt-3 md:grid-cols-2">
@@ -242,6 +245,7 @@
                                 'group' => $row->skillGroup->name ?? '-',
                                 'name'  => $row->skill->name ?? '-',
                                 'level' => $row->proficiency_level ?? null,
+                                'is_required' => (bool) ($row->is_required ?? true),
                             ];
                         });
                     }
@@ -251,6 +255,7 @@
                                 'group' => $skill->skillGroup->name ?? '-',
                                 'name'  => $skill->name ?? '-',
                                 'level' => data_get($skill, 'pivot.proficiency_level'),
+                                'is_required' => true,
                             ];
                         });
                     }
@@ -268,21 +273,54 @@
                         'advanced' => 'text-amber-700',
                         'expert' => 'text-fuchsia-700',
                     ];
+
+                    $requiredSkillItems = $skillItems->filter(fn ($item) => (bool) ($item['is_required'] ?? true))->values();
+                    $optionalSkillItems = $skillItems->filter(fn ($item) => !(bool) ($item['is_required'] ?? true))->values();
                 @endphp
 
                 @if($skillItems->count())
-                    <div class="flex flex-wrap gap-2 mt-3">
-                        @foreach($skillItems as $item)
-                            @php $levelClass = $levelColorMap[$item['level'] ?? ''] ?? 'bg-gray-100 text-gray-600'; @endphp
-                            <div class="min-w-[230px] max-w-full px-3 py-2 border rounded-xl bg-blue-50 border-blue-100 text-slate-800 shadow-sm">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium text-cyan-800">ทักษะ: {{ $item['name'] }}</span>
-                                    @if(!empty($item['level']))
-                                        <span class="text-sm font-medium {{ $levelClass }}">ระดับ: {{ $levelMap[$item['level']] ?? $item['level'] }}</span>
-                                    @endif
+                    <div class="mt-3 space-y-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">ทักษะสำคัญ</p>
+                            @if($requiredSkillItems->isNotEmpty())
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    @foreach($requiredSkillItems as $item)
+                                        @php $levelClass = $levelColorMap[$item['level'] ?? ''] ?? 'bg-gray-100 text-gray-600'; @endphp
+                                        <div class="min-w-[230px] max-w-full px-3 py-2 border rounded-xl bg-rose-50 border-rose-100 text-slate-800 shadow-sm">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-medium text-rose-800">ทักษะ: {{ $item['name'] }}</span>
+                                                @if(!empty($item['level']))
+                                                    <span class="text-sm font-medium {{ $levelClass }}">ระดับ: {{ $levelMap[$item['level']] ?? $item['level'] }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            </div>
-                        @endforeach
+                            @else
+                                <p class="mt-1 text-sm text-gray-500">ไม่ระบุ</p>
+                            @endif
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">ทักษะโบนัส</p>
+                            @if($optionalSkillItems->isNotEmpty())
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    @foreach($optionalSkillItems as $item)
+                                        @php $levelClass = $levelColorMap[$item['level'] ?? ''] ?? 'bg-gray-100 text-gray-600'; @endphp
+                                        <div class="min-w-[230px] max-w-full px-3 py-2 border rounded-xl bg-emerald-50 border-emerald-100 text-slate-800 shadow-sm">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-medium text-emerald-800">ทักษะ: {{ $item['name'] }}</span>
+                                                @if(!empty($item['level']))
+                                                    <span class="text-sm font-medium {{ $levelClass }}">ระดับ: {{ $levelMap[$item['level']] ?? $item['level'] }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="mt-1 text-sm text-gray-500">ไม่ระบุ</p>
+                            @endif
+                        </div>
                     </div>
                 @else
                     <p class="mt-3 text-sm text-gray-500">ไม่ระบุทักษะความสามารถ</p>
@@ -328,6 +366,78 @@
 
         {{-- Sidebar --}}
         <div class="space-y-6 lg:col-span-4">
+
+            @php
+                $matchingData = $matching ?? [
+                    'total_score' => 0,
+                    'breakdown' => [
+                        'skill_match' => 0,
+                        'skill_level' => 0,
+                        'language' => 0,
+                        'experience' => 0,
+                        'education' => 0,
+                        'location' => 0,
+                        'gender' => 0,
+                    ],
+                    'criteria_defined' => [
+                        'skill_match' => false,
+                        'skill_level' => false,
+                        'language' => false,
+                        'experience' => false,
+                        'education' => false,
+                        'location' => false,
+                        'gender' => false,
+                    ],
+                    'required_skills_matched' => 0,
+                    'required_skills_total' => 0,
+                    'optional_skills_matched' => 0,
+                    'optional_skills_total' => 0,
+                ];
+
+                $showFactor = function (string $key) use ($matchingData) {
+                    $isDefined = (bool) data_get($matchingData, 'criteria_defined.' . $key, false);
+                    if (!$isDefined) {
+                        return 'ไม่ระบุ';
+                    }
+
+                    return (int) data_get($matchingData, 'breakdown.' . $key, 0) . '%';
+                };
+            @endphp
+
+            @auth
+                @if(auth()->user()->role === 'jobber')
+                    <div class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200">
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="text-xl font-bold text-slate-800">ความเหมาะสม {{ (int) ($matchingData['total_score'] ?? 0) }}%</h3>
+                            <span class="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded-full bg-slate-100 text-slate-700 border border-slate-200"
+                                title="สูตรคะแนนความเหมาะสม: ทักษะ 45%, ระดับทักษะ 20%, ภาษา 10%, ประสบการณ์ 10%, การศึกษา 5%, สถานที่ 5%, เพศ 5%">
+                                สูตรคะแนน
+                                <i class="fa-regular fa-circle-question"></i>
+                            </span>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-600">คะแนนความเหมาะสมแบบถ่วงน้ำหนัก</p>
+
+                        <div class="mt-3 space-y-2 text-sm">
+                            <div class="flex items-center justify-between"><span>ทักษะ</span><span class="font-semibold">{{ $showFactor('skill_match') }}</span></div>
+                            <div class="flex items-center justify-between"><span>ระดับทักษะ</span><span class="font-semibold">{{ $showFactor('skill_level') }}</span></div>
+                            <div class="flex items-center justify-between"><span>ภาษา</span><span class="font-semibold">{{ $showFactor('language') }}</span></div>
+                            <div class="flex items-center justify-between"><span>ประสบการณ์</span><span class="font-semibold">{{ $showFactor('experience') }}</span></div>
+                            <div class="flex items-center justify-between"><span>การศึกษา</span><span class="font-semibold">{{ $showFactor('education') }}</span></div>
+                            <div class="flex items-center justify-between"><span>สถานที่</span><span class="font-semibold">{{ $showFactor('location') }}</span></div>
+                            <div class="flex items-center justify-between"><span>เพศ</span><span class="font-semibold">{{ $showFactor('gender') }}</span></div>
+                        </div>
+
+                        <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+                            <div class="p-2 rounded-lg bg-rose-50 border border-rose-100">
+                                ทักษะสำคัญ: {{ (int) ($matchingData['required_skills_matched'] ?? 0) }}/{{ (int) ($matchingData['required_skills_total'] ?? 0) }}
+                            </div>
+                            <div class="p-2 rounded-lg bg-emerald-50 border border-emerald-100">
+                                ทักษะโบนัส: {{ (int) ($matchingData['optional_skills_matched'] ?? 0) }}/{{ (int) ($matchingData['optional_skills_total'] ?? 0) }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endauth
 
             {{-- Apply card --}}
             <div class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200">

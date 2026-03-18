@@ -10,11 +10,14 @@ use App\Models\MasterSkill;
 use App\Models\MasterSkillGroup;
 use App\Models\JobApplication;
 use App\Models\ProviderCandidateInvite;
+use App\Models\Resume;
 use App\Models\User;
+use App\Services\JobMatchingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class RecruitmentController extends Controller
 {
@@ -29,8 +32,12 @@ class RecruitmentController extends Controller
             $request->string('work_mode')->toString(),
         ];
 
-        $recs = Recruitment::query()->open()
-            ->with('skills')
+        $query = Recruitment::query()->open()
+            ->with([
+                'recruitmentSkills.skillGroup',
+                'recruitmentSkills.skill',
+                'languages',
+            ])
             ->when($q, function ($qq) use ($q) {
                 $qq->where(function ($w) use ($q) {
                     $w->where('rc_title', 'ilike', "%{$q}%")
@@ -40,12 +47,70 @@ class RecruitmentController extends Controller
             })
             ->when($type, fn($qq) => $this->applyTypeFilter($qq, $type))
             ->when($mode, fn($qq) => $this->applyWorkModeFilter($qq, $mode))
-            ->orderByDesc('rc_posted_at')
-            ->paginate(12)
-            ->withQueryString();
+            ->orderByDesc('rc_posted_at');
+
+        $resume = Resume::query()
+            ->with([
+                'resumeSkills.skill',
+                'languages',
+                'workExperiences',
+                'educations',
+            ])
+            ->where('user_id', Auth::id())
+            ->first();
+
+        $allRecs = $query->get();
+        $matcher = app(JobMatchingService::class);
+        $scoredRecs = $matcher->scoreRecruitmentsForResume($allRecs, $resume)
+            ->sort(function ($a, $b) {
+                $scoreA = (int) data_get($a, 'matching_meta.total_score', 0);
+                $scoreB = (int) data_get($b, 'matching_meta.total_score', 0);
+
+                if ($scoreA !== $scoreB) {
+                    return $scoreB <=> $scoreA;
+                }
+
+                $postedA = optional($a->rc_posted_at)->timestamp ?? 0;
+                $postedB = optional($b->rc_posted_at)->timestamp ?? 0;
+                return $postedB <=> $postedA;
+            })
+            ->values();
+
+        $topMatches = $scoredRecs->take(5)->values();
+        $recommendedJobs = $matcher->recommendRecruitments($scoredRecs, 6, $topMatches)
+            ->filter(function ($rec) use ($topMatches) {
+                return !$topMatches->contains('rc_id', $rec->rc_id);
+            })
+            ->values()
+            ->take(6);
+
+        $perPage = (int) $request->input('perPage', 12);
+        if (!in_array($perPage, [12, 24, 36], true)) {
+            $perPage = 12;
+        }
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $scoredRecs
+            ->slice(($currentPage - 1) * $perPage, $perPage)
+            ->values();
+
+        $recs = new LengthAwarePaginator(
+            $currentItems,
+            $scoredRecs->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
 
         // ดึงข้อมูลบริษัทของเจ้าของประกาศ เพื่อแสดงชื่อ/โลโก้
-        $ownerIds = $recs->pluck('rc_u_id')->unique()->values();
+        $ownerIds = $recs->getCollection()
+            ->pluck('rc_u_id')
+            ->merge($topMatches->pluck('rc_u_id'))
+            ->merge($recommendedJobs->pluck('rc_u_id'))
+            ->unique()
+            ->values();
         $companies = \Illuminate\Support\Facades\DB::table('companies_profiles')
             ->whereIn('co_user_id', $ownerIds)
             ->get()
@@ -54,11 +119,134 @@ class RecruitmentController extends Controller
         return view('jobber.recruitments.index', [
             'recs' => $recs,
             'companies' => $companies,
+            'topMatches' => $topMatches,
+            'recommendedJobs' => $recommendedJobs,
+            'matchingEnabled' => (bool) $resume,
             'filters' => [
                 'q' => $q,
                 'type' => $type,
                 'work_mode' => $mode,
+                'perPage' => $perPage,
             ],
+        ]);
+    }
+
+    /** Jobber API: คะแนน Matching สำหรับ dashboard/mobile */
+    public function jobberMatchingScores(Request $request)
+    {
+        if (!Auth::check() || Auth::user()->role !== 'jobber') {
+            abort(403);
+        }
+
+        $ids = collect(explode(',', (string) $request->query('ids', '')))
+            ->map(fn ($id) => (int) trim($id))
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        $resume = Resume::query()
+            ->with([
+                'resumeSkills.skill',
+                'languages',
+                'workExperiences',
+                'educations',
+            ])
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$resume) {
+            return response()->json([
+                'matchingEnabled' => false,
+                'message' => 'ยังไม่มีเรซูเม่สำหรับคำนวณคะแนน',
+                'jobs' => [],
+                'topMatches' => [],
+                'recommended' => [],
+            ]);
+        }
+
+        $query = Recruitment::query()->open()
+            ->with([
+                'recruitmentSkills.skill',
+                'recruitmentSkills.skillGroup',
+                'languages',
+            ]);
+
+        if ($ids->isNotEmpty()) {
+            $query->whereIn('rc_id', $ids);
+        }
+
+        $jobs = $query->limit($ids->isNotEmpty() ? 100 : 50)->get();
+        $matcher = app(JobMatchingService::class);
+        $scored = $matcher->scoreRecruitmentsForResume($jobs, $resume)
+            ->sortByDesc(fn ($rec) => (int) data_get($rec, 'matching_meta.total_score', 0))
+            ->values();
+
+        $topMatches = $scored->take(5)->values();
+        $recommended = $matcher->recommendRecruitments($scored, 6, $topMatches)
+            ->filter(function ($rec) use ($topMatches) {
+                return !$topMatches->contains('rc_id', $rec->rc_id);
+            })
+            ->values()
+            ->take(6);
+
+        $toPayload = function ($rec) {
+            $breakdown = data_get($rec, 'matching_meta.breakdown', []);
+            $criteriaDefined = data_get($rec, 'matching_meta.criteria_defined', []);
+
+            $factorMeta = [
+                'skill_match' => 'ทักษะ',
+                'skill_level' => 'ระดับทักษะ',
+                'language' => 'ภาษา',
+                'experience' => 'ประสบการณ์',
+                'education' => 'การศึกษา',
+                'location' => 'สถานที่',
+                'gender' => 'เพศ',
+            ];
+
+            $breakdownThai = collect($factorMeta)->mapWithKeys(function ($label, $key) use ($breakdown, $criteriaDefined) {
+                $defined = (bool) ($criteriaDefined[$key] ?? false);
+                $value = (int) ($breakdown[$key] ?? 0);
+
+                return [
+                    $key => [
+                        'label' => $label,
+                        'defined' => $defined,
+                        'value' => $value,
+                        'display' => $defined ? ($value . '%') : 'ไม่ระบุ',
+                    ],
+                ];
+            })->all();
+
+            return [
+                'id' => $rec->rc_id,
+                'title' => $rec->rc_title,
+                'type' => $rec->type_values,
+                'type_labels' => $rec->type_labels,
+                'work_mode' => $rec->work_mode_values,
+                'work_mode_labels' => $rec->work_mode_labels,
+                'score' => (int) data_get($rec, 'matching_meta.total_score', 0),
+                'breakdown' => $breakdown,
+                'criteria_defined' => $criteriaDefined,
+                'breakdown_th' => $breakdownThai,
+                'embedding' => (float) data_get($rec, 'matching_meta.embedding_similarity', 0),
+                'required' => [
+                    'label' => 'ทักษะสำคัญ',
+                    'matched' => (int) data_get($rec, 'matching_meta.required_skills_matched', 0),
+                    'total' => (int) data_get($rec, 'matching_meta.required_skills_total', 0),
+                ],
+                'optional' => [
+                    'label' => 'ทักษะโบนัส',
+                    'matched' => (int) data_get($rec, 'matching_meta.optional_skills_matched', 0),
+                    'total' => (int) data_get($rec, 'matching_meta.optional_skills_total', 0),
+                ],
+            ];
+        };
+
+        return response()->json([
+            'matchingEnabled' => true,
+            'jobs' => $scored->map($toPayload)->values(),
+            'topMatches' => $topMatches->map($toPayload)->values(),
+            'recommended' => $recommended->map($toPayload)->values(),
         ]);
     }
 
@@ -95,10 +283,14 @@ class RecruitmentController extends Controller
         return view('jobber.recruitments.index', [
             'recs' => $recs,
             'companies' => $companies,
+            'topMatches' => collect(),
+            'recommendedJobs' => collect(),
+            'matchingEnabled' => false,
             'filters' => [
                 'q' => $q,
                 'type' => $type,
                 'work_mode' => $mode,
+                'perPage' => 12,
             ],
         ]);
     }
@@ -116,6 +308,18 @@ class RecruitmentController extends Controller
                 'languages',
             ])
             ->findOrFail($rcId);
+
+        $resume = Resume::query()
+            ->with([
+                'resumeSkills.skill',
+                'languages',
+                'workExperiences',
+                'educations',
+            ])
+            ->where('user_id', Auth::id())
+            ->first();
+
+        $matching = app(JobMatchingService::class)->scoreSingleRecruitment($rec, $resume);
 
         $isOpen = $rec->rc_status === 'open'
             && (
@@ -147,7 +351,7 @@ class RecruitmentController extends Controller
 
         try { $rec->increment('rc_views'); } catch (\Throwable $e) {}
 
-        return view('jobber.recruitments.show', compact('rec', 'company'));
+        return view('jobber.recruitments.show', compact('rec', 'company', 'matching'));
     }
 
     /** Public: ดูรายละเอียดงาน (เปิดสำหรับผู้ที่ยังไม่ล็อกอิน) */
@@ -164,9 +368,11 @@ class RecruitmentController extends Controller
 
         $company = DB::table('companies_profiles')->where('co_user_id', $rec->rc_u_id)->first();
 
+        $matching = app(JobMatchingService::class)->scoreSingleRecruitment($rec, null);
+
         try { $rec->increment('rc_views'); } catch (\Throwable $e) {}
 
-        return view('jobber.recruitments.show', compact('rec', 'company'));
+        return view('jobber.recruitments.show', compact('rec', 'company', 'matching'));
     }
     
     /** Admin: รายการงานของ provider คนที่ระบุ */
@@ -515,9 +721,9 @@ public function createForProvider()
             'rc_title'           => ['required', 'string', 'max:255'],
             'rc_description'     => ['nullable', 'string'],
             'rc_requirements'    => ['nullable', 'string'],
-            'rc_gender'          => ['nullable', 'in:any,male,female'],
-            'rc_education_level' => ['nullable', 'in:any,below_bachelor,bachelor,master'],
-            'rc_experience_level'=> ['nullable', 'in:no_experience,0_1,1_3,3_5,more_5'],
+            'rc_gender'          => ['nullable', 'in:unspecified,any,male,female'],
+            'rc_education_level' => ['nullable', 'in:unspecified,any,below_bachelor,bachelor,master,doctorate'],
+            'rc_experience_level'=> ['nullable', 'in:unspecified,no_experience,0_1,1_3,3_5,more_5'],
             'rc_salary'          => ['nullable', 'string', 'max:255'],
 
             'rc_location_text'   => ['nullable', 'string', 'max:255'],
@@ -532,6 +738,7 @@ public function createForProvider()
             'skills.*.skill_group_id' => ['required', 'exists:master_skill_groups,id'],
             'skills.*.skill_id' => ['required', 'exists:master_skills,id'],
             'skills.*.proficiency_level' => ['required', 'in:beginner,intermediate,advanced,expert'],
+            'skills.*.is_required' => ['nullable', 'boolean'],
 
             'languages' => ['nullable', 'array'],
             'languages.*.language' => ['required', 'string', 'max:255'],
@@ -564,6 +771,9 @@ public function createForProvider()
 
         $data['rc_type'] = filled($data['rc_type'] ?? null) ? trim((string) $data['rc_type']) : null;
         $data['rc_work_mode'] = filled($data['rc_work_mode'] ?? null) ? trim((string) $data['rc_work_mode']) : null;
+        $data['rc_gender'] = filled($data['rc_gender'] ?? null) ? trim((string) $data['rc_gender']) : 'unspecified';
+        $data['rc_education_level'] = filled($data['rc_education_level'] ?? null) ? trim((string) $data['rc_education_level']) : 'unspecified';
+        $data['rc_experience_level'] = filled($data['rc_experience_level'] ?? null) ? trim((string) $data['rc_experience_level']) : 'unspecified';
 
         $requiresLocation = in_array($data['rc_work_mode'] ?? null, ['onsite', 'hybrid'], true);
 
@@ -598,6 +808,7 @@ public function createForProvider()
                 'master_skill_group_id' => $skill['skill_group_id'],
                 'master_skill_id' => $skill['skill_id'],
                 'proficiency_level' => $skill['proficiency_level'],
+                'is_required' => (string) ($skill['is_required'] ?? '1') === '1',
             ]);
         }
 

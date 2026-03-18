@@ -29,6 +29,7 @@
                 'skill_group_id' => $skill->master_skill_group_id,
                 'skill_id' => $skill->master_skill_id,
                 'proficiency_level' => $skill->proficiency_level,
+                'is_required' => (int) ($skill->is_required ?? 1),
             ])->toArray()))->filter(fn ($skill) => filled($skill['skill_group_id'] ?? null) || filled($skill['skill_id'] ?? null))->values();
             $langs = collect(old('languages', $rec->languages->toArray()))->filter(fn ($lang) => filled($lang['language'] ?? null))->values();
             $tomorrow = now()->addDay()->toDateString();
@@ -164,8 +165,8 @@
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">เพศ</span></label>
                         <select name="rc_gender" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
-                            @foreach (['any' => 'ไม่จำกัดเพศ', 'male' => 'ชาย', 'female' => 'หญิง'] as $k => $v)
-                                <option value="{{ $k }}" @selected(old('rc_gender', $rec->rc_gender ?? 'any') === $k)>{{ $v }}</option>
+                            @foreach (['unspecified' => 'ไม่ระบุ', 'any' => 'ไม่จำกัดเพศ', 'male' => 'ชาย', 'female' => 'หญิง'] as $k => $v)
+                                <option value="{{ $k }}" @selected(old('rc_gender', $rec->rc_gender ?? 'unspecified') === $k)>{{ $v }}</option>
                             @endforeach
                         </select>
                         @error('rc_gender') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -174,8 +175,8 @@
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">วุฒิการศึกษา</span></label>
                         <select name="rc_education_level" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
-                            @foreach (['any' => 'ไม่จำกัดวุฒิ', 'below_bachelor' => 'ต่ำกว่าปริญญาตรี', 'bachelor' => 'ปริญญาตรี', 'master' => 'ปริญญาโท', 'doctorate' => 'ปริญญาเอก'] as $k => $v)
-                                <option value="{{ $k }}" @selected(old('rc_education_level', $rec->rc_education_level ?? 'any') === $k)>{{ $v }}</option>
+                            @foreach (['unspecified' => 'ไม่ระบุ', 'any' => 'ไม่จำกัดวุฒิ', 'below_bachelor' => 'ต่ำกว่าปริญญาตรี', 'bachelor' => 'ปริญญาตรี', 'master' => 'ปริญญาโท', 'doctorate' => 'ปริญญาเอก'] as $k => $v)
+                                <option value="{{ $k }}" @selected(old('rc_education_level', $rec->rc_education_level ?? 'unspecified') === $k)>{{ $v }}</option>
                             @endforeach
                         </select>
                         @error('rc_education_level') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -184,8 +185,8 @@
                     <div>
                         <label class="label py-1"><span class="label-text font-medium">ประสบการณ์ทำงาน</span></label>
                         <select name="rc_experience_level" class="w-full select select-bordered focus:select-primary border border-base-300 pl-2">
-                            @foreach (['no_experience' => 'ไม่ต้องมีประสบการณ์', '0_1' => '0-1 ปี', '1_3' => '1-3 ปี', '3_5' => '3-5 ปี', 'more_5' => 'มากกว่า 5 ปี'] as $k => $v)
-                                <option value="{{ $k }}" @selected(old('rc_experience_level', $rec->rc_experience_level ?? 'no_experience') === $k)>{{ $v }}</option>
+                            @foreach (['unspecified' => 'ไม่ระบุ', 'no_experience' => 'ไม่ต้องมีประสบการณ์', '0_1' => '0-1 ปี', '1_3' => '1-3 ปี', '3_5' => '3-5 ปี', 'more_5' => 'มากกว่า 5 ปี'] as $k => $v)
+                                <option value="{{ $k }}" @selected(old('rc_experience_level', $rec->rc_experience_level ?? 'unspecified') === $k)>{{ $v }}</option>
                             @endforeach
                         </select>
                         @error('rc_experience_level') <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
@@ -200,16 +201,17 @@
                     ทักษะที่ต้องการ
                 </h2>
 
-                <div class="grid items-center gap-2 px-3 mb-1" style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
+                <div class="grid items-center gap-2 px-3 mb-1" style="grid-template-columns: 2fr 2fr 1.5fr 1.2fr 2rem">
                     <span class="text-xs font-medium opacity-60">กลุ่มทักษะ <span class="text-error">*</span></span>
                     <span class="text-xs font-medium opacity-60">ทักษะ <span class="text-error">*</span></span>
                     <span class="text-xs font-medium opacity-60">ระดับความชำนาญ <span class="text-error">*</span></span>
+                    <span class="text-xs font-medium opacity-60">ความสำคัญ <span class="text-error">*</span></span>
                     <span></span>
                 </div>
                 <div id="skills-wrapper" class="space-y-2">
                     @foreach ($existingSkills as $i => $existingSkill)
                         <div class="skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300"
-                             style="grid-template-columns: 2fr 2fr 1.5fr 2rem">
+                             style="grid-template-columns: 2fr 2fr 1.5fr 1.2fr 2rem">
 
                             @php $selectedGroupId = $existingSkill['skill_group_id'] ?? null; @endphp
                             <div class="relative min-w-0 overflow-hidden">
@@ -253,6 +255,11 @@
                                         {{ $label }}
                                     </option>
                                 @endforeach
+                            </select>
+
+                            <select name="skills[{{ $i }}][is_required]" class="select select-bordered select-sm focus:select-primary">
+                                <option value="1" @selected((string) ($existingSkill['is_required'] ?? '1') === '1')>สำคัญ</option>
+                                <option value="0" @selected((string) ($existingSkill['is_required'] ?? '1') === '0')>โบนัส</option>
                             </select>
 
                             <button type="button"
@@ -564,6 +571,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <option value="advanced">ขั้นสูง</option>
             <option value="expert">ผู้เชี่ยวชาญ</option>
         </select>
+        <select name="skills[${index}][is_required]" class="select select-bordered select-sm focus:select-primary">
+            <option value="1">สำคัญ</option>
+            <option value="0">โบนัส</option>
+        </select>
         <button type="button" class="remove-skill btn btn-xs shrink-0" style="background-color:#ef4444; color:white; border:none; min-width:2rem">✕</button>
     `;
 
@@ -649,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wrapper = document.getElementById('skills-wrapper');
         const row = document.createElement('div');
         row.className = 'skill-row grid items-center gap-2 p-3 bg-base-100 rounded-xl border border-base-300';
-        row.style.gridTemplateColumns = '2fr 2fr 1.5fr 2rem';
+        row.style.gridTemplateColumns = '2fr 2fr 1.5fr 1.2fr 2rem';
         row.innerHTML = buildSkillRowHtml(skillIndex);
         wrapper.appendChild(row);
         skillIndex++;

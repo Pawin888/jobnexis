@@ -218,6 +218,7 @@ Route::middleware('role:jobber')->prefix('jobber')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'jobber'])->name('jobber.dashboard');
     Route::get('/applications', [JobApplicationController::class, 'index'])->name('jobber.applications.index');
     Route::get('/jobs', [RecruitmentController::class, 'jobberIndex'])->name('jobber.jobs.index');
+    Route::get('/jobs/matching-scores', [RecruitmentController::class, 'jobberMatchingScores'])->name('jobber.jobs.matching-scores');
     Route::get('/jobs/{rcId}', [RecruitmentController::class, 'jobberShow'])->name('jobber.jobs.show');
     // Companies directory for jobbers
     Route::get('/companies', [CompaniesProfileController::class, 'publicIndex'])->name('jobber.companies.index');
@@ -241,7 +242,7 @@ Route::middleware('role:admin')
     ->prefix('admin')
     ->group(function () {
 
-        Route::get('/skills-management', [AdminSkillController::class, 'index'])
+        Route::get('/skills-management', [SkillController::class, 'index'])
             ->name('admin.skills.management.index');
 
 });

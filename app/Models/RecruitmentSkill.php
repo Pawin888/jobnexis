@@ -14,6 +14,11 @@ class RecruitmentSkill extends Model
         'master_skill_group_id',
         'master_skill_id',
         'proficiency_level',
+        'is_required',
+    ];
+
+    protected $casts = [
+        'is_required' => 'boolean',
     ];
 
     public $timestamps = true;
