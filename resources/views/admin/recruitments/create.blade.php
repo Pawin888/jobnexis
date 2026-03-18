@@ -5,13 +5,13 @@
 @section('content')
 <div class="flex flex-col gap-4 p-4 shadow bg-base-200 rounded-2xl">
 
-    {{-- ================= HEADER ================= --}}
-    <div class="flex items-center justify-between bg-base-200 rounded-2xl px-6 py-4">
-        <div>
-            <h1 class="text-xl font-bold tracking-tight">เพิ่มประกาศงาน</h1>
-            <p class="text-sm opacity-60 mt-0.5">
-                สำหรับ {{ $company->co_name ?? ($provider->email ?? '-') }}
-            </p>
+    <div class="flex items-center gap-4 mt-4">
+        <a href="{{ $isAdmin ? route('admin.providers.recruitments.index', $ownerId) : route('provider.recruitments.index') }}" class="flex items-center justify-center w-9 h-9 border border-gray-400 rounded-2xl bg-base-100 hover:bg-gray-200 transition" title="กลับ">
+            <i class="fa-solid fa-arrow-left text-gray-600"></i>
+        </a>
+        <div class="min-w-0">
+            <h1 class="text-2xl font-bold leading-tight md:text-3xl text-base-content break-words">เพิ่มประกาศงาน</h1>
+            <p class="mt-1 text-sm text-gray-500">สำหรับ {{ $company->co_name ?? ($provider->email ?? '-') }}</p>
         </div>
     </div>
 
