@@ -88,7 +88,7 @@
                             <th class="text-left py-2 px-3 w-5/12">
                                 <a href="{{ $groupUrl }}"
                                    class="inline-flex items-center gap-1 hover:text-blue-600 transition-colors select-none">
-                                    หมวดหมู่
+                                    กลุ่มทักษะ
                                     <span class="inline-block w-3 text-xs text-center {{ $sortBy === 'group' ? 'text-blue-600' : 'text-gray-400' }}">
                                         {{ $sortBy === 'group' ? ($sortDir === 'asc' ? '↑' : '↓') : '↕' }}
                                     </span>
