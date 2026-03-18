@@ -418,9 +418,10 @@
                 </button>
                 <p style="font-size:0.75rem;color:#9ca3af;margin-top:8px">สแกน QR Code เพื่อเปิดประกาศงาน</p>
             `,
-            showConfirmButton: true,
-            confirmButtonText: isNew ? 'ตกลง' : 'ปิด',
-            confirmButtonColor: isNew ? '#2563eb' : '#6b7280',
+            showConfirmButton: isNew,
+            confirmButtonText: 'ตกลง',
+            confirmButtonColor: '#2563eb',
+            showCloseButton: !isNew,
             focusConfirm: false,
             width: 480,
             didOpen: () => {
