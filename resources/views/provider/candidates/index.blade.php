@@ -15,13 +15,13 @@
         <fieldset class="fieldset md:col-span-2">
             <legend class="mb-1 fieldset-legend">ค้นหา</legend>
             <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
-                class="w-full border border-gray-300 input input-bordered"
+                class="pl-2 w-full border border-gray-300 input input-bordered"
                 placeholder="ชื่อ, อีเมล, หรือทักษะ">
         </fieldset>
         <fieldset class="fieldset md:col-span-2">
             <legend class="mb-1 fieldset-legend">สถานที่ที่ต้องการ</legend>
             <input type="text" name="location" value="{{ $filters['location'] ?? '' }}"
-                class="w-full border border-gray-300 input input-bordered"
+                class="pl-2 w-full border border-gray-300 input input-bordered"
                 placeholder="เช่น กรุงเทพ, เชียงใหม่">
         </fieldset>
         <fieldset class="fieldset md:col-span-1">

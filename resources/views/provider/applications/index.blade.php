@@ -16,18 +16,18 @@
         <fieldset class="fieldset">
             <legend class="mb-1 fieldset-legend">ชื่อ-นามสกุล</legend>
             <input type="text" id="filterName"
-                class="w-full border border-gray-300 input input-bordered"
+                class="pl-2 w-full border border-gray-300 input input-bordered"
                 placeholder="ค้นหาชื่อผู้สมัคร">
         </fieldset>
         <fieldset class="fieldset">
             <legend class="mb-1 fieldset-legend">ชื่องาน</legend>
             <input type="text" id="filterTitle"
-                class="w-full border border-gray-300 input input-bordered"
+                class="pl-2 w-full border border-gray-300 input input-bordered"
                 placeholder="ค้นหาตำแหน่งงาน">
         </fieldset>
         <fieldset class="fieldset">
             <legend class="mb-1 fieldset-legend">สถานะ</legend>
-            <select id="filterStatus" class="w-full border border-gray-300 select select-bordered">
+            <select id="filterStatus" class="pl-2 w-full border border-gray-300 select select-bordered">
                 <option value="">— ทั้งหมด —</option>
                 <option value="รอประเมิน">รอประเมิน</option>
                 <option value="ยอมรับ">ยอมรับ</option>
@@ -38,7 +38,7 @@
             <legend class="mb-1 fieldset-legend">วันที่สมัคร</legend>
             <div class="flex gap-2">
                 <input type="date" id="filterDate"
-                    class="w-full border border-gray-300 input input-bordered">
+                    class="pl-2 w-full border border-gray-300 input input-bordered">
                 <button onclick="filterTable()" class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">ค้นหา</button>
                 <a href="{{ url()->current() }}" class="btn">ล้าง</a>
             </div>
@@ -236,31 +236,35 @@
 @push('scripts')
 <script>
     function filterTable() {
-        const name   = document.getElementById('filterName').value.toLowerCase();
-        const title  = document.getElementById('filterTitle').value.toLowerCase();
-        const status = document.getElementById('filterStatus').value;
-        const date   = document.getElementById('filterDate').value;
+    const name   = document.getElementById('filterName').value.toLowerCase();
+    const title  = document.getElementById('filterTitle').value.toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    const date   = document.getElementById('filterDate').value;
 
-        let visibleCount = 0;
+    let visibleRows = [];
 
-        document.querySelectorAll('#tableBody .table-row').forEach(row => {
-            const colName   = row.querySelector('.col-name')?.textContent.toLowerCase() ?? '';
-            const colTitle  = row.querySelector('.col-title')?.textContent.toLowerCase() ?? '';
-            const colStatus = row.querySelector('.col-status')?.textContent.trim() ?? '';
-            const colDate   = row.querySelector('.col-date')?.dataset.date ?? '';
+    document.querySelectorAll('#tableBody .table-row').forEach(row => {
+        const colName   = row.querySelector('.col-name')?.textContent.toLowerCase() ?? '';
+        const colTitle  = row.querySelector('.col-title')?.textContent.toLowerCase() ?? '';
+        const colStatus = row.querySelector('.col-status')?.textContent.trim() ?? '';
+        const colDate   = row.querySelector('.col-date')?.dataset.date ?? '';
 
-            const match =
-                colName.includes(name) &&
-                colTitle.includes(title) &&
-                (status === '' || colStatus === status) &&
-                (date === '' || colDate === date);
+        const match =
+            colName.includes(name) &&
+            colTitle.includes(title) &&
+            (status === '' || colStatus === status) &&
+            (date === '' || colDate <= date);
 
-            row.style.display = match ? '' : 'none';
-            if (match) visibleCount++;
-        });
+        row.style.display = match ? '' : 'none';
+        if (match) visibleRows.push({ row, date: colDate });
+    });
+    const tbody = document.getElementById('tableBody');
+    visibleRows
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .forEach(({ row }) => tbody.appendChild(row));
 
-        document.getElementById('emptyRow').style.display = visibleCount === 0 ? '' : 'none';
-    }
+    document.getElementById('emptyRow').style.display = visibleRows.length === 0 ? '' : 'none';
+}
 
     function clearFilter() {
         document.getElementById('filterName').value   = '';
