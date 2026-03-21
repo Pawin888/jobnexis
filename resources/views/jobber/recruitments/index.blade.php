@@ -80,12 +80,10 @@
                             $company = $companies[$job->rc_u_id] ?? null;
                         @endphp
                                 <a href="{{ $viewRouteResolver($job->rc_id) }}" class="block p-3 bg-white border border-slate-200 rounded-xl hover:shadow-md transition"
-                                    title="ทักษะ 45% | ระดับทักษะ 20% | ภาษา 10% | ประสบการณ์ 10% | การศึกษา 5% | สถานที่ 5% | เพศ 5%">
                             <p class="text-xs text-gray-500 line-clamp-1">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
                             <p class="text-sm font-semibold text-slate-800 line-clamp-2 mt-1">{{ $job->rc_title }}</p>
                             <div class="mt-2 flex items-center justify-between text-xs">
                                 <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700">ความเหมาะสม {{ (int) ($meta['total_score'] ?? 0) }}%</span>
-                                <span class="text-slate-500">AI {{ (int) round(((float) ($meta['embedding_similarity'] ?? 0)) * 100) }}%</span>
                             </div>
                         </a>
                     @endforeach
@@ -97,7 +95,6 @@
             <div class="mt-4 p-5 bg-white border border-slate-200 rounded-2xl">
                 <div class="flex items-center justify-between flex-wrap gap-2">
                     <h2 class="text-lg font-bold text-slate-800">แนะนำสำหรับคุณ</h2>
-                    <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">AI + หมวดงานใกล้เคียง</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-4">
                     @foreach($recommendedJobs as $job)
@@ -107,7 +104,7 @@
                             $typeLabels = collect($job->type_labels ?? []);
                         @endphp
                                 <a href="{{ $viewRouteResolver($job->rc_id) }}" class="block p-3 border rounded-xl bg-slate-50 border-slate-200 hover:border-emerald-300 hover:bg-white transition"
-                                    title="แนะนำจากคะแนนความเหมาะสม + AI + ความใกล้เคียงหมวดงาน/โหมดงาน">
+                                    title="แนะนำจากคะแนนความเหมาะสม">
                             <div class="flex items-center justify-between gap-2">
                                 <p class="text-sm font-semibold text-slate-800 line-clamp-1">{{ $job->rc_title }}</p>
                                 <span class="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700">{{ (int) ($meta['total_score'] ?? 0) }}%</span>
@@ -171,7 +168,6 @@
                         <div class="mt-3 p-3 rounded-xl border border-cyan-100 bg-cyan-50/70">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm font-semibold text-cyan-900">ความเหมาะสม {{ (int) ($meta['total_score'] ?? 0) }}%</p>
-                                <span class="text-[11px] px-2 py-0.5 rounded-full bg-white border border-cyan-200 text-cyan-700">AI {{ (int) round(((float) ($meta['embedding_similarity'] ?? 0)) * 100) }}%</span>
                             </div>
                             <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-600">
                                 <span>{{ $factorLabel('skill_match', 'ทักษะ') }}</span>
