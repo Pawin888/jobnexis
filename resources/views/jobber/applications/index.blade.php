@@ -13,15 +13,16 @@
     <div class="overflow-x-auto rounded-2xl border shadow bg-base-200">
         <div class="bg-base-300 text-xs uppercase tracking-wide py-3 px-4 font-semibold">การเชิญสมัคร (Invite)</div>
         <table class="table table-fixed w-full min-w-[820px]">
-            <thead class="bg-base-100 text-xs uppercase tracking-wide">
-                <tr>
-                    <th class="w-[30%] py-3 px-4">ตำแหน่งงาน</th>
-                    <th class="w-[22%] py-3 px-3">ผู้ประกอบการ</th>
-                    <th class="w-[18%] py-3 px-3">วันที่เชิญ</th>
-                    <th class="w-[15%] py-3 px-3">สถานะ</th>
-                    <th class="w-[15%] py-3 px-3 text-center">จัดการ</th>
-                </tr>
-            </thead>
+            <table class="table table-fixed w-full min-w-[820px]">
+    <thead class="bg-base-100 text-xs uppercase tracking-wide">
+        <tr>
+            <th class="w-[32%] py-3 px-4">ตำแหน่งงาน</th>
+            <th class="w-[24%] py-3 px-3">ผู้ประกอบการ</th>
+            <th class="w-[16%] py-3 px-3">วันที่เชิญ</th>
+            <th class="w-[14%] py-3 px-3">สถานะ</th>
+            <th class="w-[14%] py-3 px-3 text-center">จัดการ</th>
+        </tr>
+    </thead>
             <tbody class="divide-y divide-base-300">
                 @forelse($invites as $invite)
                     <tr class="hover:bg-base-100 transition-colors">
@@ -42,7 +43,7 @@
                         <td class="py-3 px-3">
                             <div class="flex items-center justify-center gap-1.5">
                                 @if($invite->recruitment)
-                                    <a href="{{ route('jobber.jobs.show', $invite->recruitment->rc_id) }}"
+                                    <a href="{{ route('jobber.jobs.show', $invite->recruitment->rc_id) }}?from=applications"
                                        class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
                                        title="ดูประกาศงาน">
                                         <i class="fa-solid fa-search text-sm"></i>
@@ -64,15 +65,15 @@
     <div class="overflow-x-auto rounded-2xl border shadow bg-base-200">
         <div class="bg-base-300 text-xs uppercase tracking-wide py-3 px-4 font-semibold">รายการงานที่สมัคร</div>
         <table class="table table-fixed w-full min-w-[820px]">
-            <thead class="bg-base-100 text-xs uppercase tracking-wide">
-                <tr>
-                    <th class="w-[32%] py-3 px-4">ตำแหน่งงาน</th>
-                    <th class="w-[24%] py-3 px-3">ผู้ประกอบการ</th>
-                    <th class="w-[16%] py-3 px-3">วันที่สมัคร</th>
-                    <th class="w-[14%] py-3 px-3">สถานะ</th>
-                    <th class="w-[14%] py-3 px-3 text-center">จัดการ</th>
-                </tr>
-            </thead>
+    <thead class="bg-base-100 text-xs uppercase tracking-wide">
+        <tr>
+            <th class="w-[32%] py-3 px-4">ตำแหน่งงาน</th>
+            <th class="w-[24%] py-3 px-3">ผู้ประกอบการ</th>
+            <th class="w-[16%] py-3 px-3">วันที่สมัคร</th>
+            <th class="w-[14%] py-3 px-3">สถานะ</th>
+            <th class="w-[14%] py-3 px-3 text-center">จัดการ</th>
+        </tr>
+    </thead>
             <tbody class="divide-y divide-base-300">
                 @forelse($applications as $app)
                     @php

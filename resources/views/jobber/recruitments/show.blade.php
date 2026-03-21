@@ -60,38 +60,36 @@
     {{-- Header --}}
     <div class="p-5 mb-6 bg-white border shadow-sm rounded-2xl border-slate-200">
         <div class="flex items-center justify-between">
-            @php
-                $previousUrl = url()->previous();
-                $previousPath = parse_url($previousUrl, PHP_URL_PATH) ?? '';
-                $backUrl = route('jobs.index');
+           @php
+    $sessionReferer = session()->pull('back_url');
+    $fromParam = request()->query('from'); // ✅ รับ ?from=applications
 
-                // ใช้หน้าเดิมเป็นหลักก่อน
-                if (str_contains($previousPath, '/jobber/applications') && auth()->check() && auth()->user()->role === 'jobber') {
+    $backUrl = $sessionReferer ?? null;
+
+    if (!$backUrl) {
+        if ($fromParam === 'applications' && auth()->check() && auth()->user()->role === 'jobber') {
+            $backUrl = route('jobber.applications.index');
+        } else {
+            $previousPath = parse_url(url()->previous(), PHP_URL_PATH) ?? '';
+
+            if (auth()->check() && auth()->user()->role === 'jobber') {
+                if (str_contains($previousPath, '/jobber/applications')) {
                     $backUrl = route('jobber.applications.index');
-                } elseif (str_contains($previousPath, '/jobber/jobs') && auth()->check() && auth()->user()->role === 'jobber') {
+                } elseif (str_contains($previousPath, '/jobber/jobs')) {
                     $backUrl = route('jobber.jobs.index');
-                } elseif (str_contains($previousPath, '/my/recruitments') && auth()->check() && auth()->user()->role === 'provider') {
-                    $backUrl = route('provider.recruitments.index');
-                } elseif (
-                    str_contains($previousPath, '/admin/providers/')
-                    && str_contains($previousPath, '/recruitments')
-                    && auth()->check()
-                    && auth()->user()->role === 'admin'
-                ) {
-                    $backUrl = route('admin.recruitments.index', ['userId' => $rec->rc_u_id]);
-                } elseif (str_contains($previousPath, '/jobs')) {
-                    $backUrl = route('jobs.index');
-                } elseif (auth()->check()) {
-                    // fallback ตามบทบาท
-                    if (auth()->user()->role === 'provider') {
-                        $backUrl = route('provider.recruitments.index');
-                    } elseif (auth()->user()->role === 'jobber') {
-                        $backUrl = route('jobber.jobs.index');
-                    } elseif (auth()->user()->role === 'admin') {
-                        $backUrl = route('admin.recruitments.index', ['userId' => $rec->rc_u_id]);
-                    }
+                } else {
+                    $backUrl = route('jobber.jobs.index');
                 }
-            @endphp
+            } elseif (auth()->check() && auth()->user()->role === 'provider') {
+                $backUrl = route('provider.recruitments.index');
+            } elseif (auth()->check() && auth()->user()->role === 'admin') {
+                $backUrl = route('admin.recruitments.index', ['userId' => $rec->rc_u_id]);
+            } else {
+                $backUrl = route('jobs.index');
+            }
+        }
+    }
+@endphp
             <a
                 href="{{ $backUrl }}"
                 class="flex items-center justify-center w-9 h-9 border border-gray-400 rounded-2xl bg-base-100 hover:bg-gray-200 transition"

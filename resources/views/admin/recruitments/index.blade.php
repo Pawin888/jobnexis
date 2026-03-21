@@ -33,11 +33,11 @@
             <fieldset class="fieldset">
                 <legend class="mb-1 fieldset-legend">ค้นหา</legend>
                 <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
-                    class="w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
+                    class="pl-2 w-full border border-gray-300 input input-bordered" placeholder="ชื่องาน/รายละเอียด/คุณสมบัติ">
             </fieldset>
             <fieldset class="fieldset">
                 <legend class="mb-1 fieldset-legend">สถานะ</legend>
-                <select name="status" class="w-full border border-gray-300 select select-bordered">
+                <select name="status" class="w-full border border-gray-300 select select-bordered pl-2">
                     <option value="">— ทั้งหมด —</option>
                     @foreach (['open' => 'เปิดรับ', 'inactive' => 'ปิดรับ/หมดอายุ'] as $k => $v)
                         <option value="{{ $k }}" @selected(($filters['status'] ?? '') === $k)>{{ $v }}</option>
@@ -46,7 +46,7 @@
             </fieldset>
             <fieldset class="fieldset">
                 <legend class="mb-1 fieldset-legend">ประเภท</legend>
-                <select name="type" class="w-full border border-gray-300 select select-bordered">
+                <select name="type" class="w-full border border-gray-300 select select-bordered pl-2">
                     <option value="">— ทั้งหมด —</option>
                     @foreach (['full-time' => 'เต็มเวลา (Full-time)', 'part-time' => 'พาร์ทไทม์ (Part-time)', 'intern' => 'ฝึกงาน (Internship)', 'freelance' => 'ฟรีแลนซ์ (Freelance)'] as $k => $v)
                         <option value="{{ $k }}" @selected(($filters['type'] ?? '') === $k)>{{ $v }}</option>
@@ -56,7 +56,7 @@
             <fieldset class="fieldset">
                 <legend class="mb-1 fieldset-legend">โหมดการทำงาน</legend>
                 <div class="flex gap-2">
-                    <select name="work_mode" class="w-full border border-gray-300 select select-bordered">
+                    <select name="work_mode" class="w-full border border-gray-300 select select-bordered pl-2">
                         <option value="">— ทั้งหมด —</option>
                         @foreach (['onsite' => 'เข้าออฟฟิศ (Work on Site)', 'remote' => 'ทำที่บ้าน (Work from Home)', 'hybrid' => 'ผสมผสาน (Hybrid Work)', 'distributed' => 'ทำที่ไหนก็ได้ (Distributed Work)'] as $k => $v)
                             <option value="{{ $k }}" @selected(($filters['work_mode'] ?? '') === $k)>{{ $v }}</option>
