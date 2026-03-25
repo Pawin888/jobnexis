@@ -116,17 +116,24 @@ class RecruitmentController extends Controller
             ->get()
             ->keyBy('co_user_id');
 
+        // ✅ ดึง ID งานที่ jobber สมัครไปแล้ว
+        $appliedJobIds = JobApplication::where('jobber_id', Auth::id())
+            ->whereNotIn('status', ['withdrawn'])
+            ->pluck('recruitment_id')
+            ->flip();
+
         return view('jobber.recruitments.index', [
-            'recs' => $recs,
-            'companies' => $companies,
-            'topMatches' => $topMatches,
+            'recs'            => $recs,
+            'companies'       => $companies,
+            'topMatches'      => $topMatches,
             'recommendedJobs' => $recommendedJobs,
             'matchingEnabled' => (bool) $resume,
-            'filters' => [
-                'q' => $q,
-                'type' => $type,
+            'appliedJobIds'   => $appliedJobIds,
+            'filters'         => [
+                'q'        => $q,
+                'type'     => $type,
                 'work_mode' => $mode,
-                'perPage' => $perPage,
+                'perPage'  => $perPage,
             ],
         ]);
     }
@@ -157,7 +164,7 @@ class RecruitmentController extends Controller
         if (!$resume) {
             return response()->json([
                 'matchingEnabled' => false,
-                'message' => 'ยังไม่มีเรซูเม่สำหรับคำนวณคะแนน',
+                'message' => 'ยังไม่มี Resume สำหรับคำนวณคะแนน',
                 'jobs' => [],
                 'topMatches' => [],
                 'recommended' => [],
@@ -280,21 +287,30 @@ class RecruitmentController extends Controller
             ->get()
             ->keyBy('co_user_id');
 
+        // ✅ ดึง ID งานที่ jobber สมัครไปแล้ว (ถ้า login อยู่)
+        $appliedJobIds = (Auth::check() && Auth::user()->role === 'jobber')
+            ? JobApplication::where('jobber_id', Auth::id())
+                ->whereNotIn('status', ['withdrawn'])
+                ->pluck('recruitment_id')
+                ->flip()
+            : collect();
+
         return view('jobber.recruitments.index', [
-            'recs' => $recs,
-            'companies' => $companies,
-            'topMatches' => collect(),
+            'recs'            => $recs,
+            'companies'       => $companies,
+            'topMatches'      => collect(),
             'recommendedJobs' => collect(),
             'matchingEnabled' => false,
-            'filters' => [
-                'q' => $q,
-                'type' => $type,
+            'appliedJobIds'   => $appliedJobIds,
+            'filters'         => [
+                'q'        => $q,
+                'type'     => $type,
                 'work_mode' => $mode,
-                'perPage' => 12,
+                'perPage'  => 12,
             ],
         ]);
     }
-    
+
     /** Jobber: ดูรายละเอียดงาน (เปิดรับทั้งหมดสำหรับผู้ที่มีสิทธิ์เข้าถึง) */
     public function jobberShow($rcId)
     {
@@ -374,7 +390,7 @@ class RecruitmentController extends Controller
 
         return view('jobber.recruitments.show', compact('rec', 'company', 'matching'));
     }
-    
+
     /** Admin: รายการงานของ provider คนที่ระบุ */
     public function adminIndex(Request $request, $userId)
     {
@@ -625,130 +641,130 @@ class RecruitmentController extends Controller
 
         return back()->with('status', $to === 'open' ? 'เปิดรับประกาศงานแล้ว' : 'ปิดรับประกาศงานแล้ว');
     }
+
     public function createForAdmin($userId)
-{
-    if (Auth::user()->role !== 'admin') abort(403);
+    {
+        if (Auth::user()->role !== 'admin') abort(403);
 
-    // ดึงข้อมูลเบื้องต้นไว้โชว์หัวเรื่อง
-    $provider = DB::table('users')->where('id', $userId)->first();
-    $company  = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
-    // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
-    $skillGroups = MasterSkillGroup::query()
-        ->whereHas('skills')
-        ->with(['skills' => function ($query) {
-            $query->orderByRaw('LOWER(name)');
-        }])
-        ->orderByRaw('LOWER(name)')
-        ->get();
+        // ดึงข้อมูลเบื้องต้นไว้โชว์หัวเรื่อง
+        $provider = DB::table('users')->where('id', $userId)->first();
+        $company  = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
+        // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
+        $skillGroups = MasterSkillGroup::query()
+            ->whereHas('skills')
+            ->with(['skills' => function ($query) {
+                $query->orderByRaw('LOWER(name)');
+            }])
+            ->orderByRaw('LOWER(name)')
+            ->get();
 
-    return view('admin.recruitments.create', [
-        'isAdmin'  => true,
-        'ownerId'  => (int) $userId,
-        'provider' => $provider,
-        'company'  => $company,
-        'skillGroups'  => $skillGroups,
-    ]);
-}
+        return view('admin.recruitments.create', [
+            'isAdmin'     => true,
+            'ownerId'     => (int) $userId,
+            'provider'    => $provider,
+            'company'     => $company,
+            'skillGroups' => $skillGroups,
+        ]);
+    }
 
-public function storeForAdmin(Request $request, $userId)
-{
-    if (Auth::user()->role !== 'admin') abort(403);
+    public function storeForAdmin(Request $request, $userId)
+    {
+        if (Auth::user()->role !== 'admin') abort(403);
 
-    $data = $this->validatedRecruitment($request);
-    $data['rc_u_id'] = (int) $userId;
+        $data = $this->validatedRecruitment($request);
+        $data['rc_u_id'] = (int) $userId;
 
-    $data['rc_posted_at'] = now();
-    $data['rc_status'] = 'open';
-    $data['rc_description'] = $data['rc_description'] ?? '';
+        $data['rc_posted_at'] = now();
+        $data['rc_status'] = 'open';
+        $data['rc_description'] = $data['rc_description'] ?? '';
 
-    $rec = Recruitment::create($data);
+        $rec = Recruitment::create($data);
 
-    $this->syncRecruitmentRelations($rec, $request);
+        $this->syncRecruitmentRelations($rec, $request);
 
-    return redirect()
-        ->route('admin.providers.recruitments.index', $userId)
-        ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
-}
+        return redirect()
+            ->route('admin.providers.recruitments.index', $userId)
+            ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
+    }
 
-public function createForProvider()
-{
-    if (Auth::user()->role !== 'provider') abort(403);
+    public function createForProvider()
+    {
+        if (Auth::user()->role !== 'provider') abort(403);
 
-    $userId  = Auth::id();
-    $company = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
-    // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
-    $skillGroups = MasterSkillGroup::query()
-        ->whereHas('skills')
-        ->with(['skills' => function ($query) {
-            $query->orderByRaw('LOWER(name)');
-        }])
-        ->orderByRaw('LOWER(name)')
-        ->get();
+        $userId  = Auth::id();
+        $company = DB::table('companies_profiles')->where('co_user_id', $userId)->first();
+        // ⭐ เพิ่มการกรองเฉพาะกลุ่มที่มี skills
+        $skillGroups = MasterSkillGroup::query()
+            ->whereHas('skills')
+            ->with(['skills' => function ($query) {
+                $query->orderByRaw('LOWER(name)');
+            }])
+            ->orderByRaw('LOWER(name)')
+            ->get();
 
-    return view('admin.recruitments.create', [
-        'isAdmin'  => false,
-        'ownerId'  => $userId,
-        'provider' => Auth::user(),
-        'company'  => $company,
-        'skillGroups'  => $skillGroups,
-    ]);
-}
+        return view('admin.recruitments.create', [
+            'isAdmin'     => false,
+            'ownerId'     => $userId,
+            'provider'    => Auth::user(),
+            'company'     => $company,
+            'skillGroups' => $skillGroups,
+        ]);
+    }
 
     public function storeForProvider(Request $request)
     {
         if (Auth::user()->role !== 'provider') abort(403);
 
-    $data = $this->validatedRecruitment($request);
-    $data['rc_u_id'] = Auth::id();
+        $data = $this->validatedRecruitment($request);
+        $data['rc_u_id'] = Auth::id();
 
-    $data['rc_posted_at'] = now();
-    $data['rc_status'] = 'open';
-    $data['rc_description'] = $data['rc_description'] ?? '';
+        $data['rc_posted_at'] = now();
+        $data['rc_status'] = 'open';
+        $data['rc_description'] = $data['rc_description'] ?? '';
 
-    $rec = Recruitment::create($data);
+        $rec = Recruitment::create($data);
 
-    $this->syncRecruitmentRelations($rec, $request);
+        $this->syncRecruitmentRelations($rec, $request);
 
         return redirect()
             ->route('provider.recruitments.index')
             ->with('swal_qr', ['rc_id' => $rec->rc_id, 'rc_title' => $rec->rc_title]);
     }
 
-/** ----- แชร์ rules ระหว่าง create/update ----- */
+    /** ----- แชร์ rules ระหว่าง create/update ----- */
     private function validatedRecruitment(Request $request): array
     {
         $validator = Validator::make($request->all(), [
-            'rc_title'           => ['required', 'string', 'max:255'],
-            'rc_description'     => ['nullable', 'string'],
-            'rc_requirements'    => ['nullable', 'string'],
-            'rc_gender'          => ['nullable', 'in:unspecified,any,male,female'],
-            'rc_education_level' => ['nullable', 'in:unspecified,any,below_bachelor,bachelor,master,doctorate'],
-            'rc_experience_level'=> ['nullable', 'in:unspecified,no_experience,0_1,1_3,3_5,more_5'],
-            'rc_salary'          => ['nullable', 'string', 'max:255'],
+            'rc_title'            => ['required', 'string', 'max:255'],
+            'rc_description'      => ['nullable', 'string'],
+            'rc_requirements'     => ['nullable', 'string'],
+            'rc_gender'           => ['nullable', 'in:unspecified,any,male,female'],
+            'rc_education_level'  => ['nullable', 'in:unspecified,any,below_bachelor,bachelor,master,doctorate'],
+            'rc_experience_level' => ['nullable', 'in:unspecified,no_experience,0_1,1_3,3_5,more_5'],
+            'rc_salary'           => ['nullable', 'string', 'max:255'],
 
-            'rc_location_text'   => ['nullable', 'string', 'max:255'],
-            'rc_location_link'   => ['nullable', 'url', 'max:2048'],
+            'rc_location_text' => ['nullable', 'string', 'max:255'],
+            'rc_location_link' => ['nullable', 'url', 'max:2048'],
 
-            'rc_type'            => ['nullable', 'in:full-time,part-time,intern,freelance'],
-            'rc_work_mode'       => ['nullable', 'in:onsite,remote,hybrid,distributed'],
-            'rc_expire_at'       => ['nullable', 'date', 'after:today'],
-            'expire_no_limit'    => ['nullable', 'boolean'],
+            'rc_type'      => ['nullable', 'in:full-time,part-time,intern,freelance'],
+            'rc_work_mode' => ['nullable', 'in:onsite,remote,hybrid,distributed'],
+            'rc_expire_at' => ['nullable', 'date', 'after:today'],
+            'expire_no_limit' => ['nullable', 'boolean'],
 
-            'skills' => ['nullable', 'array'],
-            'skills.*.skill_group_id' => ['required', 'exists:master_skill_groups,id'],
-            'skills.*.skill_id' => ['required', 'exists:master_skills,id'],
-            'skills.*.proficiency_level' => ['required', 'in:beginner,intermediate,advanced,expert'],
-            'skills.*.is_required' => ['nullable', 'boolean'],
+            'skills'                          => ['nullable', 'array'],
+            'skills.*.skill_group_id'         => ['required', 'exists:master_skill_groups,id'],
+            'skills.*.skill_id'               => ['required', 'exists:master_skills,id'],
+            'skills.*.proficiency_level'      => ['required', 'in:beginner,intermediate,advanced,expert'],
+            'skills.*.is_required'            => ['nullable', 'boolean'],
 
-            'languages' => ['nullable', 'array'],
-            'languages.*.language' => ['required', 'string', 'max:255'],
-            'languages.*.proficiency' => ['required', 'in:basic,conversational,fluent,native'],
+            'languages'                  => ['nullable', 'array'],
+            'languages.*.language'       => ['required', 'string', 'max:255'],
+            'languages.*.proficiency'    => ['required', 'in:basic,conversational,fluent,native'],
         ]);
 
         $validator->after(function ($validator) use ($request) {
             $selectedMode = trim((string) $request->input('rc_work_mode', ''));
             $requiresLocation = in_array($selectedMode, ['onsite', 'hybrid'], true);
-            $locationLink = trim((string) $request->input('rc_location_link', ''));
 
             if ($requiresLocation) {
                 if (!filled($request->input('rc_location_text'))) {
@@ -759,7 +775,6 @@ public function createForProvider()
                     $validator->errors()->add('rc_location_link', 'กรุณาระบุลิงก์สถานที่เมื่อเลือกเข้าออฟฟิศหรือผสมผสาน');
                 }
             }
-
         });
 
         $data = $validator->validate();
@@ -769,10 +784,10 @@ public function createForProvider()
             $data['rc_expire_at'] = null;
         }
 
-        $data['rc_type'] = filled($data['rc_type'] ?? null) ? trim((string) $data['rc_type']) : null;
-        $data['rc_work_mode'] = filled($data['rc_work_mode'] ?? null) ? trim((string) $data['rc_work_mode']) : null;
-        $data['rc_gender'] = filled($data['rc_gender'] ?? null) ? trim((string) $data['rc_gender']) : 'unspecified';
-        $data['rc_education_level'] = filled($data['rc_education_level'] ?? null) ? trim((string) $data['rc_education_level']) : 'unspecified';
+        $data['rc_type']             = filled($data['rc_type'] ?? null) ? trim((string) $data['rc_type']) : null;
+        $data['rc_work_mode']        = filled($data['rc_work_mode'] ?? null) ? trim((string) $data['rc_work_mode']) : null;
+        $data['rc_gender']           = filled($data['rc_gender'] ?? null) ? trim((string) $data['rc_gender']) : 'unspecified';
+        $data['rc_education_level']  = filled($data['rc_education_level'] ?? null) ? trim((string) $data['rc_education_level']) : 'unspecified';
         $data['rc_experience_level'] = filled($data['rc_experience_level'] ?? null) ? trim((string) $data['rc_experience_level']) : 'unspecified';
 
         $requiresLocation = in_array($data['rc_work_mode'] ?? null, ['onsite', 'hybrid'], true);
@@ -804,11 +819,11 @@ public function createForProvider()
 
         foreach ($skills as $skill) {
             RecruitmentSkill::create([
-                'rc_id' => $rec->rc_id,
+                'rc_id'                => $rec->rc_id,
                 'master_skill_group_id' => $skill['skill_group_id'],
-                'master_skill_id' => $skill['skill_id'],
-                'proficiency_level' => $skill['proficiency_level'],
-                'is_required' => (string) ($skill['is_required'] ?? '1') === '1',
+                'master_skill_id'      => $skill['skill_id'],
+                'proficiency_level'    => $skill['proficiency_level'],
+                'is_required'          => (string) ($skill['is_required'] ?? '1') === '1',
             ]);
         }
 
@@ -821,7 +836,7 @@ public function createForProvider()
 
         foreach ($languages as $language) {
             $rec->languages()->create([
-                'language' => $language['language'],
+                'language'    => $language['language'],
                 'proficiency' => $language['proficiency'] ?? 'basic',
             ]);
         }
@@ -852,5 +867,4 @@ public function createForProvider()
             ->route('provider.recruitments.index')
             ->with('status', 'ลบประกาศงานเรียบร้อย');
     }
-
 }

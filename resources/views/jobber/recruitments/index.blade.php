@@ -7,6 +7,7 @@
         $topMatches = $topMatches ?? collect();
         $recommendedJobs = $recommendedJobs ?? collect();
         $matchingEnabled = $matchingEnabled ?? false;
+        $appliedJobIds = $appliedJobIds ?? collect();
         $viewRouteResolver = function ($jobId) {
             return (auth()->check() && auth()->user()->role === 'jobber')
                 ? route('jobber.jobs.show', $jobId)
@@ -78,9 +79,15 @@
                         @php
                             $meta = $job->matching_meta ?? [];
                             $company = $companies[$job->rc_u_id] ?? null;
+                            $jobIsApplied = $appliedJobIds->has($job->rc_id);
                         @endphp
-                                <a href="{{ $viewRouteResolver($job->rc_id) }}" class="block p-3 bg-white border border-slate-200 rounded-xl hover:shadow-md transition"
-                            <p class="text-xs text-gray-500 line-clamp-1">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
+                        <a href="{{ $viewRouteResolver($job->rc_id) }}" class="relative block p-3 bg-white border border-slate-200 rounded-xl hover:shadow-md transition">
+                            @if($jobIsApplied)
+                                <span class="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-green-100 text-green-700 border border-green-200">
+                                    ✓ สมัครแล้ว
+                                </span>
+                            @endif
+                            <p class="text-xs text-gray-500 line-clamp-1 {{ $jobIsApplied ? 'pr-14' : '' }}">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
                             <p class="text-sm font-semibold text-slate-800 line-clamp-2 mt-1">{{ $job->rc_title }}</p>
                             <div class="mt-2 flex items-center justify-between text-xs">
                                 <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700">ความเหมาะสม {{ (int) ($meta['total_score'] ?? 0) }}%</span>
@@ -102,12 +109,18 @@
                             $meta = $job->matching_meta ?? [];
                             $company = $companies[$job->rc_u_id] ?? null;
                             $typeLabels = collect($job->type_labels ?? []);
+                            $jobIsApplied = $appliedJobIds->has($job->rc_id);
                         @endphp
-                                <a href="{{ $viewRouteResolver($job->rc_id) }}" class="block p-3 border rounded-xl bg-slate-50 border-slate-200 hover:border-emerald-300 hover:bg-white transition"
-                                    title="แนะนำจากคะแนนความเหมาะสม">
-                            <div class="flex items-center justify-between gap-2">
+                        <a href="{{ $viewRouteResolver($job->rc_id) }}" class="relative block p-3 border rounded-xl bg-slate-50 border-slate-200 hover:border-emerald-300 hover:bg-white transition"
+                            title="แนะนำจากคะแนนความเหมาะสม">
+                            @if($jobIsApplied)
+                                <span class="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-green-100 text-green-700 border border-green-200">
+                                    ✓ สมัครแล้ว
+                                </span>
+                            @endif
+                            <div class="flex items-center justify-between gap-2 {{ $jobIsApplied ? 'pr-14' : '' }}">
                                 <p class="text-sm font-semibold text-slate-800 line-clamp-1">{{ $job->rc_title }}</p>
-                                <span class="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700">{{ (int) ($meta['total_score'] ?? 0) }}%</span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700 shrink-0">{{ (int) ($meta['total_score'] ?? 0) }}%</span>
                             </div>
                             <p class="mt-1 text-xs text-gray-500 line-clamp-1">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
                             <div class="mt-2 flex flex-wrap gap-1">
@@ -138,6 +151,7 @@
                     $meta = $r->matching_meta ?? [];
                     $breakdown = $meta['breakdown'] ?? [];
                     $defined = $meta['criteria_defined'] ?? [];
+                    $isApplied = $appliedJobIds->has($r->rc_id);
                     $factorLabel = function (string $key, string $label) use ($defined, $breakdown) {
                         $isDefined = (bool) ($defined[$key] ?? false);
                         if (!$isDefined) {
@@ -147,7 +161,19 @@
                         return $label . ' ' . (int) ($breakdown[$key] ?? 0) . '%';
                     };
                 @endphp
-                <div class="flex flex-col h-full p-4 transition-all duration-200 bg-white border shadow-sm rounded-2xl border-slate-100 hover:-translate-y-0.5 hover:shadow-lg">
+
+                {{-- ✅ เพิ่ม relative สำหรับ badge มุมบนขวา --}}
+                <div class="relative flex flex-col h-full p-4 transition-all duration-200 bg-white border shadow-sm rounded-2xl border-slate-100 hover:-translate-y-0.5 hover:shadow-lg">
+
+                    {{-- ✅ Badge "สมัครแล้ว" มุมบนขวา --}}
+                    @if($isApplied)
+                        <div class="absolute top-3 right-3 z-10">
+                            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-green-100 text-green-700 border border-green-200">
+                                ✓ สมัครแล้ว
+                            </span>
+                        </div>
+                    @endif
+
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 overflow-hidden bg-gray-100 rounded-full">
                             @if($company && $company->co_profile_img)
@@ -156,7 +182,7 @@
                                 <img src="{{ asset('image/web-image/logo.png') }}" class="object-contain w-full h-full p-1" />
                             @endif
                         </div>
-                        <div>
+                        <div class="{{ $isApplied ? 'pr-16' : '' }}">
                             <h2 class="text-lg font-semibold text-base-content line-clamp-1">
                                 <a href="{{ $viewRouteResolver($r->rc_id) }}" class="hover:text-blue-600">{{ $r->rc_title }}</a>
                             </h2>

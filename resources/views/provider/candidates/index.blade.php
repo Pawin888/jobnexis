@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'ใบเรซูเม่ผู้สมัคร')
+@section('title', 'ใบเ Resume ผู้สมัคร')
 
 @section('content')
 <div class="flex flex-col gap-4 p-4 shadow bg-base-200 rounded-2xl">
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-xl font-semibold">ใบเรซูเม่ผู้สมัครที่เปิดเผย</h1>
+            <h1 class="text-xl font-semibold">ใบ Resume ผู้สมัครที่เปิดเผย</h1>
             <p class="text-sm opacity-70">ทั้งหมด {{ number_format($resumes->total()) }} รายการ</p>
         </div>
     </div>
@@ -91,7 +91,7 @@
                             <div class="flex items-center justify-start gap-1.5 whitespace-nowrap">
                                 <a href="{{ route('provider.candidates.show', $resume->id) }}"
                                    class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-base-100 hover:bg-blue-50 hover:border-blue-400 transition text-gray-600 hover:text-blue-600"
-                                   title="ดูรายละเอียดเรซูเม่">
+                                   title="ดูรายละเอียด Resume">
                                     <i class="fa-solid fa-search text-sm"></i>
                                 </a>
 
@@ -129,7 +129,7 @@
                     <tr>
                         <td colspan="5" class="py-16 text-center text-gray-400">
                             <i class="fa-solid fa-user-group text-3xl mb-3 block opacity-40"></i>
-                            ไม่พบเรซูเม่ที่เปิดเผย
+                            ไม่พบ Resume ที่เปิดเผย
                         </td>
                     </tr>
                 @endforelse
