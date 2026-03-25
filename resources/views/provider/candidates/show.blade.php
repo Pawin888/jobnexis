@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'รายละเอียดเรซูเม่ผู้สมัคร')
+@section('title', 'รายละเอียด Resume ผู้สมัคร')
 
 @section('content')
 @php
@@ -21,7 +21,7 @@
                 <i class="fa-solid fa-arrow-left text-gray-500 text-sm"></i>
             </a>
             <div>
-                <h1 class="text-base font-bold text-gray-800 leading-tight">รายละเอียดเรซูเม่ผู้สมัคร</h1>
+                <h1 class="text-base font-bold text-gray-800 leading-tight">รายละเอียด Resume ผู้สมัคร</h1>
                 <p class="text-xs text-gray-400 mt-0.5">{{ $fullName ?: '-' }}</p>
             </div>
         </div>

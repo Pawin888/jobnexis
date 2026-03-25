@@ -110,11 +110,11 @@
                 </svg>
             </div>
             <div>
-                <h3 class="text-lg font-semibold text-gray-800">ยืนยันการบันทึกเรซูเม่</h3>
+                <h3 class="text-lg font-semibold text-gray-800">ยืนยันการบันทึก Resume</h3>
                 <p class="text-sm text-gray-500">กรุณาตรวจสอบความถูกต้องก่อนบันทึก</p>
             </div>
         </div>
-        <p class="text-gray-600 mb-6">{{ isset($resume) ? 'คุณแน่ใจหรือว่าต้องการบันทึกการแก้ไขเรซูเม่นี้?' : 'คุณแน่ใจหรือว่าต้องการสร้างเรซูเม่นี้?' }}</p>
+        <p class="text-gray-600 mb-6">{{ isset($resume) ? 'คุณแน่ใจหรือว่าต้องการบันทึกการแก้ไข Resume นี้' : 'คุณแน่ใจหรือว่าต้องการสร้าง Resume นี้' }}</p>
         <div class="flex gap-3 justify-end">
             <button type="button" id="cancel-submit-confirm" class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
                 ยกเลิก
@@ -475,8 +475,8 @@
                 <input type="hidden" name="is_visible" value="0">
                 <input type="checkbox" name="is_visible" value="1" {{ old('is_visible', $resume->is_visible ?? true) ? 'checked' : '' }} class="mt-1">
                 <div>
-                    <span class="font-medium text-gray-800">เปิดเผยเรซูเม่ต่อสาธารณะ</span>
-                    <p class="text-sm text-gray-600 mt-1">หากเปิดเผย นายจ้างจะสามารถค้นหาและดูเรซูเม่ของคุณได้</p>
+                    <span class="font-medium text-gray-800">เปิดเผย Resume ต่อสาธารณะ</span>
+                    <p class="text-sm text-gray-600 mt-1">หากเปิดเผย นายจ้างจะสามารถค้นหาและดู Resume ของคุณได้</p>
                 </div>
             </label>
         </div>
@@ -848,7 +848,7 @@
 
     function openSubmitConfirmModal() {
     Swal.fire({
-        title: '{{ isset($resume) ? "ยืนยันการบันทึกการแก้ไข?" : "ยืนยันการสร้างเรซูเม่" }}',
+        title: '{{ isset($resume) ? "ยืนยันการบันทึกการแก้ไข" : "ยืนยันการสร้าง Resume" }}',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#16a34a',
@@ -910,7 +910,7 @@
             preferred_location: 'สถานที่ทำงานที่ต้องการ',
             salary_min: 'เงินเดือนขั้นต่ำ',
             salary_max: 'เงินเดือนสูงสุด',
-            is_visible: 'การเปิดเผยเรซูเม่',
+            is_visible: 'การเปิดเผย Resume',
             profile_image: 'รูปโปรไฟล์',
         };
 

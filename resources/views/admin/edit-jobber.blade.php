@@ -67,18 +67,18 @@
         </div>
     </form>
 
-    {{-- ================= แสดงเรซูเม่ ================= --}}
+    {{-- ================= แสดง Resume ================= --}}
     <div class="mt-12">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold tracking-tight text-gray-800">เรซูเม่ของคุณ</h2>
+            <h2 class="text-xl font-bold tracking-tight text-gray-800">Resume ของคุณ</h2>
         </div>
 
         @if ($resumes->isEmpty())
             <div class="p-10 text-center bg-white border border-dashed rounded-2xl">
-                <p class="mb-4 text-gray-500">ยังไม่สร้างเรซูเม่</p>
+                <p class="mb-4 text-gray-500">ยังไม่สร้าง Resume</p>
                 <a href="{{ route('jobber.resumes.create') }}"
                    class="inline-flex items-center gap-2 px-6 py-3 text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
-                    สร้างเรซูเม่
+                    สร้าง Resume
                 </a>
             </div>
         @else
@@ -147,7 +147,7 @@
                                     <h3 class="text-lg font-bold text-gray-800 truncate">{{ $fullName ?: '-' }}</h3>
                                     <div class="flex gap-2 mt-2">
                                         <span class="px-2 py-1 text-xs rounded-full {{ $resume->is_visible ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
-                                            {{ $resume->is_visible ? 'เปิดเผยเรซูเม่' : 'ซ่อนเรซูเม่' }}
+                                            {{ $resume->is_visible ? 'เปิดเผย Resume' : 'ซ่อน Resume' }}
                                         </span>
                                     </div>
                                 </div>
@@ -347,7 +347,7 @@
         <button type="button"
             class="delete-resume-btn px-4 py-2 text-sm text-white transition bg-red-600 rounded-xl hover:bg-red-700"
             data-id="{{ $resume->id }}"
-            data-name="{{ addslashes($fullName ?: 'เรซูเม่') }}">
+            data-name="{{ addslashes($fullName ?: 'Resume') }}">
             ลบ
         </button>
     </div>
@@ -374,14 +374,14 @@
         });
     @endif
 
-    // ===== ลบเรซูเม่ =====
+    // ===== ลบ Resume =====
     document.querySelectorAll('.delete-resume-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const id   = this.dataset.id;
             const name = this.dataset.name;
 
             Swal.fire({
-                title: 'ยืนยันการลบเรซูเม่',
+                title: 'ยืนยันการลบ Resume',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',

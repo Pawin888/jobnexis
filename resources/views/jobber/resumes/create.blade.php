@@ -7,8 +7,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">สร้างเรซูเม่</h1>
-                <p class="text-gray-600 mt-2">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อสร้างเรซูเม่ของคุณ</p>
+                <h1 class="text-3xl font-bold text-gray-800">สร้าง Resume</h1>
+                <p class="text-gray-600 mt-2">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อสร้าง Resume ของคุณ</p>
             </div>
             <a href="{{ route('profile-jobber.edit') }}" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-gray-200 transition">
                 ยกเลิก
@@ -26,7 +26,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                บันทึกเรซูเม่
+                บันทึก Resume
             </span>
         </button>
     </div>

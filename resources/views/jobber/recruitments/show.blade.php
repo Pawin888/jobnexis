@@ -440,7 +440,7 @@
             {{-- Apply card --}}
             <div class="p-5 bg-white border shadow-sm rounded-2xl border-slate-200">
                 <h3 class="text-xl font-bold text-slate-800">สมัครงาน</h3>
-                <p class="mt-1 text-sm text-gray-600">ส่งเรซูเม่ของคุณให้ผู้ประกอบการ</p>
+                <p class="mt-1 text-sm text-gray-600">ส่ง Resume ของคุณให้ผู้ประกอบการ</p>
 
                 @php
                     $application = null;
@@ -491,7 +491,7 @@
                                     </form>
                                     <button type="button" id="btn-apply"
                                             class="w-full px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
-                                        สมัครงานด้วยเรซูเม่ของคุณ
+                                        สมัครงานด้วย Resume ของคุณ
                                     </button>
                                 @else
                                     <div class="w-full px-4 py-2 text-sm text-center text-gray-600 bg-gray-100 rounded-lg">

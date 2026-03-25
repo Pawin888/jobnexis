@@ -50,7 +50,7 @@ class JobApplicationController extends Controller
         ->first();
 
     if (!$resume) {
-        return back()->with('error', 'กรุณาสร้างเรซูเม่ก่อนสมัครงาน');
+        return back()->with('error', 'กรุณาสร้าง Resume ก่อนสมัครงาน');
     }
 
     $existingApplication = JobApplication::where('recruitment_id', $rcId)
@@ -70,7 +70,7 @@ class JobApplicationController extends Controller
         'cover_letter'   => $request->input('cover_letter'),
         'applied_at'     => now(),
     ]);
-    
+
     ProviderCandidateInvite::whereHas('resume', fn ($q) => $q->where('user_id', $jobber->id))
         ->where('recruitment_id', $rcId)
         ->delete();

@@ -7,8 +7,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">แก้ไขเรซูเม่</h1>
-                <p class="text-gray-600 mt-2">อัปเดตข้อมูลเรซูเม่ของคุณ</p>
+                <h1 class="text-3xl font-bold text-gray-800">แก้ไข Resume</h1>
+                <p class="text-gray-600 mt-2">อัปเดตข้อมูล Resume ของคุณ</p>
             </div>
             <a href="{{ route('profile-jobber.edit') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                 กลับไปหน้าโปรไฟล์
@@ -27,7 +27,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
-                    ลบเรซูเม่
+                    ลบ Resume
                 </span>
             </button>
             <button type="submit" form="resume-form" id="submit-btn" class="px-8 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
@@ -184,10 +184,10 @@
 
 @push('scripts')
 <script>
-    // ลบเรซูเม่
+    // ลบ Resume
     document.getElementById('delete-btn').addEventListener('click', function () {
         Swal.fire({
-            title: 'ยืนยันการลบเรซูเม่',
+            title: 'ยืนยันการลบ Resume',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
