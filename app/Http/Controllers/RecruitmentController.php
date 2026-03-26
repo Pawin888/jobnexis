@@ -780,7 +780,10 @@ class RecruitmentController extends Controller
         $data = $validator->validate();
 
         $isNoLimitExpire = (string) $request->input('expire_no_limit', '0') === '1';
-        if ($isNoLimitExpire) {
+            // ✅ rc_description ห้ามเป็น null (database constraint NOT NULL)
+            $data['rc_description'] = filled($data['rc_description'] ?? null) ? trim((string) $data['rc_description']) : '';
+
+            if ($isNoLimitExpire) {
             $data['rc_expire_at'] = null;
         }
 
