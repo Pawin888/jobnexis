@@ -29,7 +29,7 @@ return new class extends Migration
             $table->enum('rc_status', ['open', 'closed', 'draft'])->default('open');
 
             // โหมดการทำงาน ใช้บ่อยมากในตลาดงานปัจจุบัน
-            $table->enum('rc_work_mode', ['onsite', 'remote', 'hybrid'])->default('onsite');
+            $table->enum('rc_work_mode', ['onsite', 'remote', 'hybrid','distributed'])->default('onsite');
 
             // ใช้ timestamp จะยืดหยุ่นกว่า (มีเวลา) และตั้ง default เป็นเวลาปัจจุบัน
             $table->timestamp('rc_posted_at')->useCurrent();
