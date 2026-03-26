@@ -98,41 +98,6 @@
             </div>
         @endif
 
-        @if($matchingEnabled && $recommendedJobs->isNotEmpty())
-            <div class="mt-4 p-5 bg-white border border-slate-200 rounded-2xl">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <h2 class="text-lg font-bold text-slate-800">แนะนำสำหรับคุณ</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-4">
-                    @foreach($recommendedJobs as $job)
-                        @php
-                            $meta = $job->matching_meta ?? [];
-                            $company = $companies[$job->rc_u_id] ?? null;
-                            $typeLabels = collect($job->type_labels ?? []);
-                            $jobIsApplied = $appliedJobIds->has($job->rc_id);
-                        @endphp
-                        <a href="{{ $viewRouteResolver($job->rc_id) }}" class="relative block p-3 border rounded-xl bg-slate-50 border-slate-200 hover:border-emerald-300 hover:bg-white transition"
-                            title="แนะนำจากคะแนนความเหมาะสม">
-                            @if($jobIsApplied)
-                                <span class="absolute top-2 right-2 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-green-100 text-green-700 border border-green-200">
-                                    ✓ สมัครแล้ว
-                                </span>
-                            @endif
-                            <div class="flex items-center justify-between gap-2 {{ $jobIsApplied ? 'pr-14' : '' }}">
-                                <p class="text-sm font-semibold text-slate-800 line-clamp-1">{{ $job->rc_title }}</p>
-                                <span class="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700 shrink-0">{{ (int) ($meta['total_score'] ?? 0) }}%</span>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-500 line-clamp-1">{{ $company->co_name ?? 'ไม่ระบุบริษัท' }}</p>
-                            <div class="mt-2 flex flex-wrap gap-1">
-                                @foreach($typeLabels->take(2) as $tag)
-                                    <span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-100 text-emerald-700">{{ $tag }}</span>
-                                @endforeach
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
         <div class="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
             @forelse ($recs as $r)
