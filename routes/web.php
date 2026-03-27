@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileDetailController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\SkillController;
+use App\Http\Controllers\Admin\CustomTaxonomyController;
 
 use App\Http\Controllers\Admin\MasterSkillOverviewController;
 use App\Http\Controllers\Jobber\ResumeController;
@@ -255,6 +256,32 @@ Route::middleware('role:admin')
         Route::get('/master-skills', [MasterSkillOverviewController::class, 'index'])
             ->name('skills-overview');
 
+    });
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin/custom-taxonomy')
+    ->name('admin.custom-taxonomy.')
+    ->group(function () {
+        Route::get('/', [CustomTaxonomyController::class, 'index'])->name('index');
+
+        Route::post('/groups', [CustomTaxonomyController::class, 'storeGroup'])->name('groups.store');
+        Route::put('/groups/{group}', [CustomTaxonomyController::class, 'updateGroup'])->name('groups.update');
+        Route::delete('/groups/{group}', [CustomTaxonomyController::class, 'destroyGroup'])->name('groups.destroy');
+
+        Route::post('/roles', [CustomTaxonomyController::class, 'storeRole'])->name('roles.store');
+        Route::put('/roles/{role}', [CustomTaxonomyController::class, 'updateRole'])->name('roles.update');
+        Route::delete('/roles/{role}', [CustomTaxonomyController::class, 'destroyRole'])->name('roles.destroy');
+
+        Route::post('/skills', [CustomTaxonomyController::class, 'storeSkill'])->name('skills.store');
+        Route::put('/skills/{skill}', [CustomTaxonomyController::class, 'updateSkill'])->name('skills.update');
+        Route::delete('/skills/{skill}', [CustomTaxonomyController::class, 'destroySkill'])->name('skills.destroy');
+
+        Route::post('/weights', [CustomTaxonomyController::class, 'storeWeight'])->name('weights.store');
+        Route::put('/weights/{weight}', [CustomTaxonomyController::class, 'updateWeight'])->name('weights.update');
+        Route::delete('/weights/{weight}', [CustomTaxonomyController::class, 'destroyWeight'])->name('weights.destroy');
+
+        Route::get('/api/groups/{group}/roles', [CustomTaxonomyController::class, 'rolesByGroup'])->name('api.groups.roles');
+        Route::get('/api/roles/{role}/skills', [CustomTaxonomyController::class, 'skillsByRole'])->name('api.roles.skills');
     });
 
 Route::middleware(['auth', 'role:jobber'])

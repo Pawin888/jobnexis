@@ -18,6 +18,11 @@ class DatabaseSeeder extends Seeder
             MasterSkillGroupSeeder::class,
             MasterSkillSeeder::class,
             MasterSkillGroupSkillSeeder::class,
+            CustomJobGroupSeeder::class,
+            CustomJobRoleSeeder::class,
+            CustomSkillSeeder::class,
+            CustomRoleSkillTaxonomySeeder::class,
+            UpdateRoleSkillWeightByTaxonomySeeder::class, // อัปเดต weight ตาม taxonomy level หลัง seed หลัก
         ]);
     }
 }

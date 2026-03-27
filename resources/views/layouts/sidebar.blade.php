@@ -69,6 +69,13 @@
                     คลังทักษะ ESCO
                 </a>
             </li>
+            <li>
+                <a href="{{ route('admin.custom-taxonomy.index') }}"
+                    class="flex items-center px-3 py-2 rounded-lg {{ request()->is('admin/custom-taxonomy*') ? 'text-blue-600' : '' }}">
+                    <i class="fa-solid fa-sitemap w-5 text-blue-600 text-center mr-1"></i>
+                    โครงสร้างทักษะเฉพาะ
+                </a>
+            </li>
         </ul>
     </aside>
 @elseif (Auth::check() && Auth::user()->role === 'education')
