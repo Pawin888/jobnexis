@@ -164,8 +164,12 @@
     /* Table modern */
     .taxonomy-surface table {
         border-radius: 1rem;
-        overflow: hidden;
+        overflow: visible !important;
         background: #fff;
+    }
+    .taxonomy-surface .overflow-x-auto {
+        overflow-x: auto;
+        overflow-y: visible !important;
     }
     .taxonomy-surface th, .taxonomy-surface td {
         padding: 0.55em 0.7em;
@@ -175,6 +179,14 @@
         background: #e0e7ff;
         color: var(--ui-primary);
         font-weight: 700;
+    }
+    /* Sticky table header fix */
+    .taxonomy-surface table thead.sticky th {
+        position: sticky !important;
+        top: 0;
+        background: #e0e7ff;
+        z-index: 20;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
     .taxonomy-surface tr {
         transition: background .15s;
@@ -487,7 +499,7 @@
                 </label>
                 <div class="overflow-x-auto max-h-96 rounded-lg border border-base-200">
                     <table class="table table-xs">
-                        <thead>
+                        <thead class="sticky top-0 bg-white z-10">
                             <tr>
                                 <th>ชื่อ</th>
                                 <th>จำนวนตำแหน่ง</th>
@@ -553,7 +565,7 @@
                 </label>
                 <div class="overflow-x-auto max-h-96 rounded-lg border border-base-200">
                     <table class="table table-xs">
-                        <thead>
+                        <thead class="sticky top-0 bg-white z-10">
                             <tr>
                                 <th>ตำแหน่งงาน</th>
                                 <th>กลุ่มงาน</th>
@@ -629,10 +641,11 @@
                 </label>
                 <div class="overflow-x-auto max-h-96 rounded-lg border border-base-200">
                     <table class="table table-xs">
-                        <thead>
+                        <thead class="sticky top-0 bg-white z-10">
                             <tr>
                                 <th>ทักษะ</th>
                                 <th>ถูกใช้</th>
+                                <th>คะแนนทักษะ</th>
                                 <th>จัดการ</th>
                             </tr>
                         </thead>
@@ -658,6 +671,9 @@
                                         </div>
                                     </td>
                                     <td>{{ $skill->role_weights_count }}</td>
+                                    <td>
+                                        {{ $skillScores[$skill->id] ?? '-' }}
+                                    </td>
                                     <td>
                                         <div class="flex gap-1">
                                             <form id="skill-update-{{ $skill->id }}" method="POST" action="{{ route('admin.custom-taxonomy.skills.update', $skill) }}">

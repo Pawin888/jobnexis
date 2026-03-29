@@ -61,6 +61,30 @@ class CustomTaxonomyController extends Controller
             }
         }
 
+        // --- คำนวณคะแนนทักษะ (สูตรใหม่: ค่าเฉลี่ย taxonomy) ---
+        // 1. ดึง role_count และ avg_taxonomy ของแต่ละทักษะ
+        $skillRoleStats = \DB::table('custom_role_skill_weights')
+            ->select('custom_skill_id',
+                \DB::raw('COUNT(DISTINCT custom_job_role_id) as role_count'),
+                \DB::raw('AVG(weight) as avg_taxonomy')
+            )
+            ->groupBy('custom_skill_id')
+            ->get()
+            ->keyBy('custom_skill_id');
+
+        // 2. หาค่าสูงสุดของจำนวนตำแหน่งงาน
+        $maxRoleCount = $skillRoleStats->max('role_count') ?: 1;
+
+        // 3. คำนวณคะแนน
+        $skillScores = [];
+        foreach ($skillsAll as $skill) {
+            $stat = $skillRoleStats[$skill->id] ?? null;
+            $roleCount = $stat->role_count ?? 0;
+            $avgTaxonomy = $stat->avg_taxonomy ?? 0;
+            $score = $maxRoleCount > 0 ? ($roleCount / $maxRoleCount) * $avgTaxonomy : 0;
+            $skillScores[$skill->id] = round($score, 2);
+        }
+
         return view('admin.custom-taxonomy.index', compact(
             'groups',
             'groupsAll',
@@ -71,7 +95,8 @@ class CustomTaxonomyController extends Controller
             'selectedGroupId',
             'selectedRoleId',
             'selectedRole',
-            'roleWeights'
+            'roleWeights',
+            'skillScores'
         ));
     }
 
