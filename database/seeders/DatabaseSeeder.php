@@ -24,5 +24,12 @@ class DatabaseSeeder extends Seeder
             CustomRoleSkillTaxonomySeeder::class,
             UpdateRoleSkillWeightByTaxonomySeeder::class, // อัปเดต weight ตาม taxonomy level หลัง seed หลัก
         ]);
+
+        // ข้อมูลทดสอบสำหรับ dev: ทักษะที่อยู่หลายกลุ่ม
+        if (app()->environment(['local', 'development'])) {
+            $this->call([
+                DevMultiGroupMasterSkillSeeder::class,
+            ]);
+        }
     }
 }

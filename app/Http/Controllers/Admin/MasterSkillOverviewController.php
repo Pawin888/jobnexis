@@ -21,8 +21,9 @@ class MasterSkillOverviewController extends Controller
         $sortBy      = $request->get('sort', 'name');
         $sortDir     = $request->get('dir', 'asc');
         $filterGroup = $request->get('group');
+        $filterSkill = $request->get('skill');
 
-        $allowedSorts = ['name', 'group'];
+        $allowedSorts = ['name', 'group', 'level'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'name';
         }
@@ -32,7 +33,19 @@ class MasterSkillOverviewController extends Controller
             ? MasterSkillGroup::find($filterGroup)
             : null;
 
+        $activeSkill = $filterSkill
+            ? MasterSkill::with('skillGroups')->find($filterSkill)
+            : null;
+
+        $maxSkillGroupCount = (int) (MasterSkill::query()
+            ->where('is_active', true)
+            ->withCount('skillGroups')
+            ->get()
+            ->max('skill_groups_count') ?? 0);
+
         $skills = MasterSkill::with('skillGroups')
+            ->withMin('skillGroups', 'name')
+            ->withCount('skillGroups')
             ->where('master_skills.is_active', true)
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
@@ -48,14 +61,19 @@ class MasterSkillOverviewController extends Controller
                     $q->where('master_skill_groups.id', $filterGroup);
                 });
             })
+            ->when($filterSkill, function ($query, $filterSkill) {
+                $query->where('master_skills.id', $filterSkill);
+            })
             ->when($sortBy === 'group', function ($query) use ($sortDir) {
-                $query->leftJoin('master_skill_group_skill', 'master_skills.id', '=', 'master_skill_group_skill.master_skill_id')
-                      ->leftJoin('master_skill_groups', 'master_skill_group_skill.master_skill_group_id', '=', 'master_skill_groups.id')
-                      ->orderBy('master_skill_groups.name', $sortDir)
-                      ->select('master_skills.*');
+                $query->orderByRaw("COALESCE(skill_groups_min_name, '') {$sortDir}")
+                      ->orderBy('master_skills.name', 'asc');
             })
             ->when($sortBy === 'name', function ($query) use ($sortDir) {
                 $query->orderBy('master_skills.name', $sortDir);
+            })
+            ->when($sortBy === 'level', function ($query) use ($sortDir) {
+                $query->orderBy('skill_groups_count', $sortDir)
+                      ->orderBy('master_skills.name', 'asc');
             })
             ->paginate($perPage);
 
@@ -64,7 +82,9 @@ class MasterSkillOverviewController extends Controller
             'skills',
             'sortBy',
             'sortDir',
-            'activeGroup'
+            'activeGroup',
+            'activeSkill',
+            'maxSkillGroupCount'
         ));
     }
 }

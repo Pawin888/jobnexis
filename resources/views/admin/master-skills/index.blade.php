@@ -25,6 +25,7 @@
                 <input type="hidden" name="sort"  value="{{ request('sort', 'name') }}">
                 <input type="hidden" name="dir"   value="{{ request('dir', 'asc') }}">
                 <input type="hidden" name="group" value="{{ request('group') }}">
+                <input type="hidden" name="skill" value="{{ request('skill') }}">
                 <div class="flex gap-2">
                     <button
                         type="submit"
@@ -42,16 +43,28 @@
             </form>
         </div>
 
-        {{-- Active group filter badge --}}
-        @if($activeGroup)
+        {{-- Active filters badge --}}
+        @if($activeGroup || $activeSkill)
             <div class="mb-4 flex items-center gap-2">
-                <span class="text-sm text-gray-600">กรองตามหมวดหมู่:</span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                    {{ $activeGroup->name }}
-                    <a href="{{ request()->fullUrlWithQuery(['group' => null, 'page' => 1]) }}"
-                       class="hover:text-blue-900 leading-none"
-                       title="ล้างตัวกรอง">✕</a>
-                </span>
+                <span class="text-sm text-gray-600">กำลังกรอง:</span>
+
+                @if($activeGroup)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                        กลุ่ม: {{ $activeGroup->name }}
+                        <a href="{{ request()->fullUrlWithQuery(['group' => null, 'page' => 1]) }}"
+                           class="hover:text-blue-900 leading-none"
+                           title="ล้างตัวกรองกลุ่ม">✕</a>
+                    </span>
+                @endif
+
+                @if($activeSkill)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
+                        ทักษะ: {{ $activeSkill->name }}
+                        <a href="{{ request()->fullUrlWithQuery(['skill' => null, 'page' => 1]) }}"
+                           class="hover:text-emerald-900 leading-none"
+                           title="ล้างตัวกรองทักษะ">✕</a>
+                    </span>
+                @endif
             </div>
         @endif
 
@@ -63,9 +76,11 @@
 
                 $nameDir  = ($sortBy === 'name'  && $sortDir === 'asc') ? 'desc' : 'asc';
                 $groupDir = ($sortBy === 'group' && $sortDir === 'asc') ? 'desc' : 'asc';
+                $levelDir = ($sortBy === 'level' && $sortDir === 'desc') ? 'asc' : 'desc';
 
                 $nameUrl  = request()->fullUrlWithQuery(['sort' => 'name',  'dir' => $nameDir,  'page' => 1]);
                 $groupUrl = request()->fullUrlWithQuery(['sort' => 'group', 'dir' => $groupDir, 'page' => 1]);
+                $levelUrl = request()->fullUrlWithQuery(['sort' => 'level', 'dir' => $levelDir, 'page' => 1]);
             @endphp
 
             <div class="overflow-x-auto">
@@ -85,7 +100,7 @@
                             </th>
 
                             {{-- หมวดหมู่ --}}
-                            <th class="text-left py-2 px-3 w-5/12">
+                            <th class="text-left py-2 px-3 w-4/12">
                                 <a href="{{ $groupUrl }}"
                                    class="inline-flex items-center gap-1 hover:text-blue-600 transition-colors select-none">
                                     กลุ่มทักษะ
@@ -95,50 +110,132 @@
                                 </a>
                             </th>
 
+                            <th class="text-left py-2 px-3 w-2/12">
+                                <a href="{{ $levelUrl }}"
+                                   class="inline-flex items-center gap-1 hover:text-blue-600 transition-colors select-none">
+                                    Level
+                                    <span class="inline-block w-3 text-xs text-center {{ $sortBy === 'level' ? 'text-blue-600' : 'text-gray-400' }}">
+                                        {{ $sortBy === 'level' ? ($sortDir === 'desc' ? '↓' : '↑') : '↕' }}
+                                    </span>
+                                </a>
+                            </th>
+
                             <th class="text-center py-2 px-3 w-1/12">ESCO URI</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($skills as $skill)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="py-2 px-3 font-medium text-gray-900">
-                                    {{ $skill->name ?? '-' }}
-                                </td>
+                            @php
+                                $groups = $skill->skillGroups->sortBy('name')->values();
+                                // ถ้าเลือก filter กลุ่ม ให้แสดงเฉพาะกลุ่มที่เลือกเท่านั้น
+                                if ($activeGroup) {
+                                    $groups = $groups->filter(function ($g) use ($activeGroup) {
+                                        return (int) $g->id === (int) $activeGroup->id;
+                                    })->values();
+                                }
+                                // ตอนเรียงตามกลุ่ม ให้แสดงเฉพาะกลุ่มหลักที่ใช้จัดลำดับ
+                                elseif (($sortBy ?? request('sort', 'name')) === 'group') {
+                                    $groups = $groups->take(1)->values();
+                                }
+                            @endphp
 
-                                <td class="py-2 px-3 text-gray-600">
-                                    @php $group = $skill->skillGroups->first(); @endphp
-                                    @if($group)
-                                        {{-- คลิกเพื่อ filter ตามหมวดหมู่นี้ --}}
-                                        <a href="{{ request()->fullUrlWithQuery(['group' => $group->id, 'page' => 1]) }}"
-                                           class="hover:text-blue-600 hover:underline transition-colors"
-                                           title="กรองเฉพาะหมวดหมู่ {{ $group->name }}">
-                                            {{ $group->name }}
-                                        </a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
+                            @php
+                                $skillGroupCount = $skill->skillGroups->count();
+                                $maxGroups = max(1, (int) ($maxSkillGroupCount ?? 0));
+                                $filledStars = (int) round(($skillGroupCount / $maxGroups) * 5);
+                                $filledStars = max(0, min(5, $filledStars));
+                            @endphp
 
-                                <td class="py-2 px-3 text-center">
-                                    @if($skill->esco_uri)
-                                        <a
-                                            href="{{ $skill->esco_uri }}"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
-                                            title="{{ $skill->esco_uri }}"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none"
-                                                viewBox="0 0 24 24" stroke="black">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                                            </svg>
-                                        </a>
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
-                                </td>
-                            </tr>
+                            @if($groups->isNotEmpty())
+                                @foreach($groups as $group)
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="py-2 px-3 font-medium text-gray-900">
+                                            @if($skill->name)
+                                                <a href="{{ request()->fullUrlWithQuery(['skill' => $skill->id, 'group' => null, 'page' => 1]) }}"
+                                                   class="hover:text-blue-600 hover:underline transition-colors"
+                                                   title="แสดงกลุ่มทั้งหมดของทักษะ {{ $skill->name }}">
+                                                    {{ $skill->name }}
+                                                </a>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+
+                                        <td class="py-2 px-3 text-gray-600">
+                                            <a href="{{ request()->fullUrlWithQuery(['group' => $group->id, 'skill' => null, 'page' => 1]) }}"
+                                               class="hover:text-blue-600 hover:underline transition-colors"
+                                               title="กรองเฉพาะหมวดหมู่ {{ $group->name }}">
+                                                {{ $group->name }}
+                                            </a>
+                                        </td>
+
+                                        <td class="py-2 px-3 text-amber-500 whitespace-nowrap" title="{{ $skillGroupCount }}/{{ $maxGroups }} กลุ่ม">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <span class="{{ $i <= $filledStars ? 'text-amber-500' : 'text-gray-300' }}">★</span>
+                                            @endfor
+                                        </td>
+
+                                        <td class="py-2 px-3 text-center">
+                                            @if($skill->esco_uri)
+                                                <a
+                                                    href="{{ $skill->esco_uri }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+                                                    title="{{ $skill->esco_uri }}"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none"
+                                                        viewBox="0 0 24 24" stroke="black">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                    </svg>
+                                                </a>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-2 px-3 font-medium text-gray-900">
+                                        @if($skill->name)
+                                            <a href="{{ request()->fullUrlWithQuery(['skill' => $skill->id, 'group' => null, 'page' => 1]) }}"
+                                               class="hover:text-blue-600 hover:underline transition-colors"
+                                               title="แสดงกลุ่มทั้งหมดของทักษะ {{ $skill->name }}">
+                                                {{ $skill->name }}
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="py-2 px-3 text-gray-600">-</td>
+                                    <td class="py-2 px-3 text-amber-500 whitespace-nowrap" title="{{ $skillGroupCount }}/{{ $maxGroups }} กลุ่ม">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span class="{{ $i <= $filledStars ? 'text-amber-500' : 'text-gray-300' }}">★</span>
+                                        @endfor
+                                    </td>
+                                    <td class="py-2 px-3 text-center">
+                                        @if($skill->esco_uri)
+                                            <a
+                                                href="{{ $skill->esco_uri }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+                                                title="{{ $skill->esco_uri }}"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none"
+                                                    viewBox="0 0 24 24" stroke="black">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -159,7 +256,7 @@
                     <select
                         id="perPage"
                         name="perPage"
-                        onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&search={{ request('search') }}&sort={{ request('sort', 'name') }}&dir={{ request('dir', 'asc') }}&group={{ request('group') }}'"
+                        onchange="window.location.href = '{{ url()->current() }}?perPage=' + this.value + '&search={{ request('search') }}&sort={{ request('sort', 'name') }}&dir={{ request('dir', 'asc') }}&group={{ request('group') }}&skill={{ request('skill') }}'"
                         class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                     >
                         <option value="20" {{ request('perPage', 20) == 20 ? 'selected' : '' }}>20</option>
