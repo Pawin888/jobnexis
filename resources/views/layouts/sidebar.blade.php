@@ -112,17 +112,16 @@
         <ul class="w-full gap-2 menu menu-vertical text-base-content">
             <li>
                 <a href="{{ route('provider.dashboard') }}"
-                    class="flex items-center {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}">
+                    class="flex items-center {{ request()->is('provider/dashboard') ? 'text-blue-600' : '' }}">
                     <i
-                        class="fa-solid fa-tachometer-alt w-5 text-blue-600 text-center mr-1 {{ request()->is('education/dashboard') ? 'text-blue-600' : '' }}"></i>
+                        class="fa-solid fa-tachometer-alt w-5 text-blue-600 text-center mr-1 {{ request()->is('provider/dashboard') ? 'text-blue-600' : '' }}"></i>
                     แดชบอร์ด
                 </a>
             </li>
             <li>
                 <a href="{{ route('provider.recruitments.index') }}"
-                    class="flex items-center {{ request()->is('education/courses') ? 'text-blue-600' : '' }}">
-                    <i
-                        class="fa-solid fa-clipboard-check w-5 text-blue-600 text-center mr-1 {{ request()->is('education/courses') ? 'text-blue-600' : '' }}"></i>
+                    class="flex items-center {{ request()->is('my/recruitments*') ? 'text-blue-600' : '' }}">
+                    <i class="fa-solid fa-clipboard-check w-5 text-blue-600 text-center mr-1 {{ request()->is('my/recruitments*') ? 'text-blue-600' : '' }}"></i>
                     ประกาศงาน
                 </a>
             </li>

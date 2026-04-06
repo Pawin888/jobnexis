@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ใบเ Resume ผู้สมัคร')
+@section('title', 'ใบ Resume ผู้สมัคร')
 
 @section('content')
 <div class="flex flex-col gap-4 p-4 shadow bg-base-200 rounded-2xl">
